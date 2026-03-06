@@ -17,14 +17,51 @@ CREATE TABLE products (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Tạo bảng orders
+CREATE TABLE orders (
+  id SERIAL PRIMARY KEY,
+  created_date DATE NOT NULL,
+  customer_name VARCHAR(255) NOT NULL,
+  customer_phone VARCHAR(20) NOT NULL,
+  customer_id_number VARCHAR(50) NOT NULL,
+  customer_id_issued_date DATE,
+  customer_address TEXT NOT NULL,
+  total_amount DECIMAL(15,2) NOT NULL,
+  receive_date DATE NOT NULL,
+  payment_method VARCHAR(10) NOT NULL CHECK (payment_method IN ('bank', 'cash')) DEFAULT 'bank',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Tạo bảng order_items
+CREATE TABLE order_items (
+  id SERIAL PRIMARY KEY,
+  order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  product_id INTEGER NOT NULL REFERENCES products(id),
+  quantity INTEGER NOT NULL CHECK (quantity > 0),
+  selling_price DECIMAL(15,2) NOT NULL CHECK (selling_price >= 0),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Tạo index cho SKU để tìm kiếm nhanh hơn
 CREATE INDEX idx_products_sku ON products(sku);
+CREATE INDEX idx_orders_created_date ON orders(created_date);
+CREATE INDEX idx_orders_customer_phone ON orders(customer_phone);
+CREATE INDEX idx_order_items_order_id ON order_items(order_id);
+CREATE INDEX idx_order_items_product_id ON order_items(product_id);
 
--- Bật Row Level Security (RLS)
+-- Bật Row Level Security (RLS) cho tất cả bảng
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
 
 -- Tạo policy để user đã đăng nhập có thể CRUD
 CREATE POLICY "Enable all operations for authenticated users" ON products
+FOR ALL USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Enable all operations for authenticated users" ON orders
+FOR ALL USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Enable all operations for authenticated users" ON order_items
 FOR ALL USING (auth.role() = 'authenticated');
 ```
 
@@ -47,21 +84,56 @@ FOR ALL USING (bucket_id = 'product-images');
 Nếu muốn có dữ liệu mẫu để test:
 
 ```sql
--- Thêm một vài sản phẩm mẫu (có thể có hoặc không có ảnh)
+-- Thêm sản phẩm mẫu
 INSERT INTO products (name, sku, image_url) VALUES 
 ('iPhone 15 Pro', 'IP15-PRO-001', NULL),
 ('MacBook Air M3', 'MBA-M3-002', NULL),
-('iPad Pro M4', 'IPD-M4-003', NULL);
+('iPad Pro M4', 'IPD-M4-003', NULL),
+('AirPods Pro 2', 'APP-002', NULL);
+
+-- Thêm đơn hàng mẫu
+INSERT INTO orders (created_date, customer_name, customer_phone, customer_id_number, customer_id_issued_date, customer_address, total_amount, receive_date, payment_method) VALUES 
+('2024-03-01', 'Nguyễn Văn An', '0901234567', '123456789012', '2015-05-20', '123 Đường ABC, Quận 1, TP.HCM', 35990000, '2024-03-05', 'bank'),
+('2024-03-02', 'Trần Thị Bình', '0912345678', '987654321098', NULL, '456 Đường XYZ, Quận 2, TP.HCM', 6490000, '2024-03-06', 'cash');
+
+-- Thêm chi tiết đơn hàng mẫu (cần chạy sau khi có orders và products)
+INSERT INTO order_items (order_id, product_id, quantity, selling_price) VALUES 
+(1, 1, 1, 28990000),  -- iPhone cho đơn hàng 1
+(1, 4, 1, 6490000),   -- AirPods cho đơn hàng 1  
+(2, 4, 1, 6490000);   -- AirPods cho đơn hàng 2
 ```
 
 ## Bước 3: Kiểm tra
 
 1. Vào **Table Editor** trong Supabase
-2. Bạn sẽ thấy bảng `products` với structure:
+2. Bạn sẽ thấy các bảng sau:
+   
+   **Bảng `products`:**
    - `id`: Primary key (tự động tăng)
    - `name`: Tên sản phẩm
    - `sku`: Mã sản phẩm (duy nhất)
    - `image_url`: Link ảnh sản phẩm (có thể NULL)
+   - `created_at`: Thời gian tạo
+
+   **Bảng `orders`:**
+   - `id`: Primary key (tự động tăng) 
+   - `created_date`: Ngày tạo đơn hàng
+   - `customer_name`: Tên khách hàng
+   - `customer_phone`: Số điện thoại
+   - `customer_id_number`: Số CMND/CCCD
+   - `customer_id_issued_date`: Ngày cấp (có thể NULL)
+   - `customer_address`: Địa chỉ
+   - `total_amount`: Tổng tiền đơn hàng
+   - `receive_date`: Ngày nhận hàng
+   - `payment_method`: Phương thức thanh toán (bank/cash)
+   - `created_at`: Thời gian tạo
+
+   **Bảng `order_items`:**
+   - `id`: Primary key (tự động tăng)
+   - `order_id`: Foreign key đến orders
+   - `product_id`: Foreign key đến products
+   - `quantity`: Số lượng
+   - `selling_price`: Giá bán
    - `created_at`: Thời gian tạo
 
 ## ⚠️ Chú ý quan trọng
@@ -78,8 +150,20 @@ npm start
 ```
 
 Bây giờ bạn có thể:
+
+**Quản lý Sản phẩm:**
 - ✅ Xem danh sách sản phẩm với hình ảnh
 - ✅ Thêm sản phẩm mới với Name, SKU và upload ảnh
 - ✅ Upload ảnh tự động lưu vào Supabase Storage
 - ✅ Xóa sản phẩm (tự động xóa cả ảnh)
-- ✅ Dữ liệu được lưu trữ trong Supabase
+
+**Quản lý Đơn hàng:**
+- ✅ Xem danh sách đơn hàng với chi tiết đầy đủ
+- ✅ Tạo đơn hàng mới với thông tin khách hàng
+- ✅ Thêm nhiều sản phẩm vào đơn hàng
+- ✅ Tính tổng tiền tự động
+- ✅ Chọn phương thức thanh toán (bank/cash)
+- ✅ Thiết lập ngày tạo và ngày nhận hàng
+- ✅ Xóa đơn hàng (tự động xóa chi tiết đơn hàng)
+
+**Dữ liệu được lưu trữ an toàn trong Supabase**

@@ -50,6 +50,17 @@ function Sidebar() {
             </li>
           ))}
         </ul>
+        
+        {/* Quick Action Button */}
+        <div className="mt-6 pt-4 border-t border-gray-200">
+          <NavLink
+            to="/orders/create"
+            className="flex items-center w-full p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+          >
+            <span className="text-xl mr-3">➕</span>
+            <span className="font-medium">Tạo đơn hàng</span>
+          </NavLink>
+        </div>
       </nav>
       
       {user && (

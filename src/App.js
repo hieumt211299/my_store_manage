@@ -2,6 +2,9 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Sidebar from './components/Sidebar';
 import ProductList from './pages/ProductList';
+import OrderList from './pages/OrderList';
+import OrderDetail from './pages/OrderDetail';
+import CreateOrder from './pages/CreateOrder';
 import Login from './pages/Login';
 import './App.css';
 
@@ -19,7 +22,9 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<Navigate to="/products" replace />} />
           <Route path="/products" element={<ProductList />} />
-          <Route path="/orders" element={<PagePlaceholder title="Orders" />} />
+          <Route path="/orders" element={<OrderList />} />
+          <Route path="/orders/:id" element={<OrderDetail />} />
+          <Route path="/orders/create" element={<CreateOrder />} />
           <Route path="/customers" element={<PagePlaceholder title="Customers" />} />
           <Route path="/settings" element={<PagePlaceholder title="Settings" />} />
         </Routes>
