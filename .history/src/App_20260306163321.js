@@ -40,9 +40,9 @@ function App() {
 
 function PagePlaceholder({ title }) {
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold text-gray-800 mb-4">{title}</h1>
-      <p className="text-gray-500">Trang này đang được phát triển...</p>
+    <div style={{ padding: 32 }}>
+      <h1>{title}</h1>
+      <p style={{ color: '#888' }}>Trang này đang được phát triển...</p>
     </div>
   );
 }
