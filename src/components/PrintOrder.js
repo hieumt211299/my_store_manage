@@ -241,22 +241,18 @@ const PrintOrder = React.forwardRef(({ order }, ref) => {
       {/* Customer Info */}
       <div className="print-info">
         <div className="print-info-row">
-          <span className="label">Số phiếu:</span>
-          <span className="value">{order.id}</span>
+          <span className="label">Số phiếu:  {order.id}</span>
         </div>
         <div className="print-info-row">
-          <span className="label">Ngày:</span>
-          <span className="value">{formatDate(order.created_date)}</span>
+          <span className="label">Ngày:  {formatDate(order.created_date)}</span>
         </div>
         <div className="print-info-row">
-          <span className="label">Khách hàng:</span>
-          <span className="value">{order.customer_name}</span>
+          <span className="label">Khách hàng:  {order.customer_name}</span>
         </div>
         <div className="print-info-row">
-          <span className="label">SĐT:</span>
-          <span className="value">{order.customer_phone}</span>
+          <span className="label">SĐT:  {order.customer_phone}</span>
         </div>
-        <div className="print-info-cccd-row">
+        <div className="print-info-row">
           <div className="cccd-group">
             <span>CCCD: {order.customer_id_number}</span>
           </div>
@@ -267,8 +263,7 @@ const PrintOrder = React.forwardRef(({ order }, ref) => {
           </div>
         </div>
         <div className="print-info-row">
-          <span className="label">Địa chỉ:</span>
-          <span className="value">{order.customer_address}</span>
+          <span className="label">Địa chỉ:  {order.customer_address}</span>
         </div>
       </div>
 

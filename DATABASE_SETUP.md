@@ -32,6 +32,9 @@ CREATE TABLE orders (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Thay đổi ID đơn hàng bắt đầu từ 100000000 (9 chữ số) thay vì 1
+ALTER SEQUENCE orders_id_seq RESTART WITH 100000000;
+
 -- Tạo bảng order_items
 CREATE TABLE order_items (
   id SERIAL PRIMARY KEY,
@@ -78,6 +81,9 @@ FOR ALL USING (bucket_id = 'product-images');
 ```
 
 5. Nhấn **Run** để chạy SQL
+
+**Lưu ý về ID đơn hàng:** 
+Sau khi chạy script trên, ID đơn hàng sẽ bắt đầu từ 100000000 (9 chữ số) thay vì 1, 2, 3... Điều này tạo ID đơn hàng chuyên nghiệp hơn.
 
 ## Bước 2: Test thêm dữ liệu mẫu (tùy chọn)
 
