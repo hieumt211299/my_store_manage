@@ -5,9 +5,8 @@ function ProductList() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [formData, setFormData] = useState({ name: '', sku: '', image: null });
+  const [formData, setFormData] = useState({ name: '', sku: '' });
   const [message, setMessage] = useState('');
-  const [uploading, setUploading] = useState(false);
 
   // Fetch products from Supabase
   useEffect(() => {
@@ -35,33 +34,6 @@ function ProductList() {
     }
   };
 
-  // Upload image to Supabase Storage
-  const uploadImage = async (file) => {
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('product-images')
-        .upload(filePath, file);
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      // Get public URL
-      const { data } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(filePath);
-
-      return data.publicUrl;
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      throw error;
-    }
-  };
-
   // Create new product
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -72,21 +44,12 @@ function ProductList() {
     }
 
     try {
-      setUploading(true);
-      let imageUrl = null;
-
-      // Upload image if provided
-      if (formData.image) {
-        imageUrl = await uploadImage(formData.image);
-      }
-
       const { data, error } = await supabase
         .from('products')
         .insert([
           {
             name: formData.name,
             sku: formData.sku,
-            image_url: imageUrl,
             created_at: new Date().toISOString()
           }
         ])
@@ -97,75 +60,40 @@ function ProductList() {
       }
 
       setProducts([...data, ...products]);
-      setFormData({ name: '', sku: '', image: null });
+      setFormData({ name: '', sku: '' });
       setShowCreateForm(false);
       setMessage('Tạo sản phẩm thành công!');
-      
-      // Reset file input
-      const fileInput = document.getElementById('imageInput');
-      if (fileInput) fileInput.value = '';
       
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       console.error('Error creating product:', error);
       setMessage(`Lỗi tạo sản phẩm: ${error.message}`);
-    } finally {
-      setUploading(false);
     }
   };
 
-  // Delete product and its image
-  const handleDelete = async (product) => {
+  // Delete product
+  const handleDelete = async (productId) => {
     if (!window.confirm('Bạn có chắc muốn xóa sản phẩm này?')) {
       return;
     }
 
     try {
-      // Delete image from storage if exists
-      if (product.image_url) {
-        const imagePath = product.image_url.split('/').pop();
-        await supabase.storage
-          .from('product-images')
-          .remove([imagePath]);
-      }
-
-      // Delete product from database
       const { error } = await supabase
         .from('products')
         .delete()
-        .eq('id', product.id);
+        .eq('id', productId);
 
       if (error) {
         throw error;
       }
 
-      setProducts(products.filter(p => p.id !== product.id));
+      setProducts(products.filter(product => product.id !== productId));
       setMessage('Xóa sản phẩm thành công!');
       
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       console.error('Error deleting product:', error);
       setMessage(`Lỗi xóa sản phẩm: ${error.message}`);
-    }
-  };
-
-  // Handle image file selection
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      // Check file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        setMessage('Kích thước ảnh không được vượt quá 5MB');
-        return;
-      }
-      
-      // Check file type
-      if (!file.type.startsWith('image/')) {
-        setMessage('Vui lòng chọn file ảnh hợp lệ');
-        return;
-      }
-      
-      setFormData({ ...formData, image: file });
     }
   };
 
@@ -241,44 +169,18 @@ function ProductList() {
                 />
               </div>
             </div>
-            
-            {/* Image Upload */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Hình ảnh sản phẩm
-              </label>
-              <input
-                id="imageInput"
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <p className="text-sm text-gray-500 mt-1">
-                Chấp nhận: JPG, PNG, GIF (tối đa 5MB)
-              </p>
-              {formData.image && (
-                <div className="mt-2 text-sm text-green-600">
-                  ✅ Đã chọn: {formData.image.name}
-                </div>
-              )}
-            </div>
-
             <div className="flex space-x-4">
               <button
                 type="submit"
-                disabled={uploading}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
               >
-                {uploading ? 'Đang tải...' : 'Lưu sản phẩm'}
+                Lưu sản phẩm
               </button>
               <button
                 type="button"
                 onClick={() => {
                   setShowCreateForm(false);
-                  setFormData({ name: '', sku: '', image: null });
-                  const fileInput = document.getElementById('imageInput');
-                  if (fileInput) fileInput.value = '';
+                  setFormData({ name: '', sku: '' });
                 }}
                 className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
               >
@@ -304,30 +206,19 @@ function ProductList() {
         ) : (
           products.map((product) => (
             <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden" key={product.id}>
-              {/* Product Image */}
-              <div className="h-48 bg-gray-100 flex items-center justify-center">
-                {product.image_url ? (
-                  <img 
-                    src={product.image_url} 
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="text-6xl text-gray-400">📦</div>
-                )}
-              </div>
-              
-              {/* Product Info */}
-              <div className="p-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{product.name}</h3>
-                <span className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded-md">SKU: {product.sku}</span>
+              <div className="p-6">
+                <div className="text-center mb-4">
+                  <div className="text-5xl mb-2">📦</div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">{product.name}</h3>
+                  <span className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded-md">SKU: {product.sku}</span>
+                </div>
                 
-                <div className="flex justify-between items-center mt-4">
+                <div className="flex justify-between items-center">
                   <span className="text-xs text-gray-500">
                     {new Date(product.created_at).toLocaleDateString('vi-VN')}
                   </span>
                   <button
-                    onClick={() => handleDelete(product)}
+                    onClick={() => handleDelete(product.id)}
                     className="text-red-600 hover:text-red-800 text-sm font-medium"
                   >
                     Xóa
