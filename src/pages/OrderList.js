@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 
@@ -12,12 +12,8 @@ function OrderList() {
   const [totalOrders, setTotalOrders] = useState(0);
   const [itemsPerPage] = useState(10);
 
-  useEffect(() => {
-    fetchOrders();
-  }, [currentPage, searchId]);
-
   // Fetch orders from database with pagination and search
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -57,7 +53,11 @@ function OrderList() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, searchId, itemsPerPage]);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
 
   // Delete order
   const handleDeleteOrder = async (orderId) => {

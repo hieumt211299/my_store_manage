@@ -18,50 +18,50 @@ function OrderDetail() {
   });
 
   useEffect(() => {
+    // Fetch order detail from database
+    const fetchOrderDetail = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('orders')
+          .select(`
+            *,
+            order_items (
+              id,
+              quantity,
+              selling_price,
+              products (
+                id,
+                name,
+                sku,
+                image_url
+              )
+            )
+          `)
+          .eq('id', id)
+          .single();
+
+        if (error) {
+          if (error.code === 'PGRST116') {
+            setMessage('Không tìm thấy đơn hàng');
+          } else {
+            throw error;
+          }
+        } else {
+          setOrder(data);
+        }
+      } catch (error) {
+        console.error('Error fetching order detail:', error);
+        setMessage(`Lỗi tải đơn hàng: ${error.message}`);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (id) {
       fetchOrderDetail();
     }
   }, [id]);
-
-  // Fetch order detail from database
-  const fetchOrderDetail = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('orders')
-        .select(`
-          *,
-          order_items (
-            id,
-            quantity,
-            selling_price,
-            products (
-              id,
-              name,
-              sku,
-              image_url
-            )
-          )
-        `)
-        .eq('id', id)
-        .single();
-
-      if (error) {
-        if (error.code === 'PGRST116') {
-          setMessage('Không tìm thấy đơn hàng');
-        } else {
-          throw error;
-        }
-      } else {
-        setOrder(data);
-      }
-    } catch (error) {
-      console.error('Error fetching order detail:', error);
-      setMessage(`Lỗi tải đơn hàng: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Delete order
   const handleDeleteOrder = async () => {
