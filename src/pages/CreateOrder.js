@@ -41,7 +41,9 @@ function CreateOrder() {
     try {
       const { data, error } = await supabase
         .from('products')
-        .select('*')        .is('deleted_at', null)        .order('name');
+        .select('*')
+        .is('deleted_at', null)
+        .order('name');
 
       if (error) throw error;
       setProducts(data || []);
