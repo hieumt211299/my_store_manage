@@ -21,8 +21,8 @@ function Sidebar() {
   };
 
   return (
-    <aside className="w-64 bg-white shadow-lg h-screen flex flex-col">
-      <div className="p-6 border-b border-gray-200">
+    <aside className="w-64 bg-white shadow-lg h-screen flex flex-col flex-shrink-0">
+      <div className="p-6 border-b border-gray-200 flex-shrink-0">
         <h2 className="text-xl font-bold text-gray-800">MyApp</h2>
         {user && (
           <div className="mt-2">
@@ -30,7 +30,7 @@ function Sidebar() {
           </div>
         )}
       </div>
-      <nav className="flex-1 p-4">
+      <nav className="flex-1 p-4 overflow-y-auto">
         <ul className="space-y-2">
           {menuItems.map((item) => (
             <li key={item.path}>
@@ -64,7 +64,7 @@ function Sidebar() {
       </nav>
       
       {user && (
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4 border-t border-gray-200 flex-shrink-0">
           <button 
             onClick={handleLogout} 
             className="flex items-center w-full p-3 text-gray-600 hover:bg-red-50 hover:text-red-700 rounded-lg transition-colors duration-200"

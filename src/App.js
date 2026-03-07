@@ -16,18 +16,20 @@ function AppContent() {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-100 overflow-hidden">
       <Sidebar />
-      <main className="flex-1 p-6">
-        <Routes>
-          <Route path="/" element={<Navigate to="/products" replace />} />
-          <Route path="/products" element={<ProductList />} />
-          <Route path="/orders" element={<OrderList />} />
-          <Route path="/orders/:id" element={<OrderDetail />} />
-          <Route path="/orders/create" element={<CreateOrder />} />
-          <Route path="/customers" element={<PagePlaceholder title="Customers" />} />
-          <Route path="/settings" element={<PagePlaceholder title="Settings" />} />
-        </Routes>
+      <main className="flex-1 overflow-y-auto">
+        <div className="p-6">
+          <Routes>
+            <Route path="/" element={<Navigate to="/products" replace />} />
+            <Route path="/products" element={<ProductList />} />
+            <Route path="/orders" element={<OrderList />} />
+            <Route path="/orders/:id" element={<OrderDetail />} />
+            <Route path="/orders/create" element={<CreateOrder />} />
+            <Route path="/customers" element={<PagePlaceholder title="Customers" />} />
+            <Route path="/settings" element={<PagePlaceholder title="Settings" />} />
+          </Routes>
+        </div>
       </main>
     </div>
   );

@@ -9,6 +9,7 @@ function CreateOrder() {
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Form state for creating orders
   const getDefaultReceiveDate = () => {
@@ -40,8 +41,7 @@ function CreateOrder() {
     try {
       const { data, error } = await supabase
         .from('products')
-        .select('*')
-        .order('name');
+        .select('*')        .is('deleted_at', null)        .order('name');
 
       if (error) throw error;
       setProducts(data || []);
@@ -187,6 +187,13 @@ function CreateOrder() {
       navigate('/orders');
     }
   };
+
+  // Filter products based on search term
+  const filteredProducts = products.filter(product => 
+    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.id.toString().includes(searchTerm)
+  );
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -371,11 +378,35 @@ function CreateOrder() {
                       onClick={() => {
                         setShowProductDialog(false);
                         setSelectedProducts([]);
+                        setSearchTerm('');
                       }}
                       className="text-gray-500 hover:text-gray-700"
                     >
                       ✕
                     </button>
+                  </div>
+                  
+                  {/* Search Input */}
+                  <div className="mb-4">
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Tìm kiếm theo tên, SKU hoặc ID sản phẩm..."
+                      />
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                      </div>
+                    </div>
+                    {searchTerm && (
+                      <p className="text-sm text-gray-500 mt-2">
+                        Tìm thấy {filteredProducts.length} sản phẩm
+                      </p>
+                    )}
                   </div>
                   
                   <div className="border border-gray-300 rounded-lg overflow-hidden mb-4">
@@ -387,12 +418,12 @@ function CreateOrder() {
                               type="checkbox"
                               onChange={(e) => {
                                 if (e.target.checked) {
-                                  setSelectedProducts(products.map(p => p.id.toString()));
+                                  setSelectedProducts(filteredProducts.map(p => p.id.toString()));
                                 } else {
                                   setSelectedProducts([]);
                                 }
                               }}
-                              checked={selectedProducts.length === products.length && products.length > 0}
+                              checked={selectedProducts.length === filteredProducts.length && filteredProducts.length > 0}
                             />
                           </th>
                           <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Hình ảnh</th>
@@ -401,46 +432,69 @@ function CreateOrder() {
                         </tr>
                       </thead>
                       <tbody>
-                        {products.map((product) => {
-                          const isSelected = selectedProducts.includes(product.id.toString());
-                          const isAlreadyAdded = orderForm.items.some(item => item.productId === product.id);
+                        {filteredProducts.length === 0 ? (
+                          <tr>
+                            <td colSpan="4" className="px-4 py-8 text-center text-gray-500">
+                              {searchTerm ? 'Không tìm thấy sản phẩm nào phù hợp' : 'Chưa có sản phẩm nào'}
+                            </td>
+                          </tr>
+                        ) : (
+                          filteredProducts.map((product) => {
+                            const isSelected = selectedProducts.includes(product.id.toString());
+                            const isAlreadyAdded = orderForm.items.some(item => item.productId === product.id);
+                            
+                            const handleToggleProduct = () => {
+                              if (isAlreadyAdded) return;
+                              
+                              if (isSelected) {
+                                setSelectedProducts(selectedProducts.filter(id => id !== product.id.toString()));
+                              } else {
+                                setSelectedProducts([...selectedProducts, product.id.toString()]);
+                              }
+                            };
                           
-                          return (
-                            <tr key={product.id} className={`border-t ${
-                              isAlreadyAdded ? 'bg-gray-100 opacity-50' : isSelected ? 'bg-blue-50' : 'hover:bg-gray-50'
-                            }`}>
-                              <td className="px-4 py-2">
-                                <input
-                                  type="checkbox"
-                                  checked={isSelected}
-                                  disabled={isAlreadyAdded}
-                                  onChange={(e) => {
-                                    if (e.target.checked) {
-                                      setSelectedProducts([...selectedProducts, product.id.toString()]);
-                                    } else {
-                                      setSelectedProducts(selectedProducts.filter(id => id !== product.id.toString()));
-                                    }
-                                  }}
-                                />
-                              </td>
-                              <td className="px-4 py-2">
-                                <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center">
-                                  {product.image_url ? (
-                                    <img 
-                                      src={product.image_url} 
-                                      alt={product.name}
-                                      className="w-full h-full object-cover rounded"
-                                    />
-                                  ) : (
-                                    <span className="text-2xl">📦</span>
-                                  )}
-                                </div>
-                              </td>
-                              <td className="px-4 py-2 font-medium">{product.name}</td>
-                              <td className="px-4 py-2 text-gray-600">{product.sku}</td>
-                            </tr>
-                          );
-                        })}
+                            return (
+                              <tr 
+                                key={product.id} 
+                                className={`border-t cursor-pointer ${
+                                  isAlreadyAdded 
+                                    ? 'bg-gray-100 opacity-50 cursor-not-allowed' 
+                                    : isSelected 
+                                      ? 'bg-blue-50 hover:bg-blue-100' 
+                                      : 'hover:bg-gray-50'
+                                }`}
+                                onClick={handleToggleProduct}
+                              >
+                                <td className="px-4 py-2">
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    disabled={isAlreadyAdded}
+                                    onChange={(e) => {
+                                      e.stopPropagation(); // Ngăn trigger click của row
+                                      handleToggleProduct();
+                                    }}
+                                  />
+                                </td>
+                                <td className="px-4 py-2">
+                                  <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center">
+                                    {product.image_url ? (
+                                      <img 
+                                        src={product.image_url} 
+                                        alt={product.name}
+                                        className="w-full h-full object-cover rounded"
+                                      />
+                                    ) : (
+                                      <span className="text-2xl">📦</span>
+                                    )}
+                                  </div>
+                                </td>
+                                <td className="px-4 py-2 font-medium">{product.name}</td>
+                                <td className="px-4 py-2 text-gray-600">{product.sku}</td>
+                              </tr>
+                            );
+                          })
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -455,6 +509,7 @@ function CreateOrder() {
                         onClick={() => {
                           setShowProductDialog(false);
                           setSelectedProducts([]);
+                          setSearchTerm('');
                         }}
                         className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
                       >

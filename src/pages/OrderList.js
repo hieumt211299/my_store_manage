@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import Loading from '../components/Loading';
 
 function OrderList() {
   const navigate = useNavigate();
@@ -58,28 +59,6 @@ function OrderList() {
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
-
-  // Delete order
-  const handleDeleteOrder = async (orderId) => {
-    if (!window.confirm('Bạn có chắc muốn xóa đơn hàng này?')) return;
-
-    try {
-      // Delete order items first (foreign key constraint)
-      await supabase.from('order_items').delete().eq('order_id', orderId);
-      
-      // Delete order
-      const { error } = await supabase.from('orders').delete().eq('id', orderId);
-      if (error) throw error;
-
-      // Refresh data
-      fetchOrders();
-      setMessage('Xóa đơn hàng thành công!');
-      setTimeout(() => setMessage(''), 3000);
-    } catch (error) {
-      console.error('Error deleting order:', error);
-      setMessage(`Lỗi xóa đơn hàng: ${error.message}`);
-    }
-  };
 
   // Handle search
   const handleSearch = (e) => {
@@ -204,21 +183,14 @@ function OrderList() {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Tổng tiền
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Thao tác
-              </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {loading ? (
-              <tr>
-                <td colSpan="7" className="px-6 py-12 text-center">
-                  <div className="text-lg text-gray-600">Đang tải đơn hàng...</div>
-                </td>
-              </tr>
+              <Loading type="table" message="Đang tải đơn hàng..." colSpan="6" />
             ) : orders.length === 0 ? (
               <tr>
-                <td colSpan="7" className="px-6 py-12 text-center">
+                <td colSpan="6" className="px-6 py-12 text-center">
                   <div className="text-gray-500">
                     {searchId ? 'Không tìm thấy đơn hàng' : 'Chưa có đơn hàng nào'}
                   </div>
@@ -263,17 +235,6 @@ function OrderList() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600">
                     {formatCurrency(order.total_amount)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteOrder(order.id);
-                      }}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      Xóa
-                    </button>
                   </td>
                 </tr>
               ))
