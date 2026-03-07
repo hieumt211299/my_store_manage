@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
 import { supabase } from '../lib/supabase';
 import PrintOrder from '../components/PrintOrder';
+import Loading from '../components/Loading';
 
 function OrderDetail() {
   const { id } = useParams();
@@ -63,26 +64,6 @@ function OrderDetail() {
     }
   }, [id]);
 
-  // Delete order
-  const handleDeleteOrder = async () => {
-    if (!window.confirm('Bạn có chắc muốn xóa đơn hàng này?')) return;
-
-    try {
-      // Delete order items first (foreign key constraint)
-      await supabase.from('order_items').delete().eq('order_id', id);
-      
-      // Delete order
-      const { error } = await supabase.from('orders').delete().eq('id', id);
-      if (error) throw error;
-
-      // Navigate back to order list
-      navigate('/orders');
-    } catch (error) {
-      console.error('Error deleting order:', error);
-      setMessage(`Lỗi xóa đơn hàng: ${error.message}`);
-    }
-  };
-
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
@@ -91,13 +72,7 @@ function OrderDetail() {
   };
 
   if (loading) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-center items-center h-64">
-          <div className="text-lg text-gray-600">Đang tải chi tiết đơn hàng...</div>
-        </div>
-      </div>
-    );
+    return <Loading type="page" message="Đang tải chi tiết đơn hàng..." />;
   }
 
   if (message && !order) {
@@ -144,12 +119,6 @@ function OrderDetail() {
             className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center"
           >
             🖨️ In phiếu
-          </button>
-          <button
-            onClick={handleDeleteOrder}
-            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
-          >
-            Xóa đơn hàng
           </button>
         </div>
       </div>

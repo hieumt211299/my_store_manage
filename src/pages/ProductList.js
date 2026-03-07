@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import Loading from '../components/Loading';
 
 function ProductList() {
   const [products, setProducts] = useState([]);
@@ -8,6 +9,7 @@ function ProductList() {
   const [formData, setFormData] = useState({ name: '', sku: '', image: null });
   const [message, setMessage] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Fetch products from Supabase
   useEffect(() => {
@@ -20,6 +22,7 @@ function ProductList() {
       const { data, error } = await supabase
         .from('products')
         .select('*')
+        .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -114,37 +117,30 @@ function ProductList() {
     }
   };
 
-  // Delete product and its image
+  // Soft delete product (set deleted_at timestamp)
   const handleDelete = async (product) => {
     if (!window.confirm('Bạn có chắc muốn xóa sản phẩm này?')) {
       return;
     }
 
     try {
-      // Delete image from storage if exists
-      if (product.image_url) {
-        const imagePath = product.image_url.split('/').pop();
-        await supabase.storage
-          .from('product-images')
-          .remove([imagePath]);
-      }
-
-      // Delete product from database
+      // Soft delete: Update deleted_at field instead of actual deletion
       const { error } = await supabase
         .from('products')
-        .delete()
+        .update({ deleted_at: new Date().toISOString() })
         .eq('id', product.id);
 
       if (error) {
         throw error;
       }
 
+      // Remove from local state immediately
       setProducts(products.filter(p => p.id !== product.id));
       setMessage('Xóa sản phẩm thành công!');
       
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
-      console.error('Error deleting product:', error);
+      console.error('Error soft deleting product:', error);
       setMessage(`Lỗi xóa sản phẩm: ${error.message}`);
     }
   };
@@ -169,14 +165,15 @@ function ProductList() {
     }
   };
 
+  // Filter products based on search term
+  const filteredProducts = products.filter(product => 
+    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.id.toString().includes(searchTerm)
+  );
+
   if (loading) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-center items-center h-64">
-          <div className="text-lg text-gray-600">Đang tải sản phẩm...</div>
-        </div>
-      </div>
-    );
+    return <Loading type="page" message="Đang tải sản phẩm..." />;
   }
 
   return (
@@ -186,7 +183,7 @@ function ProductList() {
         <h1 className="text-3xl font-bold text-gray-900">Danh sách sản phẩm</h1>
         <div className="flex items-center space-x-4">
           <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-            {products.length} sản phẩm
+            {searchTerm ? `${filteredProducts.length} / ${products.length}` : `${products.length}`} sản phẩm
           </span>
           <button
             onClick={() => setShowCreateForm(!showCreateForm)}
@@ -207,6 +204,39 @@ function ProductList() {
           {message}
         </div>
       )}
+
+      {/* Search Bar */}
+      <div className="mb-6 bg-white rounded-lg shadow-md p-4">
+        <div className="relative">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Tìm kiếm theo tên, SKU hoặc ID sản phẩm..."
+          />
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+        </div>
+        {searchTerm && (
+          <p className="text-sm text-gray-500 mt-2">
+            Tìm thấy {filteredProducts.length} sản phẩm
+          </p>
+        )}
+      </div>
 
       {/* Create Form */}
       {showCreateForm && (
@@ -291,18 +321,32 @@ function ProductList() {
 
       {/* Products Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {products.length === 0 ? (
+        {filteredProducts.length === 0 ? (
           <div className="col-span-full text-center py-12">
-            <div className="text-gray-500 text-lg">Chưa có sản phẩm nào</div>
-            <button
-              onClick={() => setShowCreateForm(true)}
-              className="mt-4 text-blue-600 hover:text-blue-800"
-            >
-              Thêm sản phẩm đầu tiên
-            </button>
+            {searchTerm ? (
+              <div>
+                <div className="text-gray-500 text-lg">Không tìm thấy sản phẩm phù hợp</div>
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="mt-4 text-blue-600 hover:text-blue-800"
+                >
+                  Xóa bộ lọc
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div className="text-gray-500 text-lg">Chưa có sản phẩm nào</div>
+                <button
+                  onClick={() => setShowCreateForm(true)}
+                  className="mt-4 text-blue-600 hover:text-blue-800"
+                >
+                  Thêm sản phẩm đầu tiên
+                </button>
+              </div>
+            )}
           </div>
         ) : (
-          products.map((product) => (
+          filteredProducts.map((product) => (
             <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden" key={product.id}>
               {/* Product Image */}
               <div className="h-48 bg-gray-100 flex items-center justify-center">

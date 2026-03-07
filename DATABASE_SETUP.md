@@ -8,12 +8,13 @@
 4. Copy và paste SQL code dưới đây vào editor:
 
 ```sql
--- Tạo bảng products (cập nhật để hỗ trợ upload ảnh)
+-- Tạo bảng products (cập nhật để hỗ trợ upload ảnh và soft delete)
 CREATE TABLE products (
   id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   sku VARCHAR(100) NOT NULL UNIQUE,
   image_url TEXT,
+  deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -45,8 +46,9 @@ CREATE TABLE order_items (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Tạo index cho SKU để tìm kiếm nhanh hơn
+-- Tạo index cho SKU và soft delete để tìm kiếm nhanh hơn
 CREATE INDEX idx_products_sku ON products(sku);
+CREATE INDEX idx_products_deleted_at ON products(deleted_at);
 CREATE INDEX idx_orders_created_date ON orders(created_date);
 CREATE INDEX idx_orders_customer_phone ON orders(customer_phone);
 CREATE INDEX idx_order_items_order_id ON order_items(order_id);
@@ -158,18 +160,40 @@ npm start
 Bây giờ bạn có thể:
 
 **Quản lý Sản phẩm:**
-- ✅ Xem danh sách sản phẩm với hình ảnh
+- ✅ Xem danh sách sản phẩm với hình ảnh (chỉ hiển thị sản phẩm chưa xóa)
 - ✅ Thêm sản phẩm mới với Name, SKU và upload ảnh
 - ✅ Upload ảnh tự động lưu vào Supabase Storage
-- ✅ Xóa sản phẩm (tự động xóa cả ảnh)
+- ✅ Xóa sản phẩm (soft delete - đánh dấu deleted_at thay vì xóa thật)
 
 **Quản lý Đơn hàng:**
 - ✅ Xem danh sách đơn hàng với chi tiết đầy đủ
 - ✅ Tạo đơn hàng mới với thông tin khách hàng
-- ✅ Thêm nhiều sản phẩm vào đơn hàng
+- ✅ Thêm nhiều sản phẩm vào đơn hàng (chỉ sản phẩm chưa bị xóa)
 - ✅ Tính tổng tiền tự động
 - ✅ Chọn phương thức thanh toán (bank/cash)
 - ✅ Thiết lập ngày tạo và ngày nhận hàng
 - ✅ Xóa đơn hàng (tự động xóa chi tiết đơn hàng)
 
 **Dữ liệu được lưu trữ an toàn trong Supabase**
+
+## 📝 Soft Delete cho Sản phẩm
+
+Hệ thống sử dụng **soft delete** cho sản phẩm:
+- Khi xóa sản phẩm, cột `deleted_at` sẽ được set = thời gian hiện tại
+- Sản phẩm không bị xóa thật khỏi database
+- Ứng dụng chỉ hiển thị sản phẩm có `deleted_at = NULL` 
+
+**Khôi phục sản phẩm đã xóa:**
+```sql
+-- Xem sản phẩm đã bị soft delete
+SELECT * FROM products WHERE deleted_at IS NOT NULL;
+
+-- Khôi phục sản phẩm (set deleted_at = NULL)
+UPDATE products SET deleted_at = NULL WHERE id = [product_id];
+```
+
+**Xóa hoàn toàn sản phẩm cũ (nếu cần):**
+```sql
+-- Xóa vĩnh viễn sản phẩm đã soft delete quá 1 năm
+DELETE FROM products WHERE deleted_at < NOW() - INTERVAL '1 year';
+```
