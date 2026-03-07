@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
 import { supabase } from '../lib/supabase';
 import PrintOrder from '../components/PrintOrder';
@@ -7,7 +7,6 @@ import Loading from '../components/Loading';
 
 function OrderDetail() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
