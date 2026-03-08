@@ -1,16 +1,27 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
+import React, { useState } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const menuItems = [
   { path: '/products', label: 'Products', icon: '📦' },
   { path: '/orders', label: 'Orders', icon: '🛒' },
   { path: '/customers', label: 'Customers', icon: '👥' },
+  { 
+    key: 'reports',
+    label: 'Báo cáo', 
+    icon: '📊',
+    submenu: [
+      { path: '/reports/revenue', label: 'Báo cáo doanh thu' },
+      { path: '/reports/products', label: 'Báo cáo sản phẩm' }
+    ]
+  },
   { path: '/settings', label: 'Settings', icon: '⚙️' },
 ];
 
 function Sidebar() {
   const { user, signOut } = useAuth();
+  const location = useLocation();
+  const [expandedMenus, setExpandedMenus] = useState({});
 
   const handleLogout = async () => {
     try {
@@ -18,6 +29,19 @@ function Sidebar() {
     } catch (error) {
       console.error('Logout error:', error);
     }
+  };
+
+  // Toggle expand/collapse for menu items with submenu
+  const toggleSubmenu = (key) => {
+    setExpandedMenus(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+
+  // Check if current path is within a submenu
+  const isSubmenuActive = (submenu) => {
+    return submenu.some(item => location.pathname.startsWith(item.path));
   };
 
   return (
@@ -33,32 +57,87 @@ function Sidebar() {
       <nav className="flex-1 p-4 overflow-y-auto">
         <ul className="space-y-2">
           {menuItems.map((item) => (
-            <li key={item.path}>
-              <NavLink
-                to={item.path}
-                className={({ isActive }) =>
-                  `flex items-center p-3 rounded-lg transition-colors duration-200 ${
-                    isActive 
-                      ? 'bg-blue-50 text-blue-700 border-r-4 border-blue-700' 
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                  }`
-                }
-              >
-                <span className="text-xl mr-3">{item.icon}</span>
-                <span className="font-medium">{item.label}</span>
-              </NavLink>
+            <li key={item.path || item.key}>
+              {item.submenu ? (
+                // Collapsible menu item with submenu
+                <div>
+                  <button
+                    onClick={() => toggleSubmenu(item.key)}
+                    className={`flex items-center w-full p-3 rounded-lg transition-colors duration-200 ${
+                      isSubmenuActive(item.submenu) 
+                        ? 'bg-blue-50 text-blue-700' 
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    }`}
+                  >
+                    <span className="text-xl mr-3">{item.icon}</span>
+                    <span className="font-medium flex-1 text-left">{item.label}</span>
+                    <span className={`transform transition-transform duration-200 ${
+                      expandedMenus[item.key] ? 'rotate-90' : ''
+                    }`}>
+                      ▶
+                    </span>
+                  </button>
+                  
+                  {/* Submenu items */}
+                  <div className={`mt-1 ml-8 overflow-hidden transition-max-height duration-200 ease-in-out ${
+                    expandedMenus[item.key] ? 'max-h-40' : 'max-h-0'
+                  }`}>
+                    <ul className="space-y-1 py-2">
+                      {item.submenu.map((subItem) => (
+                        <li key={subItem.path}>
+                          <NavLink
+                            to={subItem.path}
+                            className={({ isActive }) =>
+                              `flex items-center p-2 pl-4 rounded-lg transition-colors duration-200 text-sm ${
+                                isActive 
+                                  ? 'bg-blue-100 text-blue-800 border-l-4 border-blue-700' 
+                                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                              }`
+                            }
+                          >
+                            {subItem.label}
+                          </NavLink>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              ) : (
+                // Regular menu item
+                <NavLink
+                  to={item.path}
+                  className={({ isActive }) =>
+                    `flex items-center p-3 rounded-lg transition-colors duration-200 ${
+                      isActive 
+                        ? 'bg-blue-50 text-blue-700 border-r-4 border-blue-700' 
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    }`
+                  }
+                >
+                  <span className="text-xl mr-3">{item.icon}</span>
+                  <span className="font-medium">{item.label}</span>
+                </NavLink>
+              )}
             </li>
           ))}
         </ul>
         
-        {/* Quick Action Button */}
-        <div className="mt-6 pt-4 border-t border-gray-200">
+        {/* Quick Action Buttons */}
+        <div className="mt-6 pt-4 border-t border-gray-200 space-y-3">
           <NavLink
             to="/orders/create"
             className="flex items-center w-full p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
           >
             <span className="text-xl mr-3">➕</span>
             <span className="font-medium">Tạo đơn hàng</span>
+          </NavLink>
+          
+          <NavLink
+            to="/warranty/create"
+            className="flex items-center w-full p-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
+          >
+            <span className="text-xl mr-3">🛡️</span>
+            <span className="font-medium">Tạo phiếu đảm bảo</span>
           </NavLink>
         </div>
       </nav>

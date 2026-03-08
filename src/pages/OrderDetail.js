@@ -10,6 +10,7 @@ function OrderDetail() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
+  const [statusLoading, setStatusLoading] = useState(false);
   const printRef = useRef(null);
 
   const handlePrint = useReactToPrint({
@@ -70,6 +71,64 @@ function OrderDetail() {
     }).format(amount);
   };
 
+  const updateOrderStatus = async (newStatus) => {
+    try {
+      setStatusLoading(true);
+      
+      // Prepare update data
+      const updateData = { status: newStatus };
+      
+      // If changing to 'received', the trigger will automatically set date_received
+      // If changing from 'received', the trigger will clear date_received
+      
+      const { data, error } = await supabase
+        .from('orders')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      // Update the local order state
+      setOrder(prev => ({ ...prev, ...data }));
+      
+      if (newStatus === 'received') {
+        setMessage('Đã cập nhật trạng thái đơn hàng thành "Đã nhận hàng" thành công!');
+      } else {
+        const statusText = newStatus === 'customer_holds' ? 'Khách giữ phiếu' : 'Cửa hàng giữ phiếu';
+        setMessage(`Đã cập nhật trạng thái đơn hàng thành "${statusText}" thành công!`);
+      }
+      
+      // Clear message after 3 seconds
+      setTimeout(() => setMessage(''), 3000);
+      
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      setMessage(`Lỗi cập nhật trạng thái: ${error.message}`);
+    } finally {
+      setStatusLoading(false);
+    }
+  };
+
+  const getStatusDisplay = (status) => {
+    switch (status) {
+      case 'received': return 'Đã nhận hàng';
+      case 'customer_holds': return 'Khách giữ phiếu';
+      case 'store_holds': return 'Cửa hàng giữ phiếu';
+      default: return 'Cửa hàng giữ phiếu';
+    }
+  };
+
+  const getStatusBadgeColor = (status) => {
+    switch (status) {
+      case 'received': return 'bg-green-100 text-green-800';
+      case 'customer_holds': return 'bg-yellow-100 text-yellow-800';
+      case 'store_holds': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   if (loading) {
     return <Loading type="page" message="Đang tải chi tiết đơn hàng..." />;
   }
@@ -113,6 +172,9 @@ function OrderDetail() {
           }`}>
             {order.payment_method === 'bank' ? 'Chuyển khoản' : 'Tiền mặt'}
           </span>
+          <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusBadgeColor(order.status || 'store_holds')}`}>
+            {getStatusDisplay(order.status || 'store_holds')}
+          </span>
           <button
             onClick={handlePrint}
             className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center"
@@ -124,7 +186,11 @@ function OrderDetail() {
 
       {/* Message */}
       {message && order && (
-        <div className="mb-6 p-4 rounded-lg bg-red-50 text-red-700 border border-red-200">
+        <div className={`mb-6 p-4 rounded-lg ${
+          message.includes('thành công') || message.includes('Đã cập nhật')
+            ? 'bg-green-50 text-green-700 border border-green-200' 
+            : 'bg-red-50 text-red-700 border border-red-200'
+        }`}>
           {message}
         </div>
       )}
@@ -159,9 +225,53 @@ function OrderDetail() {
               <span>{order.customer_address}</span>
             </div>
             <div className="flex mb-2">
-              <span className="font-medium min-w-32">Ngày nhận hàng:</span>
-              <span>{new Date(order.receive_date).toLocaleDateString('vi-VN')}</span>
+              <span className="font-medium min-w-32">Ngày giao hàng dự kiến:</span>
+              <span>{new Date(order.expected_delivery_date).toLocaleDateString('vi-VN')}</span>
             </div>
+            {order.date_received && (
+              <div className="flex mb-2">
+                <span className="font-medium min-w-32">Ngày đã nhận thực tế:</span>
+                <span className="text-green-600 font-semibold">{new Date(order.date_received).toLocaleDateString('vi-VN')}</span>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* Order Status Management */}
+        <div className="mt-6 pt-6 border-t border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Trạng thái đơn hàng</h3>
+              <p className="text-sm text-gray-600">
+                Trạng thái hiện tại: <span className="font-medium">{getStatusDisplay(order.status || 'store_holds')}</span>
+                {order.status === 'received' && (
+                  <span className="ml-2 text-green-600">(Không thể thay đổi)</span>
+                )}
+              </p>
+            </div>
+            
+            {/* Status Update Dropdown */}
+            {order.status !== 'received' && (
+              <div className="flex items-center space-x-4">
+                <label htmlFor="status-select" className="text-sm font-medium text-gray-700">
+                  Cập nhật trạng thái:
+                </label>
+                <select
+                  id="status-select"
+                  value={order.status || 'store_holds'}
+                  onChange={(e) => updateOrderStatus(e.target.value)}
+                  disabled={statusLoading}
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                >
+                  <option value="store_holds">Cửa hàng giữ phiếu</option>
+                  <option value="customer_holds">Khách giữ phiếu</option>
+                  <option value="received">Đã nhận hàng</option>
+                </select>
+                {statusLoading && (
+                  <div className="text-sm text-gray-600">Đang cập nhật...</div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
