@@ -1,6 +1,30 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-const PrintOrder = React.forwardRef(({ order }, ref) => {
+const PrintWarranty = React.forwardRef(({ warrantyData: propWarrantyData }, ref) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const warrantyData = propWarrantyData || (location.state && location.state.warrantyData);
+
+  useEffect(() => {
+    // Redirect if no warranty data
+    if (!warrantyData) {
+      navigate('/warranty/create');
+    }
+  }, [warrantyData, navigate]);
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleBack = () => {
+    navigate('/warranty/create');
+  };
+
+  const handleCreateNew = () => {
+    navigate('/warranty/create');
+  };
+
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('vi-VN').format(amount);
   };
@@ -21,10 +45,44 @@ const PrintOrder = React.forwardRef(({ order }, ref) => {
     });
   };
 
-  if (!order) return null;
+  if (!warrantyData) return null;
 
   return (
-    <div ref={ref} className="print-order-container">
+    <div>
+      {/* Print Controls - Hidden when printing */}
+      <div className="print:hidden bg-white shadow-sm border-b sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-lg font-semibold text-gray-900">Xem trước phiếu đảm bảo</h1>
+              <p className="text-sm text-gray-600">Mã: {warrantyData.warrantyId}</p>
+            </div>
+            <div className="flex space-x-3">
+              <button
+                onClick={handleBack}
+                className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+              >
+                ← Quay lại chỉnh sửa
+              </button>
+              <button
+                onClick={handlePrint}
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+              >
+                <span>🖨️</span>
+                In phiếu
+              </button>
+              <button
+                onClick={handleCreateNew}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+              >
+                Tạo phiếu mới
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    <div ref={ref} className="print-warranty-container">
       <style>{`
         @media print {
           @page {
@@ -34,10 +92,10 @@ const PrintOrder = React.forwardRef(({ order }, ref) => {
           body * {
             visibility: hidden;
           }
-          .print-order-container, .print-order-container * {
+          .print-warranty-container, .print-warranty-container * {
             visibility: visible;
           }
-          .print-order-container {
+          .print-warranty-container {
             position: absolute;
             left: 0;
             top: 0;
@@ -45,7 +103,7 @@ const PrintOrder = React.forwardRef(({ order }, ref) => {
           }
         }
 
-        .print-order-container {
+        .print-warranty-container {
           font-family: 'Times New Roman', Times, serif;
           color: #000;
           padding: 20px;
@@ -220,22 +278,6 @@ const PrintOrder = React.forwardRef(({ order }, ref) => {
         .print-signatures .sign-col .sign-space {
           height: 70px;
         }
-
-        .print-terms {
-          margin-top: 30px;
-          font-size: 12px;
-          line-height: 1.4;
-        }
-
-        .print-terms h3 {
-          font-weight: bold;
-          margin: 8px 0 4px 0;
-          font-size: 12px;
-        }
-
-        .print-terms p {
-          margin: 2px 0;
-        }
       `}</style>
 
       {/* Header */}
@@ -247,34 +289,31 @@ const PrintOrder = React.forwardRef(({ order }, ref) => {
       </div>
 
       {/* Title */}
-      <div className="print-title">PHIẾU ĐẶT HÀNG</div>
+      <div className="print-title">PHIẾU ĐẢM BẢO</div>
 
       {/* Customer Info */}
       <div className="print-info">
         <div className="print-info-row">
-          <span className="label">Số phiếu:  {order.id}</span>
+          <span className="label">Ngày:  {formatDateTime(warrantyData.createDate)}</span>
         </div>
         <div className="print-info-row">
-          <span className="label">Ngày:  {formatDateTime(order.created_date)}</span>
+          <span className="label">Khách hàng:  {warrantyData.customer.name}</span>
         </div>
         <div className="print-info-row">
-          <span className="label">Khách hàng:  {order.customer_name}</span>
-        </div>
-        <div className="print-info-row">
-          <span className="label">SĐT:  {order.customer_phone}</span>
+          <span className="label">SĐT:  {warrantyData.customer.phone}</span>
         </div>
         <div className="print-info-row">
           <div className="cccd-group">
-            <span>CCCD: {order.customer_id_number}</span>
+            <span>CCCD: {warrantyData.customer.idNumber}</span>
           </div>
           <div className="issued-group">
-            {order.customer_id_issued_date && (
-              <span>Ngày cấp: {formatDate(order.customer_id_issued_date)}</span>
+            {warrantyData.customer.idIssuedDate && (
+              <span>Ngày cấp: {formatDate(warrantyData.customer.idIssuedDate)}</span>
             )}
           </div>
         </div>
         <div className="print-info-row">
-          <span className="label">Địa chỉ:  {order.customer_address}</span>
+          <span className="label">Địa chỉ:  {warrantyData.customer.address}</span>
         </div>
       </div>
 
@@ -291,14 +330,14 @@ const PrintOrder = React.forwardRef(({ order }, ref) => {
           </tr>
         </thead>
         <tbody>
-          {order.order_items && order.order_items.map((item, index) => (
-            <tr key={item.id || index}>
+          {warrantyData.items && warrantyData.items.map((item, index) => (
+            <tr key={index}>
               <td className="center">{index + 1}</td>
-              <td>{item.products?.name || 'Sản phẩm không xác định'}</td>
+              <td>{item.productName || 'Sản phẩm không xác định'}</td>
               <td className="center">Cái</td>
               <td className="center">{item.quantity}</td>
-              <td className="right">{formatCurrency(item.selling_price)}</td>
-              <td className="right">{formatCurrency(item.quantity * item.selling_price)}</td>
+              <td className="right">{formatCurrency(item.sellingPrice)}</td>
+              <td className="right">{formatCurrency(item.quantity * item.sellingPrice)}</td>
             </tr>
           ))}
         </tbody>
@@ -307,21 +346,20 @@ const PrintOrder = React.forwardRef(({ order }, ref) => {
       {/* Total */}
       <div className="print-total-row">
         <div className="total-label">TỔNG THANH TOÁN</div>
-        <div className="total-value">{formatCurrency(order.total_amount)}</div>
+        <div className="total-value">{formatCurrency(warrantyData.items.reduce((total, item) => total + (item.subtotal || 0), 0))}</div>
       </div>
 
       {/* Footer Info */}
       <div className="print-footer-info">
         <div className="row">
-          <span className="bold">Ngày giao hàng dự kiến: </span>
-          <span>{formatDate(order.expected_delivery_date)}</span>
+          <span className="bold">Ngày tạo phiếu: </span>
+          <span>{formatDate(warrantyData.createDate)}</span>
         </div>
         <div className="print-payment-row">
           <span>
             <span className="bold">Hình thức thanh toán: </span>
-            <span>{order.payment_method === 'bank' ? 'CK' : 'Tiền mặt'}</span>
+            <span>{warrantyData.paymentMethod === 'bank' ? 'CK' : 'Tiền mặt'}</span>
           </span>
-          <span>Khách mua online</span>
         </div>
       </div>
 
@@ -339,27 +377,17 @@ const PrintOrder = React.forwardRef(({ order }, ref) => {
           <div className="sign-space"></div>
         </div>
         <div className="sign-col">
-          <div className="title">Ngày {formatDate(order.created_date)}</div>
+          <div className="title">Ngày {formatDate(warrantyData.createDate)}</div>
           <div className="title">Khách hàng</div>
           <div className="subtitle">(Ký, họ tên)</div>
           <div className="sign-space"></div>
         </div>
       </div>
-
-      {/* Terms */}
-      <div className="print-terms">
-        <h3>Cam kết chung</h3>
-        <p>1. Công ty TNHH Kim Phượng Mai Silver & Jewelry chỉ nhận trả hàng vật chất cho khách hàng khi khách hàng xuất trình đủ CCCD/ VNeID có đủ thông tin đúng như trong hợp đồng này.</p>
-        <p>2. Khách hàng đã thanh toán 100% số tiền, nếu khách hàng yêu cầu hủy trước lịch hẹn trả hàng, Công ty TNHH Kim Phượng Mai Silver & Jewelry sẽ hoàn lại giá trị tương ứng theo giá niêm yết mua vào tại thời điểm Hủy Phiếu</p>
-        <h3>Hiệu lực &amp; thỏa thuận</h3>
-        <p>1. Phiếu có giá trị kể từ ngày ký</p>
-        <p>2. Phiếu hết hiệu lực ngay sau khi CtyTNHH Kim Phượng Mai Silver&Jewelry giao đủ bạc vật lý cho khách</p>
-        <p>3. Phiếu lưu dưới dạng file ảnh có dấu đỏ công ty hoặc phiếu giấy, đều có giá trị như nhau</p>
-      </div>
+    </div>
     </div>
   );
 });
 
-PrintOrder.displayName = 'PrintOrder';
+PrintWarranty.displayName = 'PrintWarranty';
 
-export default PrintOrder;
+export default PrintWarranty;
