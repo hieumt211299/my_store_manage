@@ -5,6 +5,20 @@ import { supabase } from '../lib/supabase';
 import { useNotification } from '../contexts/NotificationContext';
 import PrintOrder from '../components/PrintOrder';
 import Loading from '../components/Loading';
+import {
+  Tables,
+  OrderFields,
+  OrderStatus,
+  OrderSelectWithItems,
+  getStatusDisplay,
+  getStatusBadgeColor,
+  getPaymentMethodLabel,
+  getPaymentMethodBadgeColor,
+  getCustomerTypeLabel,
+  getCustomerTypeBadgeColor,
+  formatCurrency,
+  formatDate,
+} from '../models';
 
 function OrderDetail() {
   const { id } = useParams();
@@ -29,22 +43,9 @@ function OrderDetail() {
         setNotFound(false);
         setFetchError(null);
         const { data, error } = await supabase
-          .from('orders')
-          .select(`
-            *,
-            order_items (
-              id,
-              quantity,
-              selling_price,
-              products (
-                id,
-                name,
-                sku,
-                image_url
-              )
-            )
-          `)
-          .eq('id', id)
+          .from(Tables.ORDERS)
+          .select(OrderSelectWithItems)
+          .eq(OrderFields.ID, id)
           .single();
 
         if (error) {
@@ -73,27 +74,22 @@ function OrderDetail() {
     }
   }, [id,addNotification]);
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(amount);
-  };
+  // formatCurrency & formatDate imported from models
 
   const updateOrderStatus = async (newStatus) => {
     try {
       setStatusLoading(true);
       
       // Prepare update data
-      const updateData = { status: newStatus };
+      const updateData = { [OrderFields.STATUS]: newStatus };
       
       // If changing to 'received', the trigger will automatically set date_received
       // If changing from 'received', the trigger will clear date_received
       
       const { data, error } = await supabase
-        .from('orders')
+        .from(Tables.ORDERS)
         .update(updateData)
-        .eq('id', id)
+        .eq(OrderFields.ID, id)
         .select()
         .single();
       
@@ -102,10 +98,10 @@ function OrderDetail() {
       // Update the local order state
       setOrder(prev => ({ ...prev, ...data }));
       
-      if (newStatus === 'received') {
+      if (newStatus === OrderStatus.RECEIVED) {
         addNotification('Đã cập nhật trạng thái đơn hàng thành "Đã nhận hàng" thành công!', 'success');
       } else {
-        const statusText = newStatus === 'customer_holds' ? 'Khách giữ phiếu' : 'Cửa hàng giữ phiếu';
+        const statusText = getStatusDisplay(newStatus);
         addNotification(`Đã cập nhật trạng thái đơn hàng thành "${statusText}" thành công!`, 'success');
       }
       
@@ -117,23 +113,7 @@ function OrderDetail() {
     }
   };
 
-  const getStatusDisplay = (status) => {
-    switch (status) {
-      case 'received': return 'Đã nhận hàng';
-      case 'customer_holds': return 'Khách giữ phiếu';
-      case 'store_holds': return 'Cửa hàng giữ phiếu';
-      default: return 'Cửa hàng giữ phiếu';
-    }
-  };
-
-  const getStatusBadgeColor = (status) => {
-    switch (status) {
-      case 'received': return 'bg-green-100 text-green-800';
-      case 'customer_holds': return 'bg-yellow-100 text-yellow-800';
-      case 'store_holds': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
+  // getStatusDisplay & getStatusBadgeColor imported from models
 
   if (loading) {
     return <Loading type="page" message="Đang tải chi tiết đơn hàng..." />;
@@ -176,16 +156,6 @@ function OrderDetail() {
           <h1 className="text-3xl font-bold text-gray-900">Chi tiết đơn hàng #{order.id}</h1>
         </div>
         <div className="flex space-x-2">
-          <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-            order.payment_method === 'bank' 
-              ? 'bg-blue-100 text-blue-800' 
-              : 'bg-green-100 text-green-800'
-          }`}>
-            {order.payment_method === 'bank' ? 'Chuyển khoản' : 'Tiền mặt'}
-          </span>
-          <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusBadgeColor(order.status || 'store_holds')}`}>
-            {getStatusDisplay(order.status || 'store_holds')}
-          </span>
           <button
             onClick={handlePrint}
             className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center"
@@ -202,36 +172,36 @@ function OrderDetail() {
           <div>
             <div className="flex mb-2">
               <span className="font-medium min-w-32">CMND/CCCD:</span>
-              <span>{order.customer_id_number}</span>
+              <span>{order[OrderFields.CUSTOMER_ID_NUMBER]}</span>
             </div>
             <div className="flex mb-2">
               <span className="font-medium min-w-32">Họ và tên:</span>
-              <span>{order.customer_name}</span>
+              <span>{order[OrderFields.CUSTOMER_NAME]}</span>
             </div>
             <div className="flex mb-2">
               <span className="font-medium min-w-32">Số điện thoại:</span>
-              <span>{order.customer_phone}</span>
+              <span>{order[OrderFields.CUSTOMER_PHONE]}</span>
             </div>
           </div>
           <div>
-            {order.customer_id_issued_date && (
+            {order[OrderFields.CUSTOMER_ID_ISSUED_DATE] && (
               <div className="flex mb-2">
                 <span className="font-medium min-w-32">Ngày cấp:</span>
-                <span>{new Date(order.customer_id_issued_date).toLocaleDateString('vi-VN')}</span>
+                <span>{formatDate(order[OrderFields.CUSTOMER_ID_ISSUED_DATE])}</span>
               </div>
             )}
             <div className="flex mb-2">
               <span className="font-medium min-w-32">Địa chỉ:</span>
-              <span>{order.customer_address}</span>
+              <span>{order[OrderFields.CUSTOMER_ADDRESS]}</span>
             </div>
             <div className="flex mb-2">
               <span className="font-medium min-w-32">Ngày giao hàng dự kiến:</span>
-              <span>{new Date(order.expected_delivery_date).toLocaleDateString('vi-VN')}</span>
+              <span>{formatDate(order[OrderFields.EXPECTED_DELIVERY_DATE])}</span>
             </div>
-            {order.date_received && (
+            {order[OrderFields.DATE_RECEIVED] && (
               <div className="flex mb-2">
                 <span className="font-medium min-w-32">Ngày đã nhận thực tế:</span>
-                <span className="text-green-600 font-semibold">{new Date(order.date_received).toLocaleDateString('vi-VN')}</span>
+                <span className="text-green-600 font-semibold">{formatDate(order[OrderFields.DATE_RECEIVED])}</span>
               </div>
             )}
           </div>
@@ -239,40 +209,57 @@ function OrderDetail() {
         
         {/* Order Status Management */}
         <div className="mt-6 pt-6 border-t border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Trạng thái đơn hàng</h3>
-              <p className="text-sm text-gray-600">
-                Trạng thái hiện tại: <span className="font-medium">{getStatusDisplay(order.status || 'store_holds')}</span>
-                {order.status === 'received' && (
-                  <span className="ml-2 text-green-600">(Không thể thay đổi)</span>
-                )}
-              </p>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Trạng thái đơn hàng</h3>
+          
+          {/* Order Status Info Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="text-sm font-medium text-gray-700 mb-1">Trạng thái hiện tại</div>
+              <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getStatusBadgeColor(order[OrderFields.STATUS] || OrderStatus.STORE_HOLDS)}`}>
+                {getStatusDisplay(order[OrderFields.STATUS] || OrderStatus.STORE_HOLDS)}
+              </span>
+              {order[OrderFields.STATUS] === OrderStatus.RECEIVED && (
+                <div className="text-xs text-green-600 mt-1">(Không thể thay đổi)</div>
+              )}
             </div>
             
-            {/* Status Update Dropdown */}
-            {order.status !== 'received' && (
-              <div className="flex items-center space-x-4">
-                <label htmlFor="status-select" className="text-sm font-medium text-gray-700">
-                  Cập nhật trạng thái:
-                </label>
-                <select
-                  id="status-select"
-                  value={order.status || 'store_holds'}
-                  onChange={(e) => updateOrderStatus(e.target.value)}
-                  disabled={statusLoading}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                >
-                  <option value="store_holds">Cửa hàng giữ phiếu</option>
-                  <option value="customer_holds">Khách giữ phiếu</option>
-                  <option value="received">Đã nhận hàng</option>
-                </select>
-                {statusLoading && (
-                  <div className="text-sm text-gray-600">Đang cập nhật...</div>
-                )}
-              </div>
-            )}
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="text-sm font-medium text-gray-700 mb-1">Phương thức thanh toán</div>
+              <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getPaymentMethodBadgeColor(order[OrderFields.PAYMENT_METHOD])}`}>
+                {getPaymentMethodLabel(order[OrderFields.PAYMENT_METHOD])}
+              </span>
+            </div>
+            
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="text-sm font-medium text-gray-700 mb-1">Loại khách hàng</div>
+              <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getCustomerTypeBadgeColor(order[OrderFields.CUSTOMER_TYPE])}`}>
+                {getCustomerTypeLabel(order[OrderFields.CUSTOMER_TYPE])}
+              </span>
+            </div>
           </div>
+            
+          {/* Status Update Dropdown */}
+          {order[OrderFields.STATUS] !== OrderStatus.RECEIVED && (
+            <div className="flex items-center space-x-4">
+              <label htmlFor="status-select" className="text-sm font-medium text-gray-700">
+                Cập nhật trạng thái:
+              </label>
+              <select
+                id="status-select"
+                value={order[OrderFields.STATUS] || OrderStatus.STORE_HOLDS}
+                onChange={(e) => updateOrderStatus(e.target.value)}
+                disabled={statusLoading}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              >
+                <option value={OrderStatus.STORE_HOLDS}>{getStatusDisplay(OrderStatus.STORE_HOLDS)}</option>
+                <option value={OrderStatus.CUSTOMER_HOLDS}>{getStatusDisplay(OrderStatus.CUSTOMER_HOLDS)}</option>
+                <option value={OrderStatus.RECEIVED}>{getStatusDisplay(OrderStatus.RECEIVED)}</option>
+              </select>
+              {statusLoading && (
+                <div className="text-sm text-gray-600">Đang cập nhật...</div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -334,11 +321,11 @@ function OrderDetail() {
                 </div>
                 <div className="flex justify-between mb-2">
                   <span className="text-sm text-gray-600">Phương thức thanh toán:</span>
-                  <span className="text-sm font-medium">{order.payment_method === 'bank' ? 'Chuyển khoản' : 'Tiền mặt'}</span>
+                  <span className="text-sm font-medium">{getPaymentMethodLabel(order[OrderFields.PAYMENT_METHOD])}</span>
                 </div>
                 <div className="flex justify-between pt-2 border-t border-gray-200">
                   <span className="text-lg font-semibold text-gray-900">TỔNG CỘNG:</span>
-                  <span className="text-lg font-bold text-gray-900">{formatCurrency(order.total_amount)}</span>
+                  <span className="text-lg font-bold text-gray-900">{formatCurrency(order[OrderFields.TOTAL_AMOUNT])}</span>
                 </div>
               </div>
             </div>

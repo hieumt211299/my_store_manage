@@ -2,6 +2,19 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import Loading from '../components/Loading';
+import {
+  Tables,
+  CustomerFields,
+  OrderFields,
+  OrderStatus,
+  OrderSelectWithCustomerAndItems,
+  getStatusDisplay,
+  getStatusBadgeColor,
+  getPaymentMethodLabel,
+  getPaymentMethodBadgeColor,
+  formatCurrency,
+  formatDate,
+} from '../models';
 
 function OrderList() {
   const navigate = useNavigate();
@@ -37,32 +50,15 @@ function OrderList() {
   // Debounce timer for search ID
   const searchDebounceTimer = useRef(null);
   
-  // Status display functions
-  const getStatusDisplay = (status) => {
-    switch (status) {
-      case 'received': return 'Đã nhận hàng';
-      case 'customer_holds': return 'Khách giữ phiếu';
-      case 'store_holds': return 'Cửa hàng giữ phiếu';
-      default: return 'Cửa hàng giữ phiếu';
-    }
-  };
-
-  const getStatusBadgeColor = (status) => {
-    switch (status) {
-      case 'received': return 'bg-green-100 text-green-800';
-      case 'customer_holds': return 'bg-yellow-100 text-yellow-800';
-      case 'store_holds': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
+  // Status display functions imported from models
 
   // Fetch customers for filter dropdown
   const fetchCustomers = useCallback(async () => {
     try {
       const { data, error } = await supabase
-        .from('customers')
-        .select('id, name, id_number')
-        .order('name');
+        .from(Tables.CUSTOMERS)
+        .select(`${CustomerFields.ID}, ${CustomerFields.NAME}, ${CustomerFields.ID_NUMBER}`)
+        .order(CustomerFields.NAME);
       
       if (error) throw error;
       setCustomers(data || []);
@@ -80,49 +76,32 @@ function OrderList() {
       const offset = (currentPage - 1) * itemsPerPage;
       
       let query = supabase
-        .from('orders')
-        .select(`
-          *,
-          customers!inner (
-            id,
-            name,
-            id_number,
-            phone
-          ),
-          order_items (
-            id,
-            quantity,
-            selling_price,
-            products (
-              name,
-              sku
-            )
-          )
-        `, { count: 'exact' })
+        .from(Tables.ORDERS)
+        .select(OrderSelectWithCustomerAndItems, { count: 'exact' })
         .order(sortBy, { ascending: sortOrder === 'asc' })
         .range(offset, offset + itemsPerPage - 1);
 
       // Apply search filter if debouncedSearchId is provided
       if (debouncedSearchId && debouncedSearchId.trim()) {
-        query = query.eq('id', parseInt(debouncedSearchId.trim()));
+        query = query.eq(OrderFields.ID, parseInt(debouncedSearchId.trim()));
       }
 
       // Apply date filters
       if (dateFrom) {
-        query = query.gte('created_date', dateFrom);
+        query = query.gte(OrderFields.CREATED_DATE, dateFrom);
       }
       if (dateTo) {
-        query = query.lte('created_date', dateTo);
+        query = query.lte(OrderFields.CREATED_DATE, dateTo);
       }
 
       // Apply customer filter
       if (customerFilter) {
-        query = query.eq('customer_id', parseInt(customerFilter));
+        query = query.eq(OrderFields.CUSTOMER_ID, parseInt(customerFilter));
       }
 
       // Apply status filter
       if (statusFilter) {
-        query = query.eq('status', statusFilter);
+        query = query.eq(OrderFields.STATUS, statusFilter);
       }
 
       const { data, error, count } = await query;
@@ -226,14 +205,12 @@ function OrderList() {
   const handleCustomerSearch = (searchTerm) => {
     setCustomerSearchTerm(searchTerm);
     if (searchTerm.length === 0) {
-      // Show all customers when no search term
-      setFilteredCustomers(customers.slice(0, 10)); // Limit to first 10
+      setFilteredCustomers(customers.slice(0, 10));
       setShowCustomerDropdown(customers.length > 0);
     } else if (searchTerm.length >= 1) {
-      // Filter customers based on search
       const filtered = customers.filter(customer => 
-        customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        customer.id_number.includes(searchTerm)
+        customer[CustomerFields.NAME].toLowerCase().includes(searchTerm.toLowerCase()) ||
+        customer[CustomerFields.ID_NUMBER].includes(searchTerm)
       );
       setFilteredCustomers(filtered.slice(0, 10)); // Limit to 10 results
       setShowCustomerDropdown(filtered.length > 0);
@@ -253,9 +230,9 @@ function OrderList() {
 
   // Select customer from dropdown
   const handleSelectCustomer = (customer) => {
-    setCustomerFilter(customer.id);
-    setSelectedCustomerName(customer.name);
-    setCustomerSearchTerm(`${customer.name} (${customer.id_number})`);
+    setCustomerFilter(customer[CustomerFields.ID]);
+    setSelectedCustomerName(customer[CustomerFields.NAME]);
+    setCustomerSearchTerm(`${customer[CustomerFields.NAME]} (${customer[CustomerFields.ID_NUMBER]})`);
     setShowCustomerDropdown(false);
   };
 
@@ -306,12 +283,7 @@ function OrderList() {
     navigate(`/orders/${orderId}`);
   };
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(amount);
-  };
+  // formatCurrency imported from models
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -435,9 +407,9 @@ function OrderList() {
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="">Tất cả trạng thái</option>
-                        <option value="store_holds">Cửa hàng giữ phiếu</option>
-                        <option value="customer_holds">Khách giữ phiếu</option>
-                        <option value="received">Đã nhận hàng</option>
+                        <option value={OrderStatus.STORE_HOLDS}>{getStatusDisplay(OrderStatus.STORE_HOLDS)}</option>
+                        <option value={OrderStatus.CUSTOMER_HOLDS}>{getStatusDisplay(OrderStatus.CUSTOMER_HOLDS)}</option>
+                        <option value={OrderStatus.RECEIVED}>{getStatusDisplay(OrderStatus.RECEIVED)}</option>
                       </select>
                     </div>
 
@@ -472,12 +444,12 @@ function OrderList() {
                             <>
                               {filteredCustomers.map((customer) => (
                                 <div
-                                  key={customer.id}
+                                  key={customer[CustomerFields.ID]}
                                   onClick={() => handleSelectCustomer(customer)}
                                   className="px-3 py-2 cursor-pointer hover:bg-blue-50 border-b border-gray-100 last:border-b-0"
                                 >
-                                  <div className="font-medium text-gray-900">{customer.name}</div>
-                                  <div className="text-sm text-gray-600">CCCD: {customer.id_number}</div>
+                                  <div className="font-medium text-gray-900">{customer[CustomerFields.NAME]}</div>
+                                  <div className="text-sm text-gray-600">CCCD: {customer[CustomerFields.ID_NUMBER]}</div>
                                 </div>
                               ))}
                               {customers.length > 10 && filteredCustomers.length === 10 && !customerSearchTerm && (
@@ -614,10 +586,10 @@ function OrderList() {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Ngày tạo
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onClick={() => handleSort('expected_delivery_date')}>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onClick={() => handleSort(OrderFields.EXPECTED_DELIVERY_DATE)}>
                 <div className="flex items-center space-x-1">
                   <span>Ngày giao dự kiến</span>
-                  {sortBy === 'expected_delivery_date' && (
+                  {sortBy === OrderFields.EXPECTED_DELIVERY_DATE && (
                     <span className="text-blue-600">
                       {sortOrder === 'asc' ? '↑' : '↓'}
                     </span>
@@ -654,47 +626,43 @@ function OrderList() {
             ) : (
               orders.map((order) => (
                 <tr 
-                  key={order.id} 
-                  onClick={() => handleOrderClick(order.id)}
+                  key={order[OrderFields.ID]} 
+                  onClick={() => handleOrderClick(order[OrderFields.ID])}
                   className="hover:bg-gray-50 cursor-pointer transition-colors"
                 >
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    #{order.id}
+                    #{order[OrderFields.ID]}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      {order.customers ? order.customers.name : order.customer_name}
+                      {order.customers ? order.customers[CustomerFields.NAME] : order[OrderFields.CUSTOMER_NAME]}
                     </div>
                     <div className="text-sm text-gray-500">
-                      {order.customers ? order.customers.phone : order.customer_phone}
+                      {order.customers ? order.customers[CustomerFields.PHONE] : order[OrderFields.CUSTOMER_PHONE]}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      order.payment_method === 'bank' 
-                        ? 'bg-blue-100 text-blue-800' 
-                        : 'bg-green-100 text-green-800'
-                    }`}>
-                      {order.payment_method === 'bank' ? 'Chuyển khoản' : 'Tiền mặt'}
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPaymentMethodBadgeColor(order[OrderFields.PAYMENT_METHOD])}`}>
+                      {getPaymentMethodLabel(order[OrderFields.PAYMENT_METHOD])}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeColor(order.status || 'store_holds')}`}>
-                      {getStatusDisplay(order.status || 'store_holds')}
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeColor(order[OrderFields.STATUS] || OrderStatus.STORE_HOLDS)}`}>
+                      {getStatusDisplay(order[OrderFields.STATUS] || OrderStatus.STORE_HOLDS)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {new Date(order.created_date).toLocaleDateString('vi-VN')}
+                    {formatDate(order[OrderFields.CREATED_DATE])}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {new Date(order.expected_delivery_date).toLocaleDateString('vi-VN')}
+                    {formatDate(order[OrderFields.EXPECTED_DELIVERY_DATE])}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600">
-                    {formatCurrency(order.total_amount)}
+                    {formatCurrency(order[OrderFields.TOTAL_AMOUNT])}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      {order.created_by || 'N/A'}
+                      {order[OrderFields.CREATED_BY] || 'N/A'}
                     </div>
                   </td>
                 </tr>

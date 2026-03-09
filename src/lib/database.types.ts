@@ -120,9 +120,12 @@ export type Database = {
           customer_id_number: string
           customer_name: string
           customer_phone: string
+          customer_type: string | null
+          date_received: string | null
+          expected_delivery_date: string
           id: number
           payment_method: string
-          receive_date: string
+          status: string
           total_amount: number
         }
         Insert: {
@@ -135,9 +138,12 @@ export type Database = {
           customer_id_number: string
           customer_name: string
           customer_phone: string
-          id: number
+          customer_type?: string | null
+          date_received?: string | null
+          expected_delivery_date: string
+          id?: number
           payment_method?: string
-          receive_date: string
+          status?: string
           total_amount: number
         }
         Update: {
@@ -150,9 +156,12 @@ export type Database = {
           customer_id_number?: string
           customer_name?: string
           customer_phone?: string
+          customer_type?: string | null
+          date_received?: string | null
+          expected_delivery_date?: string
           id?: number
           payment_method?: string
-          receive_date?: string
+          status?: string
           total_amount?: number
         }
         Relationships: [

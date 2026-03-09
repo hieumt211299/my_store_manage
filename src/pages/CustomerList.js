@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import Loading from '../components/Loading';
+import {
+  Tables,
+  CustomerFields,
+  formatDate,
+} from '../models';
 
 function CustomerList() {
   const [customers, setCustomers] = useState([]);
@@ -20,15 +25,15 @@ function CustomerList() {
       const offset = (currentPage - 1) * itemsPerPage;
       
       let query = supabase
-        .from('customers')
+        .from(Tables.CUSTOMERS)
         .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false })
+        .order(CustomerFields.CREATED_AT, { ascending: false })
         .range(offset, offset + itemsPerPage - 1);
 
       // Apply search filter if searchQuery is provided
       if (searchQuery && searchQuery.trim()) {
         const search = searchQuery.trim();
-        query = query.or(`name.ilike.%${search}%,phone.ilike.%${search}%,id_number.ilike.%${search}%`);
+        query = query.or(`${CustomerFields.NAME}.ilike.%${search}%,${CustomerFields.PHONE}.ilike.%${search}%,${CustomerFields.ID_NUMBER}.ilike.%${search}%`);
       }
 
       const { data, error, count } = await query;
@@ -70,11 +75,7 @@ function CustomerList() {
     }
   };
 
-  // Format date
-  const formatDate = (dateString) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('vi-VN');
-  };
+  // formatDate imported from models
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -176,7 +177,7 @@ function CustomerList() {
             ) : (
               customers.map((customer) => (
                 <tr 
-                  key={customer.id} 
+                  key={customer[CustomerFields.ID]} 
                   className="hover:bg-gray-50 cursor-pointer transition-colors"
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -184,38 +185,38 @@ function CustomerList() {
                       <div className="flex-shrink-0 h-10 w-10">
                         <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
                           <span className="text-sm font-medium text-gray-700">
-                            {customer.name.charAt(0).toUpperCase()}
+                            {customer[CustomerFields.NAME].charAt(0).toUpperCase()}
                           </span>
                         </div>
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900">
-                          {customer.name}
+                          {customer[CustomerFields.NAME]}
                         </div>
                         <div className="text-sm text-gray-500">
-                          ID: #{customer.id}
+                          ID: #{customer[CustomerFields.ID]}
                         </div>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 font-mono">{customer.id_number}</div>
-                    {customer.id_issued_date && (
+                    <div className="text-sm text-gray-900 font-mono">{customer[CustomerFields.ID_NUMBER]}</div>
+                    {customer[CustomerFields.ID_ISSUED_DATE] && (
                       <div className="text-sm text-gray-500">
-                        Cấp: {formatDate(customer.id_issued_date)}
+                        Cấp: {formatDate(customer[CustomerFields.ID_ISSUED_DATE])}
                       </div>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 font-mono">{customer.phone}</div>
+                    <div className="text-sm text-gray-900 font-mono">{customer[CustomerFields.PHONE]}</div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900 max-w-xs truncate" title={customer.address}>
-                      {customer.address}
+                    <div className="text-sm text-gray-900 max-w-xs truncate" title={customer[CustomerFields.ADDRESS]}>
+                      {customer[CustomerFields.ADDRESS]}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{formatDate(customer.created_at)}</div>
+                    <div className="text-sm text-gray-900">{formatDate(customer[CustomerFields.CREATED_AT])}</div>
                   </td>
                 </tr>
               ))

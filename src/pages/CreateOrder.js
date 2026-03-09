@@ -4,6 +4,26 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import LoadingOverlay from '../components/LoadingOverlay';
+import {
+  Tables,
+  CustomerFields,
+  ProductFields,
+  OrderFields,
+  PaymentMethod,
+  PaymentMethodLabels,
+  CustomerType,
+  CustomerTypeLabels,
+  OrderStatus,
+  OrderStatusLabels,
+  createDefaultOrderForm,
+  createDefaultCustomerForm,
+  mapCustomerRowToForm,
+  buildCustomerInsertPayload,
+  buildOrderInsertPayload,
+  buildOrderItemsPayload,
+  createOrderItemFromProduct,
+  formatCurrency,
+} from '../models';
 
 function CreateOrder() {
   const navigate = useNavigate();
@@ -27,35 +47,18 @@ function CreateOrder() {
   const debounceTimer = useRef(null);
 
   // Form state for creating orders
-  const getDefaultExpectedDeliveryDate = () => {
-    const date = new Date();
-    date.setDate(date.getDate() + 90);
-    return date.toISOString().split('T')[0];
-  };
-
-  const [orderForm, setOrderForm] = useState({
-    createDate: new Date().toISOString().split('T')[0],
-    expectedDeliveryDate: getDefaultExpectedDeliveryDate(),
-    paymentMethod: 'bank',
-    createdBy: user?.email || 'Admin', // Thêm created_by field
-    customer: {
-      idNumber: '',
-      name: '',
-      phone: '',
-      idIssuedDate: '',
-      address: ''
-    },
-    items: []
-  });
+  const [orderForm, setOrderForm] = useState(
+    createDefaultOrderForm(user?.email)
+  );
 
   // Fetch products for selection
   const fetchProducts = useCallback(async () => {
     try {
       const { data, error } = await supabase
-        .from('products')
+        .from(Tables.PRODUCTS)
         .select('*')
-        .is('deleted_at', null)
-        .order('name');
+        .is(ProductFields.DELETED_AT, null)
+        .order(ProductFields.NAME);
 
       if (error) throw error;
       setProducts(data || []);
@@ -109,10 +112,10 @@ function CreateOrder() {
       setIsSearchingCustomer(true);
       
       const { data, error } = await supabase
-        .from('customers')
+        .from(Tables.CUSTOMERS)
         .select('*')
-        .or(`id_number.ilike.%${searchTerm}%,name.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%`)
-        .order('created_at', { ascending: false })
+        .or(`${CustomerFields.ID_NUMBER}.ilike.%${searchTerm}%,${CustomerFields.NAME}.ilike.%${searchTerm}%,${CustomerFields.PHONE}.ilike.%${searchTerm}%`)
+        .order(CustomerFields.CREATED_AT, { ascending: false })
         .limit(10);
 
       if (error) throw error;
@@ -147,16 +150,10 @@ function CreateOrder() {
   const selectCustomer = (customer) => {
     setOrderForm({
       ...orderForm,
-      customer: {
-        idNumber: customer.id_number,
-        name: customer.name,
-        phone: customer.phone,
-        idIssuedDate: customer.id_issued_date || '',
-        address: customer.address
-      }
+      customer: mapCustomerRowToForm(customer),
     });
     
-    setCustomerSearch(customer.id_number);
+    setCustomerSearch(customer[CustomerFields.ID_NUMBER]);
     setShowCustomerDropdown(false);
     addNotification('Đã chọn khách hàng thành công!', 'success', 3000);
   };
@@ -165,13 +162,7 @@ function CreateOrder() {
   const clearCustomerSelection = () => {
     setOrderForm({
       ...orderForm,
-      customer: {
-        idNumber: '',
-        name: '',
-        phone: '',
-        idIssuedDate: '',
-        address: ''
-      }
+      customer: createDefaultCustomerForm(),
     });
     setCustomerSearch('');
     setSearchedCustomers([]);
@@ -200,15 +191,8 @@ function CreateOrder() {
     }
 
     const newItems = selectedProducts.map(productId => {
-      const product = products.find(p => p.id === parseInt(productId));
-      return {
-        productId: product.id,
-        productName: product.name,
-        productSku: product.sku,
-        quantity: 1,
-        sellingPrice: 0,
-        subtotal: 0
-      };
+      const product = products.find(p => p[ProductFields.ID] === parseInt(productId));
+      return createOrderItemFromProduct(product);
     });
 
     setOrderForm({
@@ -271,9 +255,9 @@ function CreateOrder() {
       
       // First, try to find existing customer
       const { data: existingCustomer, error: customerSearchError } = await supabase
-        .from('customers')
-        .select('id')
-        .eq('id_number', customer.idNumber)
+        .from(Tables.CUSTOMERS)
+        .select(CustomerFields.ID)
+        .eq(CustomerFields.ID_NUMBER, customer.idNumber)
         .single();
 
       if (customerSearchError && customerSearchError.code !== 'PGRST116') {
@@ -286,16 +270,8 @@ function CreateOrder() {
       } else {
         // Create new customer
         const { data: newCustomer, error: customerCreateError } = await supabase
-          .from('customers')
-          .insert([
-            {
-              id_number: customer.idNumber,
-              name: customer.name,
-              phone: customer.phone,
-              id_issued_date: customer.idIssuedDate || null,
-              address: customer.address
-            }
-          ])
+          .from(Tables.CUSTOMERS)
+          .insert([buildCustomerInsertPayload(customer)])
           .select()
           .single();
 
@@ -305,38 +281,18 @@ function CreateOrder() {
 
       // Create order with customer_id
       const { data: orderData, error: orderError } = await supabase
-        .from('orders')
-        .insert([
-          {
-            created_date: orderForm.createDate,
-            customer_id: customerId,
-            customer_id_number: customer.idNumber,
-            customer_name: customer.name,
-            customer_phone: customer.phone,
-            customer_id_issued_date: customer.idIssuedDate || null,
-            customer_address: customer.address,
-            total_amount: totalAmount,
-            expected_delivery_date: orderForm.expectedDeliveryDate,
-            payment_method: orderForm.paymentMethod,
-            created_by: orderForm.createdBy,
-            status: 'customer_holds'
-          }
-        ])
+        .from(Tables.ORDERS)
+        .insert([buildOrderInsertPayload(orderForm, customerId, totalAmount)])
         .select()
         .single();
 
       if (orderError) throw orderError;
 
       // Create order items
-      const orderItems = orderForm.items.map(item => ({
-        order_id: orderData.id,
-        product_id: item.productId,
-        quantity: item.quantity,
-        selling_price: item.sellingPrice
-      }));
+      const orderItems = buildOrderItemsPayload(orderForm.items, orderData[OrderFields.ID]);
 
       const { error: itemsError } = await supabase
-        .from('order_items')
+        .from(Tables.ORDER_ITEMS)
         .insert(orderItems);
 
       if (itemsError) throw itemsError;
@@ -356,12 +312,7 @@ function CreateOrder() {
     }
   };
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(amount);
-  };
+  // formatCurrency imported from models
 
   const handleCancel = () => {
     if (window.confirm('Bạn có chắc muốn hủy tạo đơn hàng? Tất cả thông tin đã nhập sẽ bị mất.')) {
@@ -371,9 +322,9 @@ function CreateOrder() {
 
   // Filter products based on search term
   const filteredProducts = products.filter(product => 
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.id.toString().includes(searchTerm)
+    product[ProductFields.NAME].toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product[ProductFields.SKU].toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product[ProductFields.ID].toString().includes(searchTerm)
   );
 
   return (
@@ -435,8 +386,8 @@ function CreateOrder() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={isSubmitting}
                 >
-                  <option value="bank">Chuyển khoản</option>
-                  <option value="cash">Tiền mặt</option>
+                  <option value={PaymentMethod.BANK}>{PaymentMethodLabels[PaymentMethod.BANK]}</option>
+                  <option value={PaymentMethod.CASH}>{PaymentMethodLabels[PaymentMethod.CASH]}</option>
                 </select>
               </div>
               <div>
@@ -459,6 +410,42 @@ function CreateOrder() {
           {/* Customer Info */}
           <div>
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Thông tin khách hàng</h2>
+            
+            {/* Customer Type Row */}
+            <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Loại khách hàng *
+                </label>
+                <select
+                  value={orderForm.customerType}
+                  onChange={(e) => setOrderForm({ ...orderForm, customerType: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={isSubmitting}
+                  required
+                >
+                  <option value={CustomerType.ONLINE}>{CustomerTypeLabels[CustomerType.ONLINE]}</option>
+                  <option value={CustomerType.OFFLINE}>{CustomerTypeLabels[CustomerType.OFFLINE]}</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Trạng thái đơn hàng *
+                </label>
+                <select
+                  value={orderForm.status}
+                  onChange={(e) => setOrderForm({ ...orderForm, status: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={isSubmitting}
+                  required
+                >
+                  <option value={OrderStatus.CUSTOMER_HOLDS}>{OrderStatusLabels[OrderStatus.CUSTOMER_HOLDS]}</option>
+                  <option value={OrderStatus.STORE_HOLDS}>{OrderStatusLabels[OrderStatus.STORE_HOLDS]}</option>
+                  <option value={OrderStatus.RECEIVED}>{OrderStatusLabels[OrderStatus.RECEIVED]}</option>
+                </select>
+              </div>
+            </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="relative">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -501,16 +488,16 @@ function CreateOrder() {
                   >
                     {searchedCustomers.map((customer) => (
                       <div
-                        key={customer.id}
+                        key={customer[CustomerFields.ID]}
                         onClick={() => selectCustomer(customer)}
                         className="px-4 py-3 cursor-pointer hover:bg-blue-50 border-b border-gray-100 last:border-b-0"
                       >
-                        <div className="font-medium text-gray-900">{customer.name}</div>
+                        <div className="font-medium text-gray-900">{customer[CustomerFields.NAME]}</div>
                         <div className="text-sm text-gray-600">
-                          CCCD: {customer.id_number} • SĐT: {customer.phone}
+                          CCCD: {customer[CustomerFields.ID_NUMBER]} • SĐT: {customer[CustomerFields.PHONE]}
                         </div>
                         <div className="text-xs text-gray-500 truncate">
-                          {customer.address}
+                          {customer[CustomerFields.ADDRESS]}
                         </div>
                       </div>
                     ))}

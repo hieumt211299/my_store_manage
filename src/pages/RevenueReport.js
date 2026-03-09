@@ -20,6 +20,10 @@ import {
   formatNumber,
   formatDateForDisplay
 } from '../utils/analytics';
+import {
+  OrderStatusLabels,
+  OrderStatusChartColors,
+} from '../models';
 
 function RevenueReport() {
   const { dateRange } = useOutletContext();
@@ -54,28 +58,10 @@ function RevenueReport() {
   
   // Prepare data for pie chart (orders by status)
   const statusData = Object.entries(summary.ordersByStatus).map(([status, count]) => ({
-    name: getStatusLabel(status),
+    name: OrderStatusLabels[status] || status,
     value: count,
-    color: getStatusColor(status)
+    color: OrderStatusChartColors[status] || '#6B7280'
   }));
-
-  function getStatusLabel(status) {
-    const labels = {
-      'received': 'Đã nhận',
-      'customer_holds': 'Khách giữ',
-      'store_holds': 'Cửa hàng giữ'
-    };
-    return labels[status] || status;
-  }
-
-  function getStatusColor(status) {
-    const colors = {
-      'received': '#10B981',
-      'customer_holds': '#F59E0B', 
-      'store_holds': '#6B7280'
-    };
-    return colors[status] || '#6B7280';
-  }
 
   // Custom tooltip for line chart
   const CustomTooltip = ({ active, payload, label }) => {

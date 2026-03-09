@@ -1,25 +1,14 @@
 import React from 'react';
+import {
+  OrderFields,
+  PaymentMethod,
+  formatCurrency,
+  formatDate,
+  formatDateTime,
+} from '../models';
 
 const PrintOrder = React.forwardRef(({ order }, ref) => {
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN').format(amount);
-  };
-
-  const formatDate = (dateStr) => {
-    if (!dateStr) return '';
-    return new Date(dateStr).toLocaleDateString('vi-VN');
-  };
-    const formatDateTime = (dateStr) => {
-    if (!dateStr) return '';
-    // hh/mm + dd/mm/yyyy
-    return new Date(dateStr).toLocaleString('vi-VN', {
-      hour: '2-digit',
-      minute: '2-digit',
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
-  };
+  // formatCurrency, formatDate, formatDateTime imported from models
 
   if (!order) return null;
 
@@ -252,29 +241,29 @@ const PrintOrder = React.forwardRef(({ order }, ref) => {
       {/* Customer Info */}
       <div className="print-info">
         <div className="print-info-row">
-          <span className="label">Số phiếu:  {order.id}</span>
+          <span className="label">Số phiếu:  {order[OrderFields.ID]}</span>
         </div>
         <div className="print-info-row">
-          <span className="label">Ngày:  {formatDateTime(order.created_at)}</span>
+          <span className="label">Ngày:  {formatDateTime(order[OrderFields.CREATED_AT])}</span>
         </div>
         <div className="print-info-row">
-          <span className="label">Khách hàng:  {order.customer_name}</span>
+          <span className="label">Khách hàng:  {order[OrderFields.CUSTOMER_NAME]}</span>
         </div>
         <div className="print-info-row">
-          <span className="label">SĐT:  {order.customer_phone}</span>
+          <span className="label">SĐT:  {order[OrderFields.CUSTOMER_PHONE]}</span>
         </div>
         <div className="print-info-row">
           <div className="cccd-group">
-            <span>CCCD: {order.customer_id_number}</span>
+            <span>CCCD: {order[OrderFields.CUSTOMER_ID_NUMBER]}</span>
           </div>
           <div className="issued-group">
-            {order.customer_id_issued_date && (
-              <span>Ngày cấp: {formatDate(order.customer_id_issued_date)}</span>
+            {order[OrderFields.CUSTOMER_ID_ISSUED_DATE] && (
+              <span>Ngày cấp: {formatDate(order[OrderFields.CUSTOMER_ID_ISSUED_DATE])}</span>
             )}
           </div>
         </div>
         <div className="print-info-row">
-          <span className="label">Địa chỉ:  {order.customer_address}</span>
+          <span className="label">Địa chỉ:  {order[OrderFields.CUSTOMER_ADDRESS]}</span>
         </div>
       </div>
 
@@ -307,19 +296,19 @@ const PrintOrder = React.forwardRef(({ order }, ref) => {
       {/* Total */}
       <div className="print-total-row">
         <div className="total-label">TỔNG THANH TOÁN</div>
-        <div className="total-value">{formatCurrency(order.total_amount)}</div>
+        <div className="total-value">{formatCurrency(order[OrderFields.TOTAL_AMOUNT])}</div>
       </div>
 
       {/* Footer Info */}
       <div className="print-footer-info">
         <div className="row">
           <span className="bold">Ngày giao hàng dự kiến: </span>
-          <span>{formatDate(order.expected_delivery_date)}</span>
+          <span>{formatDate(order[OrderFields.EXPECTED_DELIVERY_DATE])}</span>
         </div>
         <div className="print-payment-row">
           <span>
             <span className="bold">Hình thức thanh toán: </span>
-            <span>{order.payment_method === 'bank' ? 'CK' : 'Tiền mặt'}</span>
+            <span>{order[OrderFields.PAYMENT_METHOD] === PaymentMethod.BANK ? 'CK' : 'Tiền mặt'}</span>
           </span>
         </div>
       </div>
@@ -338,7 +327,7 @@ const PrintOrder = React.forwardRef(({ order }, ref) => {
           <div className="sign-space"></div>
         </div>
         <div className="sign-col">
-          <div className="title">Ngày {formatDate(order.created_date)}</div>
+          <div className="title">Ngày {formatDate(order[OrderFields.CREATED_DATE])}</div>
           <div className="title">Khách hàng</div>
           <div className="subtitle">(Ký, họ tên)</div>
           <div className="sign-space"></div>

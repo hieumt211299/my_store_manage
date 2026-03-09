@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import Loading from '../components/Loading';
+import {
+  Tables,
+  ProductFields,
+  StorageBuckets,
+  buildProductInsertPayload,
+} from '../models';
 
 function ProductList() {
   const [products, setProducts] = useState([]);
@@ -20,10 +26,10 @@ function ProductList() {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('products')
+        .from(Tables.PRODUCTS)
         .select('*')
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+        .is(ProductFields.DELETED_AT, null)
+        .order(ProductFields.CREATED_AT, { ascending: false });
 
       if (error) {
         throw error;
@@ -46,7 +52,7 @@ function ProductList() {
       const filePath = `${fileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('product-images')
+        .from(StorageBuckets.PRODUCT_IMAGES)
         .upload(filePath, file);
 
       if (uploadError) {
@@ -55,7 +61,7 @@ function ProductList() {
 
       // Get public URL
       const { data } = supabase.storage
-        .from('product-images')
+        .from(StorageBuckets.PRODUCT_IMAGES)
         .getPublicUrl(filePath);
 
       return data.publicUrl;
@@ -84,15 +90,8 @@ function ProductList() {
       }
 
       const { data, error } = await supabase
-        .from('products')
-        .insert([
-          {
-            name: formData.name,
-            sku: formData.sku,
-            image_url: imageUrl,
-            created_at: new Date().toISOString()
-          }
-        ])
+        .from(Tables.PRODUCTS)
+        .insert([buildProductInsertPayload(formData.name, formData.sku, imageUrl)])
         .select();
 
       if (error) {
@@ -126,16 +125,16 @@ function ProductList() {
     try {
       // Soft delete: Update deleted_at field instead of actual deletion
       const { error } = await supabase
-        .from('products')
-        .update({ deleted_at: new Date().toISOString() })
-        .eq('id', product.id);
+        .from(Tables.PRODUCTS)
+        .update({ [ProductFields.DELETED_AT]: new Date().toISOString() })
+        .eq(ProductFields.ID, product[ProductFields.ID]);
 
       if (error) {
         throw error;
       }
 
       // Remove from local state immediately
-      setProducts(products.filter(p => p.id !== product.id));
+      setProducts(products.filter(p => p[ProductFields.ID] !== product[ProductFields.ID]));
       setMessage('Xóa sản phẩm thành công!');
       
       setTimeout(() => setMessage(''), 3000);
@@ -167,9 +166,9 @@ function ProductList() {
 
   // Filter products based on search term
   const filteredProducts = products.filter(product => 
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.id.toString().includes(searchTerm)
+    product[ProductFields.NAME].toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product[ProductFields.SKU].toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product[ProductFields.ID].toString().includes(searchTerm)
   );
 
   if (loading) {
@@ -347,13 +346,13 @@ function ProductList() {
           </div>
         ) : (
           filteredProducts.map((product) => (
-            <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden" key={product.id}>
+            <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden" key={product[ProductFields.ID]}>
               {/* Product Image */}
               <div className="h-48 bg-gray-100 flex items-center justify-center">
-                {product.image_url ? (
+                {product[ProductFields.IMAGE_URL] ? (
                   <img 
-                    src={product.image_url} 
-                    alt={product.name}
+                    src={product[ProductFields.IMAGE_URL]} 
+                    alt={product[ProductFields.NAME]}
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -363,12 +362,12 @@ function ProductList() {
               
               {/* Product Info */}
               <div className="p-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{product.name}</h3>
-                <span className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded-md">SKU: {product.sku}</span>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">{product[ProductFields.NAME]}</h3>
+                <span className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded-md">SKU: {product[ProductFields.SKU]}</span>
                 
                 <div className="flex justify-between items-center mt-4">
                   <span className="text-xs text-gray-500">
-                    {new Date(product.created_at).toLocaleDateString('vi-VN')}
+                    {new Date(product[ProductFields.CREATED_AT]).toLocaleDateString('vi-VN')}
                   </span>
                   <button
                     onClick={() => handleDelete(product)}
