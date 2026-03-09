@@ -2,14 +2,16 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { useNotification } from '../contexts/NotificationContext';
+import LoadingOverlay from '../components/LoadingOverlay';
 
 function CreateOrder() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { addNotification } = useNotification();
   const [products, setProducts] = useState([]);
   const [showProductDialog, setShowProductDialog] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState([]);
-  const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -25,7 +27,7 @@ function CreateOrder() {
   const debounceTimer = useRef(null);
 
   // Form state for creating orders
-  const getDefaultReceiveDate = () => {
+  const getDefaultExpectedDeliveryDate = () => {
     const date = new Date();
     date.setDate(date.getDate() + 90);
     return date.toISOString().split('T')[0];
@@ -33,7 +35,7 @@ function CreateOrder() {
 
   const [orderForm, setOrderForm] = useState({
     createDate: new Date().toISOString().split('T')[0],
-    receiveDate: getDefaultReceiveDate(),
+    expectedDeliveryDate: getDefaultExpectedDeliveryDate(),
     paymentMethod: 'bank',
     createdBy: user?.email || 'Admin', // Thêm created_by field
     customer: {
@@ -45,6 +47,23 @@ function CreateOrder() {
     },
     items: []
   });
+
+  // Fetch products for selection
+  const fetchProducts = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .is('deleted_at', null)
+        .order('name');
+
+      if (error) throw error;
+      setProducts(data || []);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      addNotification(`Lỗi tải sản phẩm: ${error.message}`, 'error');
+    }
+  }, [addNotification]);
 
   useEffect(() => {
     fetchProducts();
@@ -76,7 +95,7 @@ function CreateOrder() {
         clearTimeout(debounceTimer.current);
       }
     };
-  }, [user, orderForm.createdBy]);  // Add orderForm.createdBy to dependency array
+  }, [user, orderForm.createdBy, fetchProducts]);  // Add fetchProducts to dependency array
 
   // Search customers with debounce
   const searchCustomers = useCallback(async (searchTerm) => {
@@ -139,12 +158,7 @@ function CreateOrder() {
     
     setCustomerSearch(customer.id_number);
     setShowCustomerDropdown(false);
-    setMessage('Đã chọn khách hàng thành công!');
-    
-    // Clear success message after 3 seconds
-    setTimeout(() => {
-      setMessage('');
-    }, 3000);
+    addNotification('Đã chọn khách hàng thành công!', 'success', 3000);
   };
 
   // Clear customer selection
@@ -178,27 +192,10 @@ function CreateOrder() {
     }
   };
 
-  // Fetch products for selection
-  const fetchProducts = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .is('deleted_at', null)
-        .order('name');
-
-      if (error) throw error;
-      setProducts(data || []);
-    } catch (error) {
-      console.error('Error fetching products:', error);
-      setMessage(`Lỗi tải sản phẩm: ${error.message}`);
-    }
-  };
-
   // Add selected products to order
   const addSelectedProductsToOrder = () => {
     if (selectedProducts.length === 0) {
-      setMessage('Vui lòng chọn ít nhất một sản phẩm');
+      addNotification('Vui lòng chọn ít nhất một sản phẩm', 'warning');
       return;
     }
 
@@ -221,7 +218,6 @@ function CreateOrder() {
 
     setSelectedProducts([]);
     setShowProductDialog(false);
-    setMessage('');
   };
 
   // Update item quantity or price
@@ -252,17 +248,17 @@ function CreateOrder() {
     
     const { customer } = orderForm;
     if (!customer.idNumber || !customer.name || !customer.phone || !customer.address) {
-      setMessage('Vui lòng điền đầy đủ thông tin khách hàng');
+      addNotification('Vui lòng điền đầy đủ thông tin khách hàng', 'error');
       return;
     }
 
     if (orderForm.items.length === 0) {
-      setMessage('Vui lòng thêm ít nhất một sản phẩm');
+      addNotification('Vui lòng thêm ít nhất một sản phẩm', 'error');
       return;
     }
 
     if (!orderForm.expectedDeliveryDate) {
-      setMessage('Vui lòng chọn ngày giao hàng dự kiến');
+      addNotification('Vui lòng chọn ngày giao hàng dự kiến', 'error');
       return;
     }
 
@@ -322,7 +318,8 @@ function CreateOrder() {
             total_amount: totalAmount,
             expected_delivery_date: orderForm.expectedDeliveryDate,
             payment_method: orderForm.paymentMethod,
-            created_by: orderForm.createdBy
+            created_by: orderForm.createdBy,
+            status: 'customer_holds'
           }
         ])
         .select()
@@ -344,15 +341,16 @@ function CreateOrder() {
 
       if (itemsError) throw itemsError;
 
-      setMessage('Tạo đơn hàng thành công! Chuyển đến chi tiết đơn hàng...');
+      addNotification('Tạo đơn hàng thành công! Chuyển đến chi tiết đơn hàng...', 'success');
       
+      // Navigate after a short delay to show success message
       setTimeout(() => {
         navigate(`/orders/${orderData.id}`);
-      }, 1500);
+      }, 2000);
       
     } catch (error) {
       console.error('Error creating order:', error);
-      setMessage(`Lỗi tạo đơn hàng: ${error.message}`);
+      addNotification(`Lỗi tạo đơn hàng: ${error.message}`, 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -394,17 +392,6 @@ function CreateOrder() {
         </button>
       </div>
 
-      {/* Message */}
-      {message && (
-        <div className={`mb-6 p-4 rounded-lg ${
-          message.includes('thành công') 
-            ? 'bg-green-50 text-green-700 border border-green-200' 
-            : 'bg-red-50 text-red-700 border border-red-200'
-        }`}>
-          {message}
-        </div>
-      )}
-
       {/* Create Order Form */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <form onSubmit={handleSubmitOrder} className="space-y-8">
@@ -434,6 +421,7 @@ function CreateOrder() {
                   value={orderForm.expectedDeliveryDate}
                   onChange={(e) => setOrderForm({ ...orderForm, expectedDeliveryDate: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={isSubmitting}
                   required
                 />
               </div>
@@ -445,6 +433,7 @@ function CreateOrder() {
                   value={orderForm.paymentMethod}
                   onChange={(e) => setOrderForm({ ...orderForm, paymentMethod: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={isSubmitting}
                 >
                   <option value="bank">Chuyển khoản</option>
                   <option value="cash">Tiền mặt</option>
@@ -460,6 +449,7 @@ function CreateOrder() {
                   onChange={(e) => setOrderForm({ ...orderForm, createdBy: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Nhập tên người tạo"
+                  disabled={isSubmitting}
                   required
                 />
               </div>
@@ -537,6 +527,7 @@ function CreateOrder() {
                   onChange={(e) => handleCustomerFieldChange('name', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Nhập họ tên khách hàng"
+                  disabled={isSubmitting}
                   required
                 />
               </div>
@@ -550,6 +541,7 @@ function CreateOrder() {
                   onChange={(e) => handleCustomerFieldChange('phone', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Nhập số điện thoại"
+                  disabled={isSubmitting}
                   required
                 />
               </div>
@@ -562,6 +554,7 @@ function CreateOrder() {
                   value={orderForm.customer.idIssuedDate}
                   onChange={(e) => handleCustomerFieldChange('idIssuedDate', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={isSubmitting}
                 />
               </div>
               <div className="md:col-span-2">
@@ -574,6 +567,7 @@ function CreateOrder() {
                   onChange={(e) => handleCustomerFieldChange('address', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Nhập địa chỉ khách hàng"
+                  disabled={isSubmitting}
                   required
                 />
               </div>
@@ -859,6 +853,12 @@ function CreateOrder() {
           </div>
         </form>
       </div>
+
+      {/* Loading Overlay */}
+      <LoadingOverlay 
+        isVisible={isSubmitting}
+        message="Đang tạo đơn hàng..."
+      />
     </div>
   );
 }

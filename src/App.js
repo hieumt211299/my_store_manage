@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { NotificationProvider } from './contexts/NotificationContext';
 import Sidebar from './components/Sidebar';
+import NotificationBanner from './components/NotificationBanner';
 import ProductList from './pages/ProductList';
 import OrderList from './pages/OrderList';
 import OrderDetail from './pages/OrderDetail';
@@ -44,6 +46,7 @@ function AppContent() {
           </Routes>
         </div>
       </main>
+      <NotificationBanner />
     </div>
   );
 }
@@ -51,9 +54,11 @@ function AppContent() {
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <AppContent />
-      </BrowserRouter>
+      <NotificationProvider>
+        <BrowserRouter>
+          <AppContent />
+        </BrowserRouter>
+      </NotificationProvider>
     </AuthProvider>
   );
 }
