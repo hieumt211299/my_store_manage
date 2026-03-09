@@ -255,7 +255,7 @@ const PrintOrder = React.forwardRef(({ order }, ref) => {
           <span className="label">Số phiếu:  {order.id}</span>
         </div>
         <div className="print-info-row">
-          <span className="label">Ngày:  {formatDateTime(order.created_date)}</span>
+          <span className="label">Ngày:  {formatDateTime(order.created_at)}</span>
         </div>
         <div className="print-info-row">
           <span className="label">Khách hàng:  {order.customer_name}</span>
@@ -321,7 +321,6 @@ const PrintOrder = React.forwardRef(({ order }, ref) => {
             <span className="bold">Hình thức thanh toán: </span>
             <span>{order.payment_method === 'bank' ? 'CK' : 'Tiền mặt'}</span>
           </span>
-          <span>Khách mua online</span>
         </div>
       </div>
 

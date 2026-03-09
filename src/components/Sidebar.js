@@ -1,21 +1,32 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { 
+  FaBoxOpen, 
+  FaShoppingCart, 
+  FaUsers, 
+  FaChartBar, 
+  FaCog, 
+  FaPlus, 
+  FaShieldAlt, 
+  FaSignOutAlt,
+  FaChevronRight 
+} from 'react-icons/fa';
 
 const menuItems = [
-  { path: '/products', label: 'Products', icon: '📦' },
-  { path: '/orders', label: 'Orders', icon: '🛒' },
-  { path: '/customers', label: 'Customers', icon: '👥' },
+  { path: '/products', label: 'Products', icon: FaBoxOpen },
+  { path: '/orders', label: 'Orders', icon: FaShoppingCart },
+  { path: '/customers', label: 'Customers', icon: FaUsers },
   { 
     key: 'reports',
     label: 'Báo cáo', 
-    icon: '📊',
+    icon: FaChartBar,
     submenu: [
       { path: '/reports/revenue', label: 'Báo cáo doanh thu' },
       { path: '/reports/products', label: 'Báo cáo sản phẩm' }
     ]
   },
-  { path: '/settings', label: 'Settings', icon: '⚙️' },
+  { path: '/settings', label: 'Settings', icon: FaCog },
 ];
 
 function Sidebar() {
@@ -69,13 +80,11 @@ function Sidebar() {
                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                     }`}
                   >
-                    <span className="text-xl mr-3">{item.icon}</span>
+                    <item.icon className="text-xl mr-3" />
                     <span className="font-medium flex-1 text-left">{item.label}</span>
-                    <span className={`transform transition-transform duration-200 ${
+                    <FaChevronRight className={`transform transition-transform duration-200 ${
                       expandedMenus[item.key] ? 'rotate-90' : ''
-                    }`}>
-                      ▶
-                    </span>
+                    }`} />
                   </button>
                   
                   {/* Submenu items */}
@@ -114,7 +123,7 @@ function Sidebar() {
                     }`
                   }
                 >
-                  <span className="text-xl mr-3">{item.icon}</span>
+                  <item.icon className="text-xl mr-3" />
                   <span className="font-medium">{item.label}</span>
                 </NavLink>
               )}
@@ -128,7 +137,7 @@ function Sidebar() {
             to="/orders/create"
             className="flex items-center w-full p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
           >
-            <span className="text-xl mr-3">➕</span>
+            <FaPlus className="text-xl mr-3" />
             <span className="font-medium">Tạo đơn hàng</span>
           </NavLink>
           
@@ -136,7 +145,7 @@ function Sidebar() {
             to="/warranty/create"
             className="flex items-center w-full p-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
           >
-            <span className="text-xl mr-3">🛡️</span>
+            <FaShieldAlt className="text-xl mr-3" />
             <span className="font-medium">Tạo phiếu đảm bảo</span>
           </NavLink>
         </div>
@@ -148,7 +157,7 @@ function Sidebar() {
             onClick={handleLogout} 
             className="flex items-center w-full p-3 text-gray-600 hover:bg-red-50 hover:text-red-700 rounded-lg transition-colors duration-200"
           >
-            <span className="text-xl mr-3">🚪</span>
+            <FaSignOutAlt className="text-xl mr-3" />
             <span className="font-medium">Đăng xuất</span>
           </button>
         </div>

@@ -2,14 +2,17 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
 import { supabase } from '../lib/supabase';
+import { useNotification } from '../contexts/NotificationContext';
 import PrintOrder from '../components/PrintOrder';
 import Loading from '../components/Loading';
 
 function OrderDetail() {
   const { id } = useParams();
+  const { addNotification } = useNotification();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState('');
+  const [notFound, setNotFound] = useState(false);
+  const [fetchError, setFetchError] = useState(null);
   const [statusLoading, setStatusLoading] = useState(false);
   const printRef = useRef(null);
 
@@ -23,6 +26,8 @@ function OrderDetail() {
     const fetchOrderDetail = async () => {
       try {
         setLoading(true);
+        setNotFound(false);
+        setFetchError(null);
         const { data, error } = await supabase
           .from('orders')
           .select(`
@@ -44,7 +49,9 @@ function OrderDetail() {
 
         if (error) {
           if (error.code === 'PGRST116') {
-            setMessage('Không tìm thấy đơn hàng');
+            setNotFound(true);
+            setFetchError(null);
+            addNotification('Không tìm thấy đơn hàng', 'error');
           } else {
             throw error;
           }
@@ -53,7 +60,9 @@ function OrderDetail() {
         }
       } catch (error) {
         console.error('Error fetching order detail:', error);
-        setMessage(`Lỗi tải đơn hàng: ${error.message}`);
+        setFetchError(error.message);
+        setNotFound(false);
+        addNotification(`Lỗi tải đơn hàng: ${error.message}`, 'error');
       } finally {
         setLoading(false);
       }
@@ -62,7 +71,7 @@ function OrderDetail() {
     if (id) {
       fetchOrderDetail();
     }
-  }, [id]);
+  }, [id,addNotification]);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -94,18 +103,15 @@ function OrderDetail() {
       setOrder(prev => ({ ...prev, ...data }));
       
       if (newStatus === 'received') {
-        setMessage('Đã cập nhật trạng thái đơn hàng thành "Đã nhận hàng" thành công!');
+        addNotification('Đã cập nhật trạng thái đơn hàng thành "Đã nhận hàng" thành công!', 'success');
       } else {
         const statusText = newStatus === 'customer_holds' ? 'Khách giữ phiếu' : 'Cửa hàng giữ phiếu';
-        setMessage(`Đã cập nhật trạng thái đơn hàng thành "${statusText}" thành công!`);
+        addNotification(`Đã cập nhật trạng thái đơn hàng thành "${statusText}" thành công!`, 'success');
       }
-      
-      // Clear message after 3 seconds
-      setTimeout(() => setMessage(''), 3000);
       
     } catch (error) {
       console.error('Error updating order status:', error);
-      setMessage(`Lỗi cập nhật trạng thái: ${error.message}`);
+      addNotification(`Lỗi cập nhật trạng thái: ${error.message}`, 'error');
     } finally {
       setStatusLoading(false);
     }
@@ -133,11 +139,18 @@ function OrderDetail() {
     return <Loading type="page" message="Đang tải chi tiết đơn hàng..." />;
   }
 
-  if (message && !order) {
+  if (!order) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center justify-center h-64">
-          <div className="text-lg text-red-600 mb-4">{message}</div>
+          {fetchError ? (
+            <>
+              <div className="text-lg text-red-600 mb-2">Lỗi tải đơn hàng</div>
+              <div className="text-sm text-gray-500 mb-4">{fetchError}</div>
+            </>
+          ) : notFound ? (
+            <div className="text-lg text-red-600 mb-4">Không tìm thấy đơn hàng</div>
+          ) : null}
           <Link
             to="/orders"
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
@@ -148,8 +161,6 @@ function OrderDetail() {
       </div>
     );
   }
-
-  if (!order) return null;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -183,17 +194,6 @@ function OrderDetail() {
           </button>
         </div>
       </div>
-
-      {/* Message */}
-      {message && order && (
-        <div className={`mb-6 p-4 rounded-lg ${
-          message.includes('thành công') || message.includes('Đã cập nhật')
-            ? 'bg-green-50 text-green-700 border border-green-200' 
-            : 'bg-red-50 text-red-700 border border-red-200'
-        }`}>
-          {message}
-        </div>
-      )}
 
       {/* Customer Information */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
