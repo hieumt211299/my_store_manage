@@ -7,13 +7,19 @@ export const formatCurrency = (amount: number | null | undefined): string => {
   }).format(amount);
 };
 
-export const formatDate = (dateStr: string | null | undefined): string => {
-  if (!dateStr) return '';
+export const formatDate = (
+  dateStr: string | null | undefined,
+  emptyPlaceholder: string = '-'
+): string => {
+  if (!dateStr) return emptyPlaceholder;
   return new Date(dateStr).toLocaleDateString('vi-VN');
 };
 
-export const formatDateTime = (dateStr: string | null | undefined): string => {
-  if (!dateStr) return '';
+export const formatDateTime = (
+  dateStr: string | null | undefined,
+  emptyPlaceholder: string = '-'
+): string => {
+  if (!dateStr) return emptyPlaceholder;
   return new Date(dateStr).toLocaleString('vi-VN', {
     hour: '2-digit',
     minute: '2-digit',
