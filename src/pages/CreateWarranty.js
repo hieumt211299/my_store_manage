@@ -2,6 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import {
+  Tables,
+  ProductFields,
+  PaymentMethod,
+} from '../models';
 
 function CreateWarranty() {
   const navigate = useNavigate();
@@ -18,7 +23,7 @@ function CreateWarranty() {
   // Form state for creating warranty
   const [warrantyForm, setWarrantyForm] = useState({
     createDate: new Date().toISOString().split('T')[0],
-    paymentMethod: 'bank',
+    paymentMethod: PaymentMethod.BANK,
     customer: {
       idNumber: '',
       name: '',
@@ -47,10 +52,10 @@ function CreateWarranty() {
   const fetchProducts = async () => {
     try {
       const { data, error } = await supabase
-        .from('products')
+        .from(Tables.PRODUCTS)
         .select('*')
-        .is('deleted_at', null)
-        .order('name');
+        .is(ProductFields.DELETED_AT, null)
+        .order(ProductFields.NAME);
 
       if (error) throw error;
       setProducts(data || []);
@@ -68,11 +73,11 @@ function CreateWarranty() {
     }
 
     const newItems = selectedProducts.map(productId => {
-      const product = products.find(p => p.id === parseInt(productId));
+      const product = products.find(p => p[ProductFields.ID] === parseInt(productId));
       return {
-        productId: product.id,
-        productName: product.name,
-        productSku: product.sku,
+        productId: product[ProductFields.ID],
+        productName: product[ProductFields.NAME],
+        productSku: product[ProductFields.SKU],
         quantity: 1,
         sellingPrice: 0,
         subtotal: 0,

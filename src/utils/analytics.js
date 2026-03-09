@@ -1,4 +1,11 @@
 import { supabase } from '../lib/supabase';
+import {
+  Tables,
+  OrderFields,
+  OrderItemFields,
+  ProductFields,
+  ProductSalesSelect,
+} from '../models';
 
 // Date utility functions
 export const getDateRanges = () => {
@@ -43,15 +50,8 @@ export const formatDateForDisplay = (date) => {
   }).format(date);
 };
 
-// Format currency in VND
-export const formatCurrency = (amount) => {
-  if (!amount) return '0 ₫';
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND',
-    minimumFractionDigits: 0
-  }).format(amount);
-};
+// formatCurrency is re-exported from models for backwards compatibility
+export { formatCurrency } from '../models';
 
 // Format large numbers (K, M notation)
 export const formatNumber = (number) => {
@@ -67,11 +67,11 @@ export const formatNumber = (number) => {
 export const fetchRevenueData = async (startDate, endDate) => {
   try {
     const { data, error } = await supabase
-      .from('orders')
-      .select('id, created_date, total_amount, status')
-      .gte('created_date', formatDateForSQL(startDate))
-      .lte('created_date', formatDateForSQL(endDate))
-      .order('created_date', { ascending: true });
+      .from(Tables.ORDERS)
+      .select(`${OrderFields.ID}, ${OrderFields.CREATED_DATE}, ${OrderFields.TOTAL_AMOUNT}, ${OrderFields.STATUS}`)
+      .gte(OrderFields.CREATED_DATE, formatDateForSQL(startDate))
+      .lte(OrderFields.CREATED_DATE, formatDateForSQL(endDate))
+      .order(OrderFields.CREATED_DATE, { ascending: true });
 
     if (error) throw error;
     return data || [];
@@ -83,13 +83,13 @@ export const fetchRevenueData = async (startDate, endDate) => {
 
 // Get revenue summary metrics
 export const getRevenueSummary = (orders) => {
-  const totalRevenue = orders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
+  const totalRevenue = orders.reduce((sum, order) => sum + (order[OrderFields.TOTAL_AMOUNT] || 0), 0);
   const totalOrders = orders.length;
   const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
   
   // Count by status
   const ordersByStatus = orders.reduce((acc, order) => {
-    acc[order.status] = (acc[order.status] || 0) + 1;
+    acc[order[OrderFields.STATUS]] = (acc[order[OrderFields.STATUS]] || 0) + 1;
     return acc;
   }, {});
 
@@ -104,7 +104,7 @@ export const getRevenueSummary = (orders) => {
 // Group revenue by date
 export const groupRevenueByDate = (orders) => {
   const grouped = orders.reduce((acc, order) => {
-    const date = new Date(order.created_date).toISOString().split('T')[0];
+    const date = new Date(order[OrderFields.CREATED_DATE]).toISOString().split('T')[0];
     if (!acc[date]) {
       acc[date] = {
         date,
@@ -112,7 +112,7 @@ export const groupRevenueByDate = (orders) => {
         orders: 0
       };
     }
-    acc[date].revenue += order.total_amount || 0;
+    acc[date].revenue += order[OrderFields.TOTAL_AMOUNT] || 0;
     acc[date].orders += 1;
     return acc;
   }, {});
@@ -124,22 +124,11 @@ export const groupRevenueByDate = (orders) => {
 export const fetchProductSalesData = async (startDate, endDate) => {
   try {
     const { data, error } = await supabase
-      .from('order_items')
-      .select(`
-        quantity,
-        selling_price,
-        products!inner (
-          id,
-          name,
-          sku
-        ),
-        orders!inner (
-          created_date
-        )
-      `)
-      .gte('orders.created_date', formatDateForSQL(startDate))
-      .lte('orders.created_date', formatDateForSQL(endDate))
-      .order('quantity', { ascending: false });
+      .from(Tables.ORDER_ITEMS)
+      .select(ProductSalesSelect)
+      .gte(`orders.${OrderFields.CREATED_DATE}`, formatDateForSQL(startDate))
+      .lte(`orders.${OrderFields.CREATED_DATE}`, formatDateForSQL(endDate))
+      .order(OrderItemFields.QUANTITY, { ascending: false });
 
     if (error) throw error;
     return data || [];
@@ -152,9 +141,9 @@ export const fetchProductSalesData = async (startDate, endDate) => {
 // Group product sales data
 export const groupProductSalesData = (orderItems) => {
   const grouped = orderItems.reduce((acc, item) => {
-    const productId = item.products.id;
-    const productName = item.products.name;
-    const productSku = item.products.sku;
+    const productId = item.products[ProductFields.ID];
+    const productName = item.products[ProductFields.NAME];
+    const productSku = item.products[ProductFields.SKU];
     
     if (!acc[productId]) {
       acc[productId] = {
@@ -167,8 +156,8 @@ export const groupProductSalesData = (orderItems) => {
       };
     }
     
-    acc[productId].totalQuantity += item.quantity || 0;
-    acc[productId].totalRevenue += (item.quantity || 0) * (item.selling_price || 0);
+    acc[productId].totalQuantity += item[OrderItemFields.QUANTITY] || 0;
+    acc[productId].totalRevenue += (item[OrderItemFields.QUANTITY] || 0) * (item[OrderItemFields.SELLING_PRICE] || 0);
     acc[productId].orderCount += 1;
     
     return acc;
