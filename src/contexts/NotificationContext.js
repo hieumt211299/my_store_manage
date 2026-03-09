@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 
 const NotificationContext = createContext();
 
@@ -12,6 +12,13 @@ export const useNotification = () => {
 
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
+  const timerIdsRef = useRef({});
+
+  useEffect(() => {
+    return () => {
+      Object.values(timerIdsRef.current).forEach(timerId => clearTimeout(timerId));
+    };
+  }, []);
 
   const addNotification = (message, type = 'info', duration = 5000) => {
     const id = Date.now() + Math.random();
@@ -26,19 +33,26 @@ export const NotificationProvider = ({ children }) => {
 
     // Auto remove notification after duration
     if (duration > 0) {
-      setTimeout(() => {
+      const timerId = setTimeout(() => {
         removeNotification(id);
       }, duration);
+      timerIdsRef.current[id] = timerId;
     }
 
     return id;
   };
 
   const removeNotification = (id) => {
+    if (timerIdsRef.current[id]) {
+      clearTimeout(timerIdsRef.current[id]);
+      delete timerIdsRef.current[id];
+    }
     setNotifications(prev => prev.filter(notification => notification.id !== id));
   };
 
   const clearAllNotifications = () => {
+    Object.values(timerIdsRef.current).forEach(timerId => clearTimeout(timerId));
+    timerIdsRef.current = {};
     setNotifications([]);
   };
 
