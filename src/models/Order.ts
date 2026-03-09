@@ -144,9 +144,11 @@ export const getCustomerTypeBadgeColor = (type: string): string =>
 
 // ── Factory / builder helpers ────────────────
 
+const EXPECTED_DELIVERY_OFFSET_DAYS = 95;
+
 export const createDefaultOrderForm = (userEmail: string = 'Admin'): OrderForm => {
   const expectedDate = new Date();
-  expectedDate.setDate(expectedDate.getDate() + 95);
+  expectedDate.setDate(expectedDate.getDate() + EXPECTED_DELIVERY_OFFSET_DAYS);
 
   return {
     createDate: new Date().toISOString().split('T')[0],
