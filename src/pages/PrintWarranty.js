@@ -358,7 +358,7 @@ const PrintWarranty = React.forwardRef(({ warrantyData: propWarrantyData }, ref)
         <div className="print-payment-row">
           <span>
             <span className="bold">Hình thức thanh toán: </span>
-            <span>{warrantyData.paymentMethod === 'bank' ? 'CK' : 'Tiền mặt'}</span>
+            <span>{warrantyData.paymentMethod === 'bank' ? 'Chuyển khoản' : 'Tiền mặt'}</span>
           </span>
         </div>
       </div>

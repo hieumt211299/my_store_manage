@@ -308,7 +308,7 @@ const PrintOrder = React.forwardRef(({ order }, ref) => {
         <div className="print-payment-row">
           <span>
             <span className="bold">Hình thức thanh toán: </span>
-            <span>{order[OrderFields.PAYMENT_METHOD] === PaymentMethod.BANK ? 'CK' : 'Tiền mặt'}</span>
+            <span>{order[OrderFields.PAYMENT_METHOD] === PaymentMethod.BANK ? 'Chuyển khoản' : 'Tiền mặt'}</span>
           </span>
         </div>
       </div>
