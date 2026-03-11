@@ -55,6 +55,7 @@ export interface ImportOrder {
   ancarat_invoice_number: string | null;
   ancarat_cashier_name: string | null;
   expected_return_date: string | null;
+  actual_return_date: string | null;
   
   // Customer seller specific fields
   seller_id_number: string | null;
@@ -103,6 +104,7 @@ export const ImportOrderFields = {
   ANCARAT_INVOICE_NUMBER: 'ancarat_invoice_number',
   ANCARAT_CASHIER_NAME: 'ancarat_cashier_name',
   EXPECTED_RETURN_DATE: 'expected_return_date',
+  ACTUAL_RETURN_DATE: 'actual_return_date',
   SELLER_ID_NUMBER: 'seller_id_number',
   SELLER_NAME: 'seller_name',
   SELLER_PHONE: 'seller_phone',

@@ -3,10 +3,10 @@ import StatusBadge from '../../../components/StatusBadge';
 import {
   ImportOrderFields,
   ImportOrderStatus,
-  ImportOrderSourceTypeLabels,
-  ImportOrderSourceTypeBadgeColors,
   getImportStatusDisplay,
   getImportStatusBadgeColor,
+  getImportSourceTypeLabel,
+  getImportSourceTypeBadgeColor,
   formatCurrency,
   formatDate,
 } from '../../../models';
@@ -19,18 +19,16 @@ function ImportInfoCard({ importOrder, statusLoading, onUpdateStatus }) {
       <div className="flex justify-between items-start mb-4">
         <h2 className="text-xl font-semibold text-gray-900">Thông tin đơn nhập</h2>
         <div className="flex items-center space-x-3">
-          <StatusBadge
-            status={importOrder[ImportOrderFields.STATUS]}
-            label={getImportStatusDisplay(importOrder[ImportOrderFields.STATUS])}
-            colorClass={getImportStatusBadgeColor(importOrder[ImportOrderFields.STATUS])}
-          />
+          <StatusBadge color={getImportStatusBadgeColor(importOrder[ImportOrderFields.STATUS])}>
+            {getImportStatusDisplay(importOrder[ImportOrderFields.STATUS])}
+          </StatusBadge>
           {canChangeStatus && (
             <button
               onClick={() => onUpdateStatus(ImportOrderStatus.COMPLETED)}
               disabled={statusLoading}
-              className="bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700 transition-colors text-sm disabled:opacity-50"
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium disabled:opacity-50"
             >
-              {statusLoading ? 'Đang cập nhật...' : 'Hoàn thành'}
+              {statusLoading ? 'Đang cập nhật...' : 'Hoàn thành đơn'}
             </button>
           )}
         </div>
@@ -46,11 +44,9 @@ function ImportInfoCard({ importOrder, statusLoading, onUpdateStatus }) {
           
           <div className="flex justify-between">
             <span className="text-gray-600">Nguồn nhập:</span>
-            <StatusBadge
-              status={importOrder[ImportOrderFields.SOURCE_TYPE]}
-              label={ImportOrderSourceTypeLabels[importOrder[ImportOrderFields.SOURCE_TYPE]]}
-              colorClass={ImportOrderSourceTypeBadgeColors[importOrder[ImportOrderFields.SOURCE_TYPE]]}
-            />
+            <StatusBadge color={getImportSourceTypeBadgeColor(importOrder[ImportOrderFields.SOURCE_TYPE])}>
+              {getImportSourceTypeLabel(importOrder[ImportOrderFields.SOURCE_TYPE])}
+            </StatusBadge>
           </div>
           
           <div className="flex justify-between">
@@ -68,17 +64,19 @@ function ImportInfoCard({ importOrder, statusLoading, onUpdateStatus }) {
               </span>
             </div>
           )}
+          
+          {importOrder[ImportOrderFields.ACTUAL_RETURN_DATE] && (
+            <div className="flex justify-between">
+              <span className="text-gray-600">Ngày trả thực tế:</span>
+              <span className="font-medium text-green-700">
+                {formatDate(importOrder[ImportOrderFields.ACTUAL_RETURN_DATE])}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Financial Info */}
         <div className="space-y-4">
-          <div className="flex justify-between">
-            <span className="text-gray-600">Tổng tiền:</span>
-            <span className="font-bold text-green-600 text-lg">
-              {formatCurrency(importOrder[ImportOrderFields.TOTAL_AMOUNT])}
-            </span>
-          </div>
-          
           <div className="flex justify-between">
             <span className="text-gray-600">Người tạo:</span>
             <span className="font-medium">

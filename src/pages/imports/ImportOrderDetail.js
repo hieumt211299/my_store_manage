@@ -72,8 +72,13 @@ function ImportOrderDetail() {
     try {
       setStatusLoading(true);
       const updateData = { [ImportOrderFields.STATUS]: newStatus };
+      
+      // Set actual return date when completing the import order
+      if (newStatus === 'completed') {
+        updateData[ImportOrderFields.ACTUAL_RETURN_DATE] = new Date().toISOString().split('T')[0];
+      }
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from(Tables.IMPORT_ORDERS)
         .update(updateData)
         .eq(ImportOrderFields.ID, id)
@@ -82,9 +87,10 @@ function ImportOrderDetail() {
 
       if (error) throw error;
 
+      // Update local state with the returned data
       setImportOrder(prev => ({ 
         ...prev, 
-        [ImportOrderFields.STATUS]: newStatus 
+        ...data
       }));
       
       addNotification(
