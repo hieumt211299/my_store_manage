@@ -7,7 +7,6 @@ import {
   getImportStatusBadgeColor,
   getImportSourceTypeLabel,
   getImportSourceTypeBadgeColor,
-  formatCurrency,
   formatDate,
 } from '../../../models';
 
