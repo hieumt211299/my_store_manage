@@ -58,7 +58,7 @@ function ImportItemsTable({ items, onUpdateItem, onRemoveItem }) {
               <td className="px-4 py-3 text-center">
                 <input
                   type="number"
-                  Min="1"
+                  min="1"
                   value={item.quantity}
                   onChange={(e) => onUpdateItem(index, 'quantity', e.target.value)}
                   className="w-20 px-2 py-1 text-center border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
