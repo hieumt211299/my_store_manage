@@ -231,7 +231,7 @@ function CreateImport() {
       [ImportOrderFields.IMPORT_DATE]: importForm.importDate,
       [ImportOrderFields.EXPECTED_RETURN_DATE]: importForm.expectedReturnDate,
       [ImportOrderFields.TOTAL_AMOUNT]: totalAmount,
-      [ImportOrderFields.CREATED_BY]: user?.email || 'Admin',
+      [ImportOrderFields.CREATED_BY]: user?.name || 'Admin',
     };
 
     if (importForm.sourceType === ImportOrderSourceType.ANCARAT) {
