@@ -4,6 +4,8 @@ export const Tables = {
   ORDERS: 'orders',
   ORDER_ITEMS: 'order_items',
   PRODUCTS: 'products',
+  IMPORT_ORDERS: 'import_orders',
+  IMPORT_ITEMS: 'import_items',
 } as const;
 
 // ── Supabase Storage ─────────────────────────

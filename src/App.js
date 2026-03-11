@@ -4,9 +4,8 @@ import { NotificationProvider } from './contexts/NotificationContext';
 import Sidebar from './components/Sidebar';
 import NotificationBanner from './components/NotificationBanner';
 import ProductList from './pages/ProductList';
-import OrderList from './pages/OrderList';
-import OrderDetail from './pages/OrderDetail';
-import CreateOrder from './pages/CreateOrder';
+import { ImportOrderList, CreateImport, ImportOrderDetail } from './pages/imports';
+import { OrderList, OrderDetail, CreateOrder } from './pages/orders';
 import CustomerList from './pages/CustomerList';
 import CreateWarranty from './pages/CreateWarranty';
 import PrintWarranty from './pages/PrintWarranty';
@@ -31,6 +30,9 @@ function AppContent() {
           <Routes>
             <Route path="/" element={<Navigate to="/products" replace />} />
             <Route path="/products" element={<ProductList />} />
+            <Route path="/imports" element={<ImportOrderList />} />
+            <Route path="/imports/create" element={<CreateImport />} />
+            <Route path="/imports/:id" element={<ImportOrderDetail />} />
             <Route path="/orders" element={<OrderList />} />
             <Route path="/orders/:id" element={<OrderDetail />} />
             <Route path="/orders/create" element={<CreateOrder />} />

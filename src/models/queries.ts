@@ -2,6 +2,8 @@ import { CustomerFields } from './Customer';
 import { ProductFields } from './Product';
 import { OrderFields } from './Order';
 import { OrderItemFields } from './OrderItem';
+import { ImportOrderFields } from './ImportOrder';
+import { ImportItemFields } from './ImportItem';
 
 /**
  * Select fragment: order with its items and nested products.
@@ -56,5 +58,40 @@ export const ProductSalesSelect = `
   ),
   orders!inner (
     ${OrderFields.CREATED_DATE}
+  )
+`;
+
+/**
+ * Select fragment: import order with its items and nested products.
+ */
+export const ImportOrderSelectWithItems = `
+  *,
+  import_items (
+    ${ImportItemFields.ID},
+    ${ImportItemFields.QUANTITY},
+    ${ImportItemFields.IMPORT_PRICE},
+    products (
+      ${ProductFields.ID},
+      ${ProductFields.NAME},
+      ${ProductFields.SKU},
+      ${ProductFields.IMAGE_URL}
+    )
+  )
+`;
+
+/**
+ * Select fragment: import items with product and import order info for reports.
+ */
+export const ImportItemSelectWithProductAndOrder = `
+  ${ImportItemFields.QUANTITY},
+  ${ImportItemFields.IMPORT_PRICE},
+  products!inner (
+    ${ProductFields.ID},
+    ${ProductFields.NAME},
+    ${ProductFields.SKU}
+  ),
+  import_orders!inner (
+    ${ImportOrderFields.IMPORT_DATE},
+    ${ImportOrderFields.SOURCE_TYPE}
   )
 `;
