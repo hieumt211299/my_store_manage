@@ -25,7 +25,8 @@ const menuItems = [
     icon: FaChartBar,
     submenu: [
       { path: '/reports/revenue', label: 'Báo cáo doanh thu' },
-      { path: '/reports/products', label: 'Báo cáo sản phẩm' }
+      { path: '/reports/products', label: 'Báo cáo sản phẩm' },
+      {path: '/reports/imports', label: 'Báo cáo nhập hàng' }
     ]
   },
   { path: '/settings', label: 'Cài đặt', icon: FaCog },

@@ -157,17 +157,14 @@ function ImportOrderDetail() {
         }
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
-          <ImportInfoCard 
-            importOrder={importOrder}
-            statusLoading={statusLoading}
-            onUpdateStatus={updateImportStatus}
-          />
-          <ImportSourceInfo importOrder={importOrder} />
-          <ImportItemsDetail items={importOrder.import_items} />
-        </div>
+      <div className="space-y-6">
+        <ImportInfoCard 
+          importOrder={importOrder}
+          statusLoading={statusLoading}
+          onUpdateStatus={updateImportStatus}
+        />
+        <ImportSourceInfo importOrder={importOrder} />
+        <ImportItemsDetail items={importOrder.import_items} />
       </div>
 
       {/* Hidden Print Template */}

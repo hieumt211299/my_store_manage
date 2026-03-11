@@ -15,8 +15,8 @@ import {
   OrderSelectWithCustomerAndItems,
   getStatusDisplay,
   getStatusBadgeColor,
-  getPaymentMethodLabel,
-  getPaymentMethodBadgeColor,
+  getOrderTypeLabel,
+  getOrderTypeBadgeColor,
   formatCurrency,
   formatDate,
 } from '../../models';
@@ -206,7 +206,7 @@ function OrderList() {
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên khách hàng</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thanh toán</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loại Phiếu</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onClick={() => handleSort('created_at')}>
                 <div className="flex items-center space-x-1">
@@ -261,8 +261,8 @@ function OrderList() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <StatusBadge color={getPaymentMethodBadgeColor(order[OrderFields.PAYMENT_METHOD])}>
-                      {getPaymentMethodLabel(order[OrderFields.PAYMENT_METHOD])}
+                    <StatusBadge color={getOrderTypeBadgeColor(order[OrderFields.ORDER_TYPE])}>
+                      {getOrderTypeLabel(order[OrderFields.ORDER_TYPE])}
                     </StatusBadge>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">

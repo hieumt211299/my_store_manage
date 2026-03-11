@@ -2,6 +2,7 @@ import React from 'react';
 import {
   OrderFields,
   PaymentMethod,
+  OrderType,
   formatCurrency,
   formatDate,
   formatDateTime,
@@ -236,7 +237,12 @@ const PrintOrder = React.forwardRef(({ order }, ref) => {
       </div>
 
       {/* Title */}
-      <div className="print-title">PHIẾU ĐẶT HÀNG</div>
+      <div className="print-title">
+        {order[OrderFields.ORDER_TYPE] === OrderType.WARRANTY 
+          ? 'PHIẾU ĐẢM BẢO' 
+          : 'PHIẾU ĐẶT HÀNG'
+        }
+      </div>
 
       {/* Customer Info */}
       <div className="print-info">
@@ -334,16 +340,18 @@ const PrintOrder = React.forwardRef(({ order }, ref) => {
         </div>
       </div>
 
-      {/* Terms */}
-      <div className="print-terms">
-        <h3>Cam kết chung</h3>
-        <p>1. Công ty TNHH Kim Phượng Mai Silver & Jewelry chỉ nhận trả hàng vật chất cho khách hàng khi khách hàng xuất trình đủ CCCD/ VNeID có đủ thông tin đúng như trong hợp đồng này.</p>
-        <p>2. Khách hàng đã thanh toán 100% số tiền, nếu khách hàng yêu cầu hủy trước lịch hẹn trả hàng, Công ty TNHH Kim Phượng Mai Silver & Jewelry sẽ hoàn lại giá trị tương ứng theo giá niêm yết mua vào tại thời điểm Hủy Phiếu</p>
-        <h3>Hiệu lực &amp; thỏa thuận</h3>
-        <p>1. Phiếu có giá trị kể từ ngày ký</p>
-        <p>2. Phiếu hết hiệu lực ngay sau khi CtyTNHH Kim Phượng Mai Silver&Jewelry giao đủ bạc vật lý cho khách</p>
-        <p>3. Phiếu lưu dưới dạng file ảnh có dấu đỏ công ty hoặc phiếu giấy, đều có giá trị như nhau</p>
-      </div>
+      {/* Terms - Only show for orders, not warranty */}
+      {order[OrderFields.ORDER_TYPE] !== OrderType.WARRANTY && (
+        <div className="print-terms">
+          <h3>Cam kết chung</h3>
+          <p>1. Công ty TNHH Kim Phượng Mai Silver & Jewelry chỉ nhận trả hàng vật chất cho khách hàng khi khách hàng xuất trình đủ CCCD/ VNeID có đủ thông tin đúng như trong hợp đồng này.</p>
+          <p>2. Khách hàng đã thanh toán 100% số tiền, nếu khách hàng yêu cầu hủy trước lịch hẹn trả hàng, Công ty TNHH Kim Phượng Mai Silver & Jewelry sẽ hoàn lại giá trị tương ứng theo giá niêm yết mua vào tại thời điểm Hủy Phiếu</p>
+          <h3>Hiệu lực &amp; thỏa thuận</h3>
+          <p>1. Phiếu có giá trị kể từ ngày ký</p>
+          <p>2. Phiếu hết hiệu lực ngay sau khi CtyTNHH Kim Phượng Mai Silver&Jewelry giao đủ bạc vật lý cho khách</p>
+          <p>3. Phiếu lưu dưới dạng file ảnh có dấu đỏ công ty hoặc phiếu giấy, đều có giá trị như nhau</p>
+        </div>
+      )}
     </div>
   );
 });

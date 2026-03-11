@@ -64,6 +64,23 @@ export const CustomerTypeBadgeColors: Record<CustomerTypeValue, string> = {
   [CustomerType.OFFLINE]: 'bg-purple-100 text-purple-800',
 };
 
+export const OrderType = {
+  ORDER: 'order',
+  WARRANTY: 'warranty',
+} as const;
+
+export type OrderTypeValue = (typeof OrderType)[keyof typeof OrderType];
+
+export const OrderTypeLabels: Record<OrderTypeValue, string> = {
+  [OrderType.ORDER]: 'Đơn hàng',
+  [OrderType.WARRANTY]: 'Phiếu đảm bảo',
+};
+
+export const OrderTypeBadgeColors: Record<OrderTypeValue, string> = {
+  [OrderType.ORDER]: 'bg-blue-100 text-blue-800',
+  [OrderType.WARRANTY]: 'bg-orange-100 text-orange-800',
+};
+
 // ── Entity ───────────────────────────────────
 
 /**
@@ -79,6 +96,7 @@ export interface Order {
   customer_address: string;
   customer_id: number | null;
   customer_type: string | null;
+  order_type: string;
   total_amount: number;
   expected_delivery_date: string;
   payment_method: string;
@@ -96,7 +114,7 @@ export interface OrderForm {
   createDate: string;
   expectedDeliveryDate: string;
   paymentMethod: string;
-  createdBy: string;
+  orderType: string;
   customerType: string;
   status: string;
   customer: CustomerForm;
@@ -113,6 +131,7 @@ export const OrderFields = {
   CUSTOMER_ADDRESS: 'customer_address',
   CUSTOMER_ID: 'customer_id',
   CUSTOMER_TYPE: 'customer_type',
+  ORDER_TYPE: 'order_type',
   TOTAL_AMOUNT: 'total_amount',
   EXPECTED_DELIVERY_DATE: 'expected_delivery_date',
   PAYMENT_METHOD: 'payment_method',
@@ -142,11 +161,17 @@ export const getCustomerTypeLabel = (type: string): string =>
 export const getCustomerTypeBadgeColor = (type: string): string =>
   CustomerTypeBadgeColors[type as CustomerTypeValue] || '';
 
+export const getOrderTypeLabel = (type: string): string =>
+  OrderTypeLabels[type as OrderTypeValue] || OrderTypeLabels[OrderType.ORDER];
+
+export const getOrderTypeBadgeColor = (type: string): string =>
+  OrderTypeBadgeColors[type as OrderTypeValue] || OrderTypeBadgeColors[OrderType.ORDER];
+
 // ── Factory / builder helpers ────────────────
 
 const EXPECTED_DELIVERY_OFFSET_DAYS = 95;
 
-export const createDefaultOrderForm = (userEmail: string = 'Admin'): OrderForm => {
+export const createDefaultOrderForm = (): OrderForm => {
   const expectedDate = new Date();
   expectedDate.setDate(expectedDate.getDate() + EXPECTED_DELIVERY_OFFSET_DAYS);
 
@@ -154,7 +179,7 @@ export const createDefaultOrderForm = (userEmail: string = 'Admin'): OrderForm =
     createDate: new Date().toISOString().split('T')[0],
     expectedDeliveryDate: expectedDate.toISOString().split('T')[0],
     paymentMethod: PaymentMethod.BANK,
-    createdBy: userEmail,
+    orderType: OrderType.ORDER,
     customerType: CustomerType.ONLINE,
     status: OrderStatus.CUSTOMER_HOLDS,
     customer: createDefaultCustomerForm(),
@@ -162,11 +187,49 @@ export const createDefaultOrderForm = (userEmail: string = 'Admin'): OrderForm =
   };
 };
 
+/** Create warranty order form with appropriate defaults */
+export const createWarrantyOrderForm = (): OrderForm => {
+  return {
+    createDate: new Date().toISOString().split('T')[0],
+    expectedDeliveryDate: new Date().toISOString().split('T')[0], // Current date for warranty
+    paymentMethod: PaymentMethod.BANK,
+    orderType: OrderType.WARRANTY,
+    customerType: CustomerType.ONLINE,
+    status: OrderStatus.RECEIVED, // Auto received for warranty
+    customer: createDefaultCustomerForm(),
+    items: [],
+  };
+};
+
+/** Update order form when order type changes */
+export const updateOrderFormForType = (currentForm: OrderForm, orderType: OrderTypeValue): OrderForm => {
+  if (orderType === OrderType.WARRANTY) {
+    return {
+      ...currentForm,
+      orderType,
+      expectedDeliveryDate: new Date().toISOString().split('T')[0],
+      status: OrderStatus.RECEIVED,
+    };
+  } else {
+    // For regular orders
+    const expectedDate = new Date();
+    expectedDate.setDate(expectedDate.getDate() + EXPECTED_DELIVERY_OFFSET_DAYS);
+    
+    return {
+      ...currentForm,
+      orderType,
+      expectedDeliveryDate: expectedDate.toISOString().split('T')[0],
+      status: OrderStatus.CUSTOMER_HOLDS,
+    };
+  }
+};
+
 /** Builds the insert payload for a new order */
 export const buildOrderInsertPayload = (
   orderForm: OrderForm,
   customerId: number,
   totalAmount: number,
+  userEmail: string,
 ): Omit<Order, 'id' | 'created_at' | 'date_received' | 'order_items' | 'customers'> => ({
   created_date: orderForm.createDate,
   customer_id: customerId,
@@ -178,7 +241,8 @@ export const buildOrderInsertPayload = (
   total_amount: totalAmount,
   expected_delivery_date: orderForm.expectedDeliveryDate,
   payment_method: orderForm.paymentMethod,
-  created_by: orderForm.createdBy,
+  order_type: orderForm.orderType,
+  created_by: userEmail,
   customer_type: orderForm.customerType,
   status: orderForm.status,
 });

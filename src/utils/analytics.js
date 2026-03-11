@@ -5,6 +5,9 @@ import {
   OrderItemFields,
   ProductFields,
   ProductSalesSelect,
+  ImportOrderFields,
+  ImportItemFields,
+  ImportOrderSelectWithItems,
 } from '../models';
 
 // Date utility functions
@@ -114,6 +117,82 @@ export const groupRevenueByDate = (orders) => {
     }
     acc[date].revenue += order[OrderFields.TOTAL_AMOUNT] || 0;
     acc[date].orders += 1;
+    return acc;
+  }, {});
+
+  return Object.values(grouped).sort((a, b) => new Date(a.date) - new Date(b.date));
+};
+
+// Get import data by date range
+export const fetchImportData = async (startDate, endDate) => {
+  try {
+    const { data, error } = await supabase
+      .from(Tables.IMPORT_ORDERS)
+      .select(ImportOrderSelectWithItems)
+      .gte(ImportOrderFields.IMPORT_DATE, formatDateForSQL(startDate))
+      .lte(ImportOrderFields.IMPORT_DATE, formatDateForSQL(endDate))
+      .order(ImportOrderFields.IMPORT_DATE, { ascending: true });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching import data:', error);
+    throw error;
+  }
+};
+
+// Get import summary metrics
+export const getImportSummary = (importOrders) => {
+  const totalImportValue = importOrders.reduce((sum, importOrder) => 
+    sum + (importOrder[ImportOrderFields.TOTAL_AMOUNT] || 0), 0);
+  
+  const totalImportOrders = importOrders.length;
+  const avgImportValue = totalImportOrders > 0 ? totalImportValue / totalImportOrders : 0;
+  
+  // Count by status
+  const importsByStatus = importOrders.reduce((acc, importOrder) => {
+    acc[importOrder[ImportOrderFields.STATUS]] = (acc[importOrder[ImportOrderFields.STATUS]] || 0) + 1;
+    return acc;
+  }, {});
+  
+  // Count by source type
+  const importsBySourceType = importOrders.reduce((acc, importOrder) => {
+    acc[importOrder[ImportOrderFields.SOURCE_TYPE]] = (acc[importOrder[ImportOrderFields.SOURCE_TYPE]] || 0) + 1;
+    return acc;
+  }, {});
+  
+  // Calculate total items imported
+  const totalItemsImported = importOrders.reduce((total, importOrder) => {
+    return total + (importOrder.import_items?.reduce((itemTotal, item) => 
+      itemTotal + (item[ImportItemFields.QUANTITY] || 0), 0) || 0);
+  }, 0);
+
+  return {
+    totalImportValue,
+    totalImportOrders,
+    avgImportValue,
+    totalItemsImported,
+    importsByStatus,
+    importsBySourceType
+  };
+};
+
+// Group imports by date
+export const groupImportsByDate = (importOrders) => {
+  const grouped = importOrders.reduce((acc, importOrder) => {
+    const date = new Date(importOrder[ImportOrderFields.IMPORT_DATE]).toISOString().split('T')[0];
+    if (!acc[date]) {
+      acc[date] = {
+        date,
+        importValue: 0,
+        orders: 0,
+        itemsCount: 0
+      };
+    }
+    acc[date].importValue += importOrder[ImportOrderFields.TOTAL_AMOUNT] || 0;
+    acc[date].orders += 1;
+    acc[date].itemsCount += importOrder.import_items?.reduce((total, item) => 
+      total + (item[ImportItemFields.QUANTITY] || 0), 0) || 0;
     return acc;
   }, {});
 

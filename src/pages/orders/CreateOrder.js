@@ -14,7 +14,10 @@ import {
   CustomerFields,
   ProductFields,
   OrderFields,
+  OrderStatus,
+  OrderType,
   createDefaultOrderForm,
+  updateOrderFormForType,
   buildCustomerInsertPayload,
   buildOrderInsertPayload,
   buildOrderItemsPayload,
@@ -32,7 +35,7 @@ function CreateOrder() {
   const [customerSearch, setCustomerSearch] = useState('');
 
   const [orderForm, setOrderForm] = useState(
-    createDefaultOrderForm(user?.email)
+    createDefaultOrderForm()
   );
 
   const fetchProducts = useCallback(async () => {
@@ -53,10 +56,7 @@ function CreateOrder() {
 
   useEffect(() => {
     fetchProducts();
-    if (user?.email && orderForm.createdBy === 'Admin') {
-      setOrderForm(prev => ({ ...prev, createdBy: user.email }));
-    }
-  }, [user, orderForm.createdBy, fetchProducts]);
+  }, [fetchProducts]);
 
   const addSelectedProductsToOrder = (selectedProductIds) => {
     if (selectedProductIds.length === 0) {
@@ -92,6 +92,17 @@ function CreateOrder() {
     return orderForm.items.reduce((total, item) => total + item.subtotal, 0);
   };
 
+  // Handle order form changes with special logic for order type changes
+  const handleOrderFormChange = (newOrderForm) => {
+    // If order type changed, update form with appropriate defaults
+    if (newOrderForm.orderType !== orderForm.orderType) {
+      const updatedForm = updateOrderFormForType(newOrderForm, newOrderForm.orderType);
+      setOrderForm(updatedForm);
+    } else {
+      setOrderForm(newOrderForm);
+    }
+  };
+
   const handleSubmitOrder = async (e) => {
     e.preventDefault();
 
@@ -104,7 +115,9 @@ function CreateOrder() {
       addNotification('Vui lòng thêm ít nhất một sản phẩm', 'error');
       return;
     }
-    if (!orderForm.expectedDeliveryDate) {
+    
+    // Only validate expected delivery date for orders, not warranty
+    if (orderForm.orderType === OrderType.ORDER && !orderForm.expectedDeliveryDate) {
       addNotification('Vui lòng chọn ngày giao hàng dự kiến', 'error');
       return;
     }
@@ -138,7 +151,7 @@ function CreateOrder() {
 
       const { data: orderData, error: orderError } = await supabase
         .from(Tables.ORDERS)
-        .insert([buildOrderInsertPayload(orderForm, customerId, totalAmount)])
+        .insert([buildOrderInsertPayload(orderForm, customerId, totalAmount, user?.email || 'Admin')])
         .select()
         .single();
       if (orderError) throw orderError;
@@ -149,7 +162,10 @@ function CreateOrder() {
         .insert(orderItems);
       if (itemsError) throw itemsError;
 
-      addNotification('Tạo đơn hàng thành công! Chuyển đến chi tiết đơn hàng...', 'success');
+      const successMessage = orderForm.orderType === OrderType.WARRANTY 
+        ? 'Tạo phiếu đảm bảo thành công! Chuyển đến chi tiết phiếu đảm bảo...'
+        : 'Tạo đơn hàng thành công! Chuyển đến chi tiết đơn hàng...';
+      addNotification(successMessage, 'success');
       setTimeout(() => navigate(`/orders/${orderData.id}`), 2000);
     } catch (error) {
       console.error('Error creating order:', error);
@@ -160,16 +176,38 @@ function CreateOrder() {
   };
 
   const handleCancel = () => {
-    if (window.confirm('Bạn có chắc muốn hủy tạo đơn hàng? Tất cả thông tin đã nhập sẽ bị mất.')) {
+    const confirmMessage = orderForm.orderType === OrderType.WARRANTY 
+      ? 'Bạn có chắc muốn hủy tạo phiếu đảm bảo? Tất cả thông tin đã nhập sẽ bị mất.'
+      : 'Bạn có chắc muốn hủy tạo đơn hàng? Tất cả thông tin đã nhập sẽ bị mất.';
+    if (window.confirm(confirmMessage)) {
       navigate('/orders');
     }
+  };
+
+  const getPageTitle = () => {
+    return orderForm.orderType === OrderType.WARRANTY 
+      ? 'Tạo phiếu đảm bảo mới'
+      : 'Tạo đơn hàng mới';
+  };
+
+  const getPageSubtitle = () => {
+    return orderForm.orderType === OrderType.WARRANTY 
+      ? 'Điền thông tin khách hàng và chọn sản phẩm đảm bảo'
+      : 'Điền thông tin khách hàng và chọn sản phẩm';
+  };
+
+  const getSubmitButtonText = () => {
+    if (isSubmitting) {
+      return orderForm.orderType === OrderType.WARRANTY ? 'Đang tạo...' : 'Đang tạo...';
+    }
+    return orderForm.orderType === OrderType.WARRANTY ? 'Tạo phiếu đảm bảo' : 'Tạo đơn hàng';
   };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <PageHeader
-        title="Tạo đơn hàng mới"
-        subtitle="Điền thông tin khách hàng và chọn sản phẩm"
+        title={getPageTitle()}
+        subtitle={getPageSubtitle()}
         actions={
           <button
             onClick={handleCancel}
@@ -185,7 +223,7 @@ function CreateOrder() {
           {/* Order Info */}
           <OrderInfoForm
             orderForm={orderForm}
-            onChange={setOrderForm}
+            onChange={handleOrderFormChange}
             disabled={isSubmitting}
           />
 
@@ -247,14 +285,20 @@ function CreateOrder() {
                 disabled={isSubmitting || orderForm.items.length === 0}
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? 'Đang tạo...' : 'Tạo đơn hàng'}
+                {getSubmitButtonText()}
               </button>
             </div>
           </div>
         </form>
       </div>
 
-      <LoadingOverlay isVisible={isSubmitting} message="Đang tạo đơn hàng..." />
+      <LoadingOverlay 
+        isVisible={isSubmitting} 
+        message={orderForm.orderType === OrderType.WARRANTY 
+          ? 'Đang tạo phiếu đảm bảo...' 
+          : 'Đang tạo đơn hàng...'
+        } 
+      />
     </div>
   );
 }

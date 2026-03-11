@@ -11,6 +11,7 @@ import CreateWarranty from './pages/CreateWarranty';
 import PrintWarranty from './pages/PrintWarranty';
 import ReportsLayout from './pages/ReportsLayout';
 import RevenueReport from './pages/RevenueReport';
+import ImportReport from './pages/ImportReport';
 import ProductSalesReport from './pages/ProductSalesReport';
 import Login from './pages/Login';
 import './App.css';
@@ -42,6 +43,7 @@ function AppContent() {
             <Route path="/reports" element={<ReportsLayout />}>
               <Route index element={<Navigate to="/reports/revenue" replace />} />
               <Route path="revenue" element={<RevenueReport />} />
+              <Route path="imports" element={<ImportReport />} />
               <Route path="products" element={<ProductSalesReport />} />
             </Route>
             <Route path="/settings" element={<PagePlaceholder title="Settings" />} />

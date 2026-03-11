@@ -28,7 +28,7 @@ function ImportBasicInfoForm({
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Ngày nhận hàng dự kiến *
+            Ngày nhận dự kiến *
           </label>
           <input
             type="date"
@@ -37,9 +37,6 @@ function ImportBasicInfoForm({
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
           />
-          <div className="text-sm text-gray-500 mt-1">
-            Ngày dự kiến Ancarat trả hàng  (mặc định 95 ngày)
-          </div>
         </div>
       </div>
     </div>
