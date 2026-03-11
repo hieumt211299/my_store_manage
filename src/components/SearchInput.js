@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useEffect } from 'react';
 
 function SearchInput({
   value,
@@ -12,6 +12,12 @@ function SearchInput({
   className = '',
 }) {
   const debounceTimer = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
+  }, []);
 
   const handleChange = useCallback((e) => {
     const newValue = e.target.value;
