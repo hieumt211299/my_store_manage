@@ -10,23 +10,26 @@ import {
   FaPlus, 
   FaShieldAlt, 
   FaSignOutAlt,
-  FaChevronRight 
+  FaChevronRight,
+  FaWarehouse
 } from 'react-icons/fa';
 
 const menuItems = [
-  { path: '/products', label: 'Products', icon: FaBoxOpen },
-  { path: '/orders', label: 'Orders', icon: FaShoppingCart },
-  { path: '/customers', label: 'Customers', icon: FaUsers },
+  { path: '/products', label: 'Sản phẩm', icon: FaBoxOpen },
+  { path: '/imports', label: 'Nhập kho', icon: FaWarehouse },
+  { path: '/orders', label: 'Đơn hàng', icon: FaShoppingCart },
+  { path: '/customers', label: 'Khách hàng', icon: FaUsers },
   { 
     key: 'reports',
     label: 'Báo cáo', 
     icon: FaChartBar,
     submenu: [
       { path: '/reports/revenue', label: 'Báo cáo doanh thu' },
-      { path: '/reports/products', label: 'Báo cáo sản phẩm' }
+      { path: '/reports/products', label: 'Báo cáo sản phẩm' },
+      {path: '/reports/imports', label: 'Báo cáo nhập hàng' }
     ]
   },
-  { path: '/settings', label: 'Settings', icon: FaCog },
+  { path: '/settings', label: 'Cài đặt', icon: FaCog },
 ];
 
 function Sidebar() {

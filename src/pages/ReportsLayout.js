@@ -52,11 +52,16 @@ function ReportsLayout() {
       label: 'Báo cáo doanh thu',
       icon: '💰'
     },
+   
     {
       path: '/reports/products', 
       label: 'Báo cáo sản phẩm',
+      icon: '🏷️'
+    }, {
+      path: '/reports/imports',
+      label: 'Báo cáo nhập hàng',
       icon: '📦'
-    }
+    },
   ];
 
   return (

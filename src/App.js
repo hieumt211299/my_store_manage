@@ -4,14 +4,14 @@ import { NotificationProvider } from './contexts/NotificationContext';
 import Sidebar from './components/Sidebar';
 import NotificationBanner from './components/NotificationBanner';
 import ProductList from './pages/ProductList';
-import OrderList from './pages/OrderList';
-import OrderDetail from './pages/OrderDetail';
-import CreateOrder from './pages/CreateOrder';
+import { ImportOrderList, CreateImport, ImportOrderDetail } from './pages/imports';
+import { OrderList, OrderDetail, CreateOrder } from './pages/orders';
 import CustomerList from './pages/CustomerList';
 import CreateWarranty from './pages/CreateWarranty';
 import PrintWarranty from './pages/PrintWarranty';
 import ReportsLayout from './pages/ReportsLayout';
 import RevenueReport from './pages/RevenueReport';
+import ImportReport from './pages/ImportReport';
 import ProductSalesReport from './pages/ProductSalesReport';
 import Login from './pages/Login';
 import './App.css';
@@ -31,6 +31,9 @@ function AppContent() {
           <Routes>
             <Route path="/" element={<Navigate to="/products" replace />} />
             <Route path="/products" element={<ProductList />} />
+            <Route path="/imports" element={<ImportOrderList />} />
+            <Route path="/imports/create" element={<CreateImport />} />
+            <Route path="/imports/:id" element={<ImportOrderDetail />} />
             <Route path="/orders" element={<OrderList />} />
             <Route path="/orders/:id" element={<OrderDetail />} />
             <Route path="/orders/create" element={<CreateOrder />} />
@@ -40,6 +43,7 @@ function AppContent() {
             <Route path="/reports" element={<ReportsLayout />}>
               <Route index element={<Navigate to="/reports/revenue" replace />} />
               <Route path="revenue" element={<RevenueReport />} />
+              <Route path="imports" element={<ImportReport />} />
               <Route path="products" element={<ProductSalesReport />} />
             </Route>
             <Route path="/settings" element={<PagePlaceholder title="Settings" />} />

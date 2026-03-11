@@ -367,7 +367,7 @@ function ProductList() {
                 
                 <div className="flex justify-between items-center mt-4">
                   <span className="text-xs text-gray-500">
-                    {new Date(product[ProductFields.CREATED_AT]).toLocaleDateString('vi-VN')}
+                    {`Số lượng: ${product[ProductFields.STOCK_QUANTITY] || 0}`}
                   </span>
                   <button
                     onClick={() => handleDelete(product)}

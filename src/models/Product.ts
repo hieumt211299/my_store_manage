@@ -8,6 +8,7 @@ export interface Product {
   image_url: string | null;
   created_at: string | null;
   deleted_at: string | null;
+  stock_quantity?: number; // Optional field for current stock level, not stored in DB but calculated from orders/imports
 }
 
 export const ProductFields = {
@@ -17,6 +18,8 @@ export const ProductFields = {
   IMAGE_URL: 'image_url',
   CREATED_AT: 'created_at',
   DELETED_AT: 'deleted_at',
+  STOCK_QUANTITY: 'stock_quantity',
+
 } as const;
 
 // ── Helpers ──────────────────────────────────

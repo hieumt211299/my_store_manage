@@ -359,7 +359,7 @@ function CreateWarranty() {
           
           {/* Warranty Info */}
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Thông tin bảo hành</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Thông tin đảm bảo</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -702,7 +702,7 @@ function CreateWarranty() {
             {warrantyForm.items.length === 0 && (
               <div className="text-center py-8 border border-gray-300 border-dashed rounded-lg">
                 <p className="text-gray-500">Chưa có sản phẩm nào được chọn</p>
-                <p className="text-sm text-gray-400 mt-1">Nhấn "Chọn sản phẩm" để thêm sản phẩm vào bảo hành</p>
+                <p className="text-sm text-gray-400 mt-1">Nhấn "Chọn sản phẩm" để thêm sản phẩm vào đảm bảo</p>
               </div>
             )}
           </div>
