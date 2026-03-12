@@ -291,7 +291,7 @@ function CreateWarranty() {
       setTimeout(() => {
         printWindow.print();
         printWindow.close();
-      }, 500);
+      }, 300);
       
     } catch (error) {
       console.error('Error creating warranty:', error);

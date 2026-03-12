@@ -297,7 +297,7 @@ function CreateImport() {
       if (itemsError) throw itemsError;
 
       addNotification('Tạo đơn nhập thành công! Chuyển đến chi tiết đơn nhập...', 'success');
-      setTimeout(() => navigate(`/imports/${importOrderData.id}`), 2000);
+      setTimeout(() => navigate(`/imports/${importOrderData.id}`), 300);
     } catch (error) {
       console.error('Error creating import:', error);
       addNotification(`Lỗi tạo đơn nhập: ${error.message}`, 'error');
