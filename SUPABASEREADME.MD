@@ -1,19 +1,13 @@
-Init your local project: supabase init
-Link your cloud project to your local project: supabase link
-Pull down the database from your cloud project: supabase db pull
-Now your database is in sync and you can start it locally: supabase db start
+# Ghi chú nhanh Supabase (phụ lục)
 
+> Tài liệu thiết lập chính: [SUPABASE_SETUP.md](./SUPABASE_SETUP.md)  
+> Tệp này chỉ là ghi chú nhanh về các lệnh đồng bộ database (local ↔️ production).
 
+---
 
+## 1. Đồng bộ dự án Supabase local với dự án cloud
 
-# 1. Dump everything from production 
-supabase db dump --data-only > production_data.sql
+1. Khởi tạo project local:
 
-# 2. Pull schema from production
-supabase db pull
-
-# 3. Reset local DB (applies schema + data if seed.sql exists)
-supabase db reset
-
-# 4. Import production data to local
-psql "postgresql://postgres:postgres@localhost:54322/postgres" < production_data.sql
+   ```bash
+   supabase init
