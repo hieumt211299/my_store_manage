@@ -8,7 +8,6 @@ import {
   FaChartBar, 
   FaCog, 
   FaPlus, 
-  FaShieldAlt, 
   FaSignOutAlt,
   FaChevronRight,
   FaWarehouse
