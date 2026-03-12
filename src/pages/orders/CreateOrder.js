@@ -165,7 +165,7 @@ function CreateOrder() {
         ? 'Tạo phiếu đảm bảo thành công! Chuyển đến chi tiết phiếu đảm bảo...'
         : 'Tạo đơn hàng thành công! Chuyển đến chi tiết đơn hàng...';
       addNotification(successMessage, 'success');
-      setTimeout(() => navigate(`/orders/${orderData.id}`), 2000);
+      setTimeout(() => navigate(`/orders/${orderData.id}`), 300);
     } catch (error) {
       console.error('Error creating order:', error);
       addNotification(`Lỗi tạo đơn hàng: ${error.message}`, 'error');

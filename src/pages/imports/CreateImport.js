@@ -60,7 +60,14 @@ function CreateImport() {
     try {
       const { data, error } = await supabase
         .from(Tables.PRODUCTS)
-        .select('*')
+        .select(`
+          ${ProductFields.ID},
+          ${ProductFields.NAME},
+          ${ProductFields.SKU},
+          ${ProductFields.IMAGE_URL},
+          ${ProductFields.STOCK_QUANTITY},
+          ${ProductFields.AVERAGE_PRICE}
+        `)
         .is(ProductFields.DELETED_AT, null)
         .order(ProductFields.NAME);
 
@@ -290,7 +297,7 @@ function CreateImport() {
       if (itemsError) throw itemsError;
 
       addNotification('Tạo đơn nhập thành công! Chuyển đến chi tiết đơn nhập...', 'success');
-      setTimeout(() => navigate(`/imports/${importOrderData.id}`), 2000);
+      setTimeout(() => navigate(`/imports/${importOrderData.id}`), 300);
     } catch (error) {
       console.error('Error creating import:', error);
       addNotification(`Lỗi tạo đơn nhập: ${error.message}`, 'error');

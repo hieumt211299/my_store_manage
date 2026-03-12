@@ -302,7 +302,7 @@ function ImportReport() {
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value) => [value, 'Đơn nhập']} />
+                      <Tooltip formatter={(value) => [value, 'Đơn nhập']} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>

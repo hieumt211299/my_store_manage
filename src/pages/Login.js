@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
 function Login() {
-  const [isLogin, setIsLogin] = useState(true);
+  const [isLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -110,7 +110,7 @@ function Login() {
             </button>
           </form>
 
-          <div className="text-center mt-6">
+          {/* <div className="text-center mt-6">
             {isLogin ? (
               <p className="text-gray-600">
                 Chưa có tài khoản?{' '}
@@ -134,7 +134,7 @@ function Login() {
                 </button>
               </p>
             )}
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

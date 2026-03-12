@@ -6,6 +6,7 @@ import {
   ProductFields,
   StorageBuckets,
   buildProductInsertPayload,
+  formatCurrency,
 } from '../models';
 
 function ProductList() {
@@ -27,7 +28,16 @@ function ProductList() {
       setLoading(true);
       const { data, error } = await supabase
         .from(Tables.PRODUCTS)
-        .select('*')
+        .select(`
+          ${ProductFields.ID},
+          ${ProductFields.NAME},
+          ${ProductFields.SKU},
+          ${ProductFields.IMAGE_URL},
+          ${ProductFields.CREATED_AT},
+          ${ProductFields.DELETED_AT},
+          ${ProductFields.STOCK_QUANTITY},
+          ${ProductFields.AVERAGE_PRICE}
+        `)
         .is(ProductFields.DELETED_AT, null)
         .order(ProductFields.CREATED_AT, { ascending: false });
 
@@ -365,10 +375,23 @@ function ProductList() {
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">{product[ProductFields.NAME]}</h3>
                 <span className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded-md">SKU: {product[ProductFields.SKU]}</span>
                 
-                <div className="flex justify-between items-center mt-4">
-                  <span className="text-xs text-gray-500">
-                    {`Số lượng: ${product[ProductFields.STOCK_QUANTITY] || 0}`}
-                  </span>
+                <div className="mt-3 space-y-1">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-600">Số lượng:</span>
+                    <span className="font-medium">{product[ProductFields.STOCK_QUANTITY] || 0}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-600">Giá trung bình:</span>
+                    <span className="font-medium text-green-600">
+                      {product[ProductFields.AVERAGE_PRICE] > 0 
+                        ? formatCurrency(product[ProductFields.AVERAGE_PRICE])
+                        : 'Chưa có'
+                      }
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="flex justify-end items-center mt-4">
                   <button
                     onClick={() => handleDelete(product)}
                     className="text-red-600 hover:text-red-800 text-sm font-medium"
