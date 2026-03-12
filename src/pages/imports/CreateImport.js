@@ -60,7 +60,14 @@ function CreateImport() {
     try {
       const { data, error } = await supabase
         .from(Tables.PRODUCTS)
-        .select('*')
+        .select(`
+          ${ProductFields.ID},
+          ${ProductFields.NAME},
+          ${ProductFields.SKU},
+          ${ProductFields.IMAGE_URL},
+          ${ProductFields.STOCK_QUANTITY},
+          ${ProductFields.AVERAGE_PRICE}
+        `)
         .is(ProductFields.DELETED_AT, null)
         .order(ProductFields.NAME);
 

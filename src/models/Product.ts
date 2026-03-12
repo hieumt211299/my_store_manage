@@ -9,6 +9,7 @@ export interface Product {
   created_at: string | null;
   deleted_at: string | null;
   stock_quantity?: number; // Optional field for current stock level, not stored in DB but calculated from orders/imports
+  average_price?: number; // Weighted average price calculated from import history
 }
 
 export const ProductFields = {
@@ -19,7 +20,7 @@ export const ProductFields = {
   CREATED_AT: 'created_at',
   DELETED_AT: 'deleted_at',
   STOCK_QUANTITY: 'stock_quantity',
-
+  AVERAGE_PRICE: 'average_price',
 } as const;
 
 // ── Helpers ──────────────────────────────────

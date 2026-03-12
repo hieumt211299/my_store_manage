@@ -144,13 +144,13 @@ function Sidebar() {
             <span className="font-medium">Tạo đơn hàng</span>
           </NavLink>
           
-          <NavLink
+          {/* <NavLink
             to="/warranty/create"
             className="flex items-center w-full p-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
           >
             <FaShieldAlt className="text-xl mr-3" />
             <span className="font-medium">Tạo phiếu đảm bảo</span>
-          </NavLink>
+          </NavLink> */}
         </div>
       </nav>
       
