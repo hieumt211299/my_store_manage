@@ -8,7 +8,7 @@ export interface Product {
   image_url: string | null;
   created_at: string | null;
   deleted_at: string | null;
-  stock_quantity?: number; // Optional field for current stock level, not stored in DB but calculated from orders/imports
+  stock_quantity?: number; // Optional field for current stock level, populated from the DB (e.g. column/view computed from orders/imports)
   average_price?: number; // Weighted average price calculated from import history
 }
 
