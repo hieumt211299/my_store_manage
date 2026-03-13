@@ -1,8 +1,10 @@
 import React from 'react';
 import CustomerSearchInput from '../../../components/CustomerSearchInput';
+import SearchableSelect from '../../../components/SearchableSelect';
 import {
   CustomerType,
   CustomerTypeLabels,
+  CustomerDiscoverySourceOptions,
   OrderStatus,
   OrderStatusLabels,
   mapCustomerRowToForm,
@@ -81,6 +83,18 @@ function CustomerInfoForm({
             <option value={OrderStatus.RECEIVED}>{OrderStatusLabels[OrderStatus.RECEIVED]}</option>
           </select>
         </div>
+        <SearchableSelect
+          label="Lý do khách biết đến cửa hàng"
+          value={orderForm.customerDiscoverySource}
+          onChange={(value) => onChange({ ...orderForm, customerDiscoverySource: value })}
+          options={CustomerDiscoverySourceOptions}
+          placeholder="Chọn nguồn khách biết đến cửa hàng"
+          searchPlaceholder="Tìm nguồn khách..."
+          emptyText="Không tìm thấy nguồn phù hợp"
+          disabled={disabled}
+          optional
+          className="md:col-span-2"
+        />
       </div>
 
       {/* Customer Fields */}

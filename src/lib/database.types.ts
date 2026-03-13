@@ -115,6 +115,8 @@ export type Database = {
           created_by: string | null
           created_date: string
           customer_address: string
+          employee_id: number | null
+          customer_discovery_source: string | null
           customer_id: number | null
           customer_id_issued_date: string | null
           customer_id_number: string
@@ -124,6 +126,7 @@ export type Database = {
           date_received: string | null
           expected_delivery_date: string
           id: number
+          order_type: string
           payment_method: string
           status: string
           total_amount: number
@@ -133,6 +136,8 @@ export type Database = {
           created_by?: string | null
           created_date: string
           customer_address: string
+          customer_discovery_source?: string | null
+          employee_id?: number | null
           customer_id?: number | null
           customer_id_issued_date?: string | null
           customer_id_number: string
@@ -142,6 +147,7 @@ export type Database = {
           date_received?: string | null
           expected_delivery_date: string
           id?: number
+          order_type?: string
           payment_method?: string
           status?: string
           total_amount: number
@@ -151,6 +157,8 @@ export type Database = {
           created_by?: string | null
           created_date?: string
           customer_address?: string
+          customer_discovery_source?: string | null
+          employee_id?: number | null
           customer_id?: number | null
           customer_id_issued_date?: string | null
           customer_id_number?: string
@@ -160,11 +168,19 @@ export type Database = {
           date_received?: string | null
           expected_delivery_date?: string
           id?: number
+          order_type?: string
           payment_method?: string
           status?: string
           total_amount?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_orders_employee_id"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "fk_orders_customer_id"
             columns: ["customer_id"]
@@ -351,4 +367,3 @@ export const Constants = {
     Enums: {},
   },
 } as const
-

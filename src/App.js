@@ -6,7 +6,9 @@ import NotificationBanner from './components/NotificationBanner';
 import ProductList from './pages/ProductList';
 import { ImportOrderList, CreateImport, ImportOrderDetail } from './pages/imports';
 import { OrderList, OrderDetail, CreateOrder } from './pages/orders';
+import { EmployeeList, EmployeeDetail, CreateEmployee } from './pages/employees';
 import CustomerList from './pages/CustomerList';
+import CustomerDetail from './pages/CustomerDetail';
 import CreateWarranty from './pages/CreateWarranty';
 import PrintWarranty from './pages/PrintWarranty';
 import ReportsLayout from './pages/ReportsLayout';
@@ -37,7 +39,11 @@ function AppContent() {
             <Route path="/orders" element={<OrderList />} />
             <Route path="/orders/:id" element={<OrderDetail />} />
             <Route path="/orders/create" element={<CreateOrder />} />
+            <Route path="/employees" element={<EmployeeList />} />
+            <Route path="/employees/create" element={<CreateEmployee />} />
+            <Route path="/employees/:id" element={<EmployeeDetail />} />
             <Route path="/customers" element={<CustomerList />} />
+            <Route path="/customers/:id" element={<CustomerDetail />} />
             <Route path="/warranty/create" element={<CreateWarranty />} />
             <Route path="/warranty/print" element={<PrintWarranty />} />
             <Route path="/reports" element={<ReportsLayout />}>

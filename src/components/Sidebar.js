@@ -10,7 +10,8 @@ import {
   FaPlus, 
   FaSignOutAlt,
   FaChevronRight,
-  FaWarehouse
+  FaWarehouse,
+  FaUserTie
 } from 'react-icons/fa';
 
 const menuItems = [
@@ -18,6 +19,7 @@ const menuItems = [
   { path: '/imports', label: 'Nhập kho', icon: FaWarehouse },
   { path: '/orders', label: 'Đơn hàng', icon: FaShoppingCart },
   { path: '/customers', label: 'Khách hàng', icon: FaUsers },
+  { path: '/employees', label: 'Nhân viên', icon: FaUserTie },
   { 
     key: 'reports',
     label: 'Báo cáo', 

@@ -29,6 +29,8 @@ function CreateOrder() {
   const { user } = useAuth();
   const { addNotification } = useNotification();
   const [products, setProducts] = useState([]);
+  const [employeeOptions, setEmployeeOptions] = useState([]);
+  const [employeesLoading, setEmployeesLoading] = useState(false);
   const [showProductDialog, setShowProductDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [customerSearch, setCustomerSearch] = useState('');
@@ -56,6 +58,38 @@ function CreateOrder() {
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
+
+  const fetchEmployees = useCallback(async () => {
+    try {
+      setEmployeesLoading(true);
+      const { data, error } = await supabase
+        .from(Tables.EMPLOYEES)
+        .select('id, full_name, employee_code')
+        .eq('status', 'active')
+        .is('deleted_at', null)
+        .order('full_name');
+
+      if (error) throw error;
+
+      setEmployeeOptions(
+        (data || []).map((employee) => ({
+          value: String(employee.id),
+          label: `${employee.full_name} (${employee.employee_code})`,
+          keywords: `${employee.full_name} ${employee.employee_code}`,
+          employeeName: employee.full_name,
+        }))
+      );
+    } catch (error) {
+      console.error('Error fetching employees:', error);
+      addNotification(`Lỗi tải danh sách nhân viên: ${error.message}`, 'error');
+    } finally {
+      setEmployeesLoading(false);
+    }
+  }, [addNotification]);
+
+  useEffect(() => {
+    fetchEmployees();
+  }, [fetchEmployees]);
 
   const addSelectedProductsToOrder = (selectedProductIds) => {
     if (selectedProductIds.length === 0) {
@@ -112,6 +146,10 @@ function CreateOrder() {
     }
     if (orderForm.items.length === 0) {
       addNotification('Vui lòng thêm ít nhất một sản phẩm', 'error');
+      return;
+    }
+    if (!orderForm.employeeId) {
+      addNotification('Vui lòng chọn nhân viên phụ trách', 'error');
       return;
     }
     
@@ -202,6 +240,15 @@ function CreateOrder() {
     return orderForm.orderType === OrderType.WARRANTY ? 'Tạo phiếu đảm bảo' : 'Tạo đơn hàng';
   };
 
+  const handleEmployeeChange = (employeeId) => {
+    const selectedEmployee = employeeOptions.find((option) => option.value === employeeId);
+    setOrderForm((prev) => ({
+      ...prev,
+      employeeId,
+      createdBy: selectedEmployee?.employeeName || '',
+    }));
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <PageHeader
@@ -223,6 +270,9 @@ function CreateOrder() {
           <OrderInfoForm
             orderForm={orderForm}
             onChange={handleOrderFormChange}
+            onEmployeeChange={handleEmployeeChange}
+            employeeOptions={employeeOptions}
+            employeesLoading={employeesLoading}
             disabled={isSubmitting}
           />
 

@@ -1,6 +1,7 @@
 // ── Table Names ──────────────────────────────
 export const Tables = {
   CUSTOMERS: 'customers',
+  EMPLOYEES: 'employees',
   ORDERS: 'orders',
   ORDER_ITEMS: 'order_items',
   PRODUCTS: 'products',

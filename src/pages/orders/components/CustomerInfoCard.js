@@ -1,5 +1,5 @@
 import React from 'react';
-import { OrderFields, formatDate } from '../../../models';
+import { OrderFields, formatDate, getCustomerDiscoverySourceLabel } from '../../../models';
 
 function CustomerInfoCard({ order, children }) {
   return (
@@ -31,10 +31,22 @@ function CustomerInfoCard({ order, children }) {
             <span className="font-medium min-w-32">Địa chỉ:</span>
             <span>{order[OrderFields.CUSTOMER_ADDRESS]}</span>
           </div>
+          {order[OrderFields.CUSTOMER_DISCOVERY_SOURCE] && (
+            <div className="flex mb-2">
+              <span className="font-medium min-w-32">Nguồn khách biết đến:</span>
+              <span>{getCustomerDiscoverySourceLabel(order[OrderFields.CUSTOMER_DISCOVERY_SOURCE])}</span>
+            </div>
+          )}
           <div className="flex mb-2">
             <span className="font-medium min-w-32">Ngày giao hàng dự kiến:</span>
             <span>{formatDate(order[OrderFields.EXPECTED_DELIVERY_DATE])}</span>
           </div>
+          {order[OrderFields.CREATED_BY] && (
+            <div className="flex mb-2">
+              <span className="font-medium min-w-32">Nhân viên phụ trách:</span>
+              <span>{order[OrderFields.CREATED_BY]}</span>
+            </div>
+          )}
           {order[OrderFields.DATE_RECEIVED] && (
             <div className="flex mb-2">
               <span className="font-medium min-w-32">Ngày đã nhận thực tế:</span>
