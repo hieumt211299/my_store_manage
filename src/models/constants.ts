@@ -6,6 +6,7 @@ export const Tables = {
   PRODUCTS: 'products',
   IMPORT_ORDERS: 'import_orders',
   IMPORT_ITEMS: 'import_items',
+  EMPLOYEES: 'employees',
 } as const;
 
 // ── Supabase Storage ─────────────────────────

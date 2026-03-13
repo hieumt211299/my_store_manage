@@ -30,6 +30,7 @@ export const CustomerFields = {
   ADDRESS: 'address',
   CREATED_AT: 'created_at',
   UPDATED_AT: 'updated_at',
+  AVERAGE_PRICE: 'average_price',
 } as const;
 
 // ── Helpers ──────────────────────────────────

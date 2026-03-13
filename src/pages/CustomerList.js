@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import Loading from '../components/Loading';
 import {
@@ -15,6 +16,7 @@ function CustomerList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCustomers, setTotalCustomers] = useState(0);
   const [itemsPerPage] = useState(15);
+  const navigate = useNavigate();
 
   // Fetch customers from database with pagination and search
   const fetchCustomers = useCallback(async () => {
@@ -179,6 +181,7 @@ function CustomerList() {
                 <tr 
                   key={customer[CustomerFields.ID]} 
                   className="hover:bg-gray-50 cursor-pointer transition-colors"
+                  onClick={() => navigate(`/customers/${customer[CustomerFields.ID]}`)}
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">

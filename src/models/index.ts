@@ -23,6 +23,13 @@ export {
   getImportStatusDisplay, getImportStatusBadgeColor,
   getImportSourceTypeLabel, getImportSourceTypeBadgeColor,
 } from './ImportOrder';
+export {
+  EmployeeFields,
+  EmployeeRole, EmployeeRoleLabels, EmployeeRoleBadgeColors,
+  EmployeeStatus, EmployeeStatusLabels, EmployeeStatusBadgeColors,
+  createDefaultEmployeeForm, mapEmployeeRowToForm, buildEmployeeInsertPayload, buildEmployeeUpdatePayload, generateEmployeeCode,
+  getRoleDisplay, getRoleBadgeColor, getStatusDisplay as getEmployeeStatusDisplay, getStatusBadgeColor as getEmployeeStatusBadgeColor,
+} from './Employee';
 
 // ── Types (re-export for convenience) ────────
 export type { Customer, CustomerForm } from './Customer';
@@ -31,6 +38,7 @@ export type { OrderItem, OrderItemForm } from './OrderItem';
 export type { Order, OrderForm, OrderStatusValue, PaymentMethodValue, CustomerTypeValue, OrderTypeValue } from './Order';
 export type { ImportItem, ImportItemForm } from './ImportItem';
 export type { ImportOrder, ImportOrderForm, ImportOrderStatusValue, ImportOrderSourceTypeValue } from './ImportOrder';
+export type { Employee, EmployeeForm, EmployeeRoleValue, EmployeeStatusValue } from './Employee';
 
 // ── Shared constants ─────────────────────────
 export { Tables, StorageBuckets } from './constants';
