@@ -64,6 +64,37 @@ export const CustomerTypeBadgeColors: Record<CustomerTypeValue, string> = {
   [CustomerType.OFFLINE]: 'bg-purple-100 text-purple-800',
 };
 
+export const CustomerDiscoverySource = {
+  FACEBOOK: 'facebook',
+  TIKTOK: 'tiktok',
+  GOOGLE: 'google',
+  FRIEND_REFERRAL: 'friend_referral',
+  WALK_IN: 'walk_in',
+  RETURNING_CUSTOMER: 'returning_customer',
+  OTHER: 'other',
+} as const;
+
+export type CustomerDiscoverySourceValue =
+  (typeof CustomerDiscoverySource)[keyof typeof CustomerDiscoverySource];
+
+export const CustomerDiscoverySourceLabels: Record<CustomerDiscoverySourceValue, string> = {
+  [CustomerDiscoverySource.FACEBOOK]: 'Facebook',
+  [CustomerDiscoverySource.TIKTOK]: 'TikTok',
+  [CustomerDiscoverySource.GOOGLE]: 'Google',
+  [CustomerDiscoverySource.FRIEND_REFERRAL]: 'Bạn bè giới thiệu',
+  [CustomerDiscoverySource.WALK_IN]: 'Đi ngang cửa hàng',
+  [CustomerDiscoverySource.RETURNING_CUSTOMER]: 'Khách cũ quay lại',
+  [CustomerDiscoverySource.OTHER]: 'Nguồn khác',
+};
+
+export const CustomerDiscoverySourceOptions = Object.entries(CustomerDiscoverySourceLabels).map(
+  ([value, label]) => ({
+    value,
+    label,
+    keywords: label,
+  })
+);
+
 export const OrderType = {
   ORDER: 'order',
   WARRANTY: 'warranty',
@@ -94,6 +125,7 @@ export interface Order {
   customer_id_number: string;
   customer_id_issued_date: string | null;
   customer_address: string;
+  customer_discovery_source: string | null;
   customer_id: number | null;
   customer_type: string | null;
   order_type: string;
@@ -116,6 +148,7 @@ export interface OrderForm {
   paymentMethod: string;
   orderType: string;
   customerType: string;
+  customerDiscoverySource: string;
   status: string;
   customer: CustomerForm;
   items: OrderItemForm[];
@@ -129,6 +162,7 @@ export const OrderFields = {
   CUSTOMER_ID_NUMBER: 'customer_id_number',
   CUSTOMER_ID_ISSUED_DATE: 'customer_id_issued_date',
   CUSTOMER_ADDRESS: 'customer_address',
+  CUSTOMER_DISCOVERY_SOURCE: 'customer_discovery_source',
   CUSTOMER_ID: 'customer_id',
   CUSTOMER_TYPE: 'customer_type',
   ORDER_TYPE: 'order_type',
@@ -181,6 +215,7 @@ export const createDefaultOrderForm = (): OrderForm => {
     paymentMethod: PaymentMethod.BANK,
     orderType: OrderType.ORDER,
     customerType: CustomerType.ONLINE,
+    customerDiscoverySource: '',
     status: OrderStatus.CUSTOMER_HOLDS,
     customer: createDefaultCustomerForm(),
     items: [],
@@ -195,6 +230,7 @@ export const createWarrantyOrderForm = (): OrderForm => {
     paymentMethod: PaymentMethod.BANK,
     orderType: OrderType.WARRANTY,
     customerType: CustomerType.ONLINE,
+    customerDiscoverySource: '',
     status: OrderStatus.RECEIVED, // Auto received for warranty
     customer: createDefaultCustomerForm(),
     items: [],
@@ -238,6 +274,7 @@ export const buildOrderInsertPayload = (
   customer_phone: orderForm.customer.phone,
   customer_id_issued_date: orderForm.customer.idIssuedDate || null,
   customer_address: orderForm.customer.address,
+  customer_discovery_source: orderForm.customerDiscoverySource || null,
   total_amount: totalAmount,
   expected_delivery_date: orderForm.expectedDeliveryDate,
   payment_method: orderForm.paymentMethod,
@@ -246,3 +283,8 @@ export const buildOrderInsertPayload = (
   customer_type: orderForm.customerType,
   status: orderForm.status,
 });
+
+export const getCustomerDiscoverySourceLabel = (source: string | null | undefined): string =>
+  source
+    ? CustomerDiscoverySourceLabels[source as CustomerDiscoverySourceValue] || source
+    : '';

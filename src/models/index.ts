@@ -7,11 +7,13 @@ export {
   OrderStatus, OrderStatusLabels, OrderStatusBadgeColors, OrderStatusChartColors,
   PaymentMethod, PaymentMethodLabels, PaymentMethodBadgeColors,
   CustomerType, CustomerTypeLabels, CustomerTypeBadgeColors,
+  CustomerDiscoverySource, CustomerDiscoverySourceLabels, CustomerDiscoverySourceOptions,
   OrderType, OrderTypeLabels, OrderTypeBadgeColors,
   createDefaultOrderForm, createWarrantyOrderForm, updateOrderFormForType, buildOrderInsertPayload,
   getStatusDisplay, getStatusBadgeColor,
   getPaymentMethodLabel, getPaymentMethodBadgeColor,
   getCustomerTypeLabel, getCustomerTypeBadgeColor,
+  getCustomerDiscoverySourceLabel,
   getOrderTypeLabel, getOrderTypeBadgeColor,
 } from './Order';
 export { ImportItemFields, createImportItemFromProduct, buildImportItemsPayload, mapImportItemRowToForm, updateImportItemSubtotal, calculateImportTotal } from './ImportItem';
@@ -35,7 +37,15 @@ export {
 export type { Customer, CustomerForm } from './Customer';
 export type { Product } from './Product';
 export type { OrderItem, OrderItemForm } from './OrderItem';
-export type { Order, OrderForm, OrderStatusValue, PaymentMethodValue, CustomerTypeValue, OrderTypeValue } from './Order';
+export type {
+  Order,
+  OrderForm,
+  OrderStatusValue,
+  PaymentMethodValue,
+  CustomerTypeValue,
+  CustomerDiscoverySourceValue,
+  OrderTypeValue,
+} from './Order';
 export type { ImportItem, ImportItemForm } from './ImportItem';
 export type { ImportOrder, ImportOrderForm, ImportOrderStatusValue, ImportOrderSourceTypeValue } from './ImportOrder';
 export type { Employee, EmployeeForm, EmployeeRoleValue, EmployeeStatusValue } from './Employee';
