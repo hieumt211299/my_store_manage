@@ -126,6 +126,7 @@ export interface Order {
   customer_id_issued_date: string | null;
   customer_address: string;
   customer_discovery_source: string | null;
+  employee_id: number | null;
   customer_id: number | null;
   customer_type: string | null;
   order_type: string;
@@ -146,6 +147,8 @@ export interface OrderForm {
   createDate: string;
   expectedDeliveryDate: string;
   paymentMethod: string;
+  employeeId: string;
+  createdBy: string;
   orderType: string;
   customerType: string;
   customerDiscoverySource: string;
@@ -163,6 +166,7 @@ export const OrderFields = {
   CUSTOMER_ID_ISSUED_DATE: 'customer_id_issued_date',
   CUSTOMER_ADDRESS: 'customer_address',
   CUSTOMER_DISCOVERY_SOURCE: 'customer_discovery_source',
+  EMPLOYEE_ID: 'employee_id',
   CUSTOMER_ID: 'customer_id',
   CUSTOMER_TYPE: 'customer_type',
   ORDER_TYPE: 'order_type',
@@ -213,6 +217,8 @@ export const createDefaultOrderForm = (): OrderForm => {
     createDate: new Date().toISOString().split('T')[0],
     expectedDeliveryDate: expectedDate.toISOString().split('T')[0],
     paymentMethod: PaymentMethod.BANK,
+    employeeId: '',
+    createdBy: '',
     orderType: OrderType.ORDER,
     customerType: CustomerType.ONLINE,
     customerDiscoverySource: '',
@@ -228,6 +234,8 @@ export const createWarrantyOrderForm = (): OrderForm => {
     createDate: new Date().toISOString().split('T')[0],
     expectedDeliveryDate: new Date().toISOString().split('T')[0], // Current date for warranty
     paymentMethod: PaymentMethod.BANK,
+    employeeId: '',
+    createdBy: '',
     orderType: OrderType.WARRANTY,
     customerType: CustomerType.ONLINE,
     customerDiscoverySource: '',
@@ -275,11 +283,12 @@ export const buildOrderInsertPayload = (
   customer_id_issued_date: orderForm.customer.idIssuedDate || null,
   customer_address: orderForm.customer.address,
   customer_discovery_source: orderForm.customerDiscoverySource || null,
+  employee_id: orderForm.employeeId ? Number(orderForm.employeeId) : null,
   total_amount: totalAmount,
   expected_delivery_date: orderForm.expectedDeliveryDate,
   payment_method: orderForm.paymentMethod,
   order_type: orderForm.orderType,
-  created_by: userEmail,
+  created_by: orderForm.createdBy || userEmail,
   customer_type: orderForm.customerType,
   status: orderForm.status,
 });

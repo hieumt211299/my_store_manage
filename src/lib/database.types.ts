@@ -115,6 +115,7 @@ export type Database = {
           created_by: string | null
           created_date: string
           customer_address: string
+          employee_id: number | null
           customer_discovery_source: string | null
           customer_id: number | null
           customer_id_issued_date: string | null
@@ -136,6 +137,7 @@ export type Database = {
           created_date: string
           customer_address: string
           customer_discovery_source?: string | null
+          employee_id?: number | null
           customer_id?: number | null
           customer_id_issued_date?: string | null
           customer_id_number: string
@@ -156,6 +158,7 @@ export type Database = {
           created_date?: string
           customer_address?: string
           customer_discovery_source?: string | null
+          employee_id?: number | null
           customer_id?: number | null
           customer_id_issued_date?: string | null
           customer_id_number?: string
@@ -171,6 +174,13 @@ export type Database = {
           total_amount?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_orders_employee_id"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "fk_orders_customer_id"
             columns: ["customer_id"]

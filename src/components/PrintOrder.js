@@ -106,7 +106,7 @@ const PrintOrder = React.forwardRef(({ order }, ref) => {
         .print-info-cccd-row .issued-group {
           flex: 1;
           text-align: left;
-          padding-left: 40px;
+          padding-left: 80px;
         }
 
         .print-table {
@@ -253,6 +253,9 @@ const PrintOrder = React.forwardRef(({ order }, ref) => {
           <span className="label">Ngày:  {formatDateTime(order[OrderFields.CREATED_AT])}</span>
         </div>
         <div className="print-info-row">
+          <span className="label">Nhân viên bán hàng:  {order[OrderFields.CREATED_BY]}</span>
+        </div>
+        <div className="print-info-row">
           <span className="label">Khách hàng:  {order[OrderFields.CUSTOMER_NAME]}</span>
         </div>
         <div className="print-info-row">
@@ -330,6 +333,11 @@ const PrintOrder = React.forwardRef(({ order }, ref) => {
           <div>&nbsp;</div>
           <div className="title">Nhân viên bán hàng</div>
           <div className="subtitle">(Ký, họ tên)</div>
+          {order[OrderFields.CREATED_BY] && (
+            <div className="subtitle" style={{ fontStyle: 'normal', marginTop: '8px' }}>
+              {order[OrderFields.CREATED_BY]}
+            </div>
+          )}
           <div className="sign-space"></div>
         </div>
         <div className="sign-col">

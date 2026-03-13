@@ -41,6 +41,12 @@ function CustomerInfoCard({ order, children }) {
             <span className="font-medium min-w-32">Ngày giao hàng dự kiến:</span>
             <span>{formatDate(order[OrderFields.EXPECTED_DELIVERY_DATE])}</span>
           </div>
+          {order[OrderFields.CREATED_BY] && (
+            <div className="flex mb-2">
+              <span className="font-medium min-w-32">Nhân viên phụ trách:</span>
+              <span>{order[OrderFields.CREATED_BY]}</span>
+            </div>
+          )}
           {order[OrderFields.DATE_RECEIVED] && (
             <div className="flex mb-2">
               <span className="font-medium min-w-32">Ngày đã nhận thực tế:</span>

@@ -1,4 +1,5 @@
 import React from 'react';
+import SearchableSelect from '../../../components/SearchableSelect';
 import {
   PaymentMethod,
   PaymentMethodLabels,
@@ -6,7 +7,14 @@ import {
 } from '../../../models';
 import OrderTypeSelector from './OrderTypeSelector';
 
-function OrderInfoForm({ orderForm, onChange, disabled = false }) {
+function OrderInfoForm({
+  orderForm,
+  onChange,
+  onEmployeeChange,
+  employeeOptions = [],
+  employeesLoading = false,
+  disabled = false,
+}) {
   const handleChange = (field, value) => {
     onChange({ ...orderForm, [field]: value });
   };
@@ -71,6 +79,24 @@ function OrderInfoForm({ orderForm, onChange, disabled = false }) {
               <option value={PaymentMethod.CASH}>{PaymentMethodLabels[PaymentMethod.CASH]}</option>
             </select>
           </div>
+
+          <SearchableSelect
+            label="Nhân viên phụ trách"
+            value={orderForm.employeeId}
+            onChange={(value) => {
+              if (onEmployeeChange) {
+                onEmployeeChange(value);
+                return;
+              }
+              handleChange('employeeId', value);
+            }}
+            options={employeeOptions}
+            placeholder={employeesLoading ? 'Đang tải danh sách nhân viên...' : 'Chọn nhân viên'}
+            searchPlaceholder="Tìm nhân viên..."
+            emptyText={employeesLoading ? 'Đang tải danh sách nhân viên...' : 'Không tìm thấy nhân viên'}
+            disabled={disabled || employeesLoading}
+            required
+          />
         </div>
       </div>
     </div>
