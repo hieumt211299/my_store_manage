@@ -4,7 +4,7 @@ export { ProductFields, buildProductInsertPayload } from './Product';
 export { OrderItemFields, createOrderItemFromProduct, buildOrderItemsPayload } from './OrderItem';
 export {
   OrderFields,
-  OrderStatus, OrderStatusLabels, OrderStatusBadgeColors, OrderStatusChartColors,
+  OrderStatus, OrderStatusLabels, OrderStatusOptions, OrderStatusBadgeColors, OrderStatusChartColors,
   PaymentMethod, PaymentMethodLabels, PaymentMethodBadgeColors,
   CustomerType, CustomerTypeLabels, CustomerTypeBadgeColors,
   CustomerDiscoverySource, CustomerDiscoverySourceLabels, CustomerDiscoverySourceOptions,

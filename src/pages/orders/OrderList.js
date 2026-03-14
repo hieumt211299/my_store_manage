@@ -35,7 +35,7 @@ function OrderList() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [customerFilter, setCustomerFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState([]);
   
   // Sorting states
   const [sortBy, setSortBy] = useState('created_at');
@@ -62,7 +62,7 @@ function OrderList() {
       if (dateFrom) query = query.gte(OrderFields.CREATED_DATE, dateFrom);
       if (dateTo) query = query.lte(OrderFields.CREATED_DATE, dateTo);
       if (customerFilter) query = query.eq(OrderFields.CUSTOMER_ID, parseInt(customerFilter));
-      if (statusFilter) query = query.eq(OrderFields.STATUS, statusFilter);
+      if (statusFilter.length > 0) query = query.in(OrderFields.STATUS, statusFilter);
 
       const { data, error, count } = await query;
 
@@ -98,7 +98,7 @@ function OrderList() {
     setDateFrom('');
     setDateTo('');
     setCustomerFilter('');
-    setStatusFilter('');
+    setStatusFilter([]);
     setCurrentPage(1);
   };
 
@@ -117,7 +117,7 @@ function OrderList() {
     if (dateFrom) count++;
     if (dateTo) count++;
     if (customerFilter) count++;
-    if (statusFilter) count++;
+    if (statusFilter.length > 0) count++;
     return count;
   };
 

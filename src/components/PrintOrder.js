@@ -333,12 +333,12 @@ const PrintOrder = React.forwardRef(({ order }, ref) => {
           <div>&nbsp;</div>
           <div className="title">Nhân viên bán hàng</div>
           <div className="subtitle">(Ký, họ tên)</div>
+          <div className="sign-space"></div>
           {order[OrderFields.CREATED_BY] && (
             <div className="subtitle" style={{ fontStyle: 'normal', marginTop: '8px' }}>
               {order[OrderFields.CREATED_BY]}
             </div>
           )}
-          <div className="sign-space"></div>
         </div>
         <div className="sign-col">
           <div className="title">Ngày {formatDate(order[OrderFields.CREATED_DATE])}</div>

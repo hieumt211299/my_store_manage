@@ -16,6 +16,11 @@ export const getDateRanges = () => {
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   
   return {
+    today:{
+       startDate : today,
+       endDate : new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999),
+
+    },
     last7Days: {
       startDate: new Date(today.getTime() - 6 * 24 * 60 * 60 * 1000),
       endDate: new Date(today.getTime() + 24 * 60 * 60 * 1000 - 1)
@@ -41,7 +46,11 @@ export const getDateRanges = () => {
 
 // Format date for SQL queries
 export const formatDateForSQL = (date) => {
-  return date.toISOString().split('T')[0];
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
 };
 
 // Format date for display
@@ -249,6 +258,17 @@ export const groupProductSalesData = (orderItems) => {
 
 // Get time period options for filters
 export const getTimePeriodOptions = () => [
+  {
+    key: 'today',
+    label: 'Hôm nay',
+    getValue: () => {
+      const now = new Date();
+      const startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+
+      return { startDate, endDate };
+    }
+  },
   {
     key: 'last7days',
     label: '7 ngày qua',

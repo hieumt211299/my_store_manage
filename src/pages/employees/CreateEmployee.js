@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import Loading from '../../components/Loading';
 import PageHeader from '../../components/PageHeader';
 import { useNotification } from '../../contexts/NotificationContext';
 import {
@@ -348,11 +347,14 @@ function CreateEmployee() {
           <button
             type="submit"
             disabled={saving}
-            className="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-6 py-2 rounded-md text-sm font-medium flex items-center space-x-2"
+            className="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-6 py-2 rounded-md text-sm font-medium flex items-center space-x-2 min-w-[140px] justify-center"
           >
             {saving ? (
               <>
-                <Loading size="sm" />
+                <div
+                  className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
+                  aria-hidden="true"
+                />
                 <span>Đang lưu...</span>
               </>
             ) : (

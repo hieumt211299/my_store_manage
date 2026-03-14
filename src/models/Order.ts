@@ -18,6 +18,12 @@ export const OrderStatusLabels: Record<OrderStatusValue, string> = {
   [OrderStatus.STORE_HOLDS]: 'Cửa hàng giữ phiếu',
 };
 
+export const OrderStatusOptions = Object.entries(OrderStatusLabels).map(([value, label]) => ({
+  value,
+  label,
+  keywords: label,
+}));
+
 export const OrderStatusBadgeColors: Record<OrderStatusValue, string> = {
   [OrderStatus.RECEIVED]: 'bg-green-100 text-green-800',
   [OrderStatus.CUSTOMER_HOLDS]: 'bg-yellow-100 text-yellow-800',
