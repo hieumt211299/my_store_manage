@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 
 const NotificationContext = createContext();
 
@@ -20,7 +20,15 @@ export const NotificationProvider = ({ children }) => {
     };
   }, []);
 
-  const addNotification = (message, type = 'info', duration = 5000) => {
+  const removeNotification = useCallback((id) => {
+    if (timerIdsRef.current[id]) {
+      clearTimeout(timerIdsRef.current[id]);
+      delete timerIdsRef.current[id];
+    }
+    setNotifications(prev => prev.filter(notification => notification.id !== id));
+  }, []);
+
+  const addNotification = useCallback((message, type = 'info', duration = 5000) => {
     const id = Date.now() + Math.random();
     const notification = {
       id,
@@ -40,21 +48,13 @@ export const NotificationProvider = ({ children }) => {
     }
 
     return id;
-  };
+  }, [removeNotification]);
 
-  const removeNotification = (id) => {
-    if (timerIdsRef.current[id]) {
-      clearTimeout(timerIdsRef.current[id]);
-      delete timerIdsRef.current[id];
-    }
-    setNotifications(prev => prev.filter(notification => notification.id !== id));
-  };
-
-  const clearAllNotifications = () => {
+  const clearAllNotifications = useCallback(() => {
     Object.values(timerIdsRef.current).forEach(timerId => clearTimeout(timerId));
     timerIdsRef.current = {};
     setNotifications([]);
-  };
+  }, []);
 
   return (
     <NotificationContext.Provider

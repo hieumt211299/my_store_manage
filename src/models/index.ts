@@ -3,8 +3,20 @@ export { CustomerFields, createDefaultCustomerForm, mapCustomerRowToForm, buildC
 export { ProductFields, buildProductInsertPayload } from './Product';
 export { OrderItemFields, createOrderItemFromProduct, buildOrderItemsPayload } from './OrderItem';
 export {
+  OrderResaleItemFields,
+  createOrderResaleItemFromOrderItem,
+  updateOrderResaleItemSubtotal,
+  buildOrderResaleItemsPayload,
+} from './OrderResaleItem';
+export {
+  ImportOrderResaleItemFields,
+  createImportOrderResaleItemFromImportItem,
+  updateImportOrderResaleItemSubtotal,
+  buildImportOrderResaleItemsPayload,
+} from './ImportOrderResaleItem';
+export {
   OrderFields,
-  OrderStatus, OrderStatusLabels, OrderStatusBadgeColors, OrderStatusChartColors,
+  OrderStatus, OrderStatusLabels, OrderStatusOptions, OrderStatusBadgeColors, OrderStatusChartColors,
   PaymentMethod, PaymentMethodLabels, PaymentMethodBadgeColors,
   CustomerType, CustomerTypeLabels, CustomerTypeBadgeColors,
   CustomerDiscoverySource, CustomerDiscoverySourceLabels, CustomerDiscoverySourceOptions,
@@ -16,6 +28,12 @@ export {
   getCustomerDiscoverySourceLabel,
   getOrderTypeLabel, getOrderTypeBadgeColor,
 } from './Order';
+export {
+  OrderResaleFields,
+  OrderResaleStatus, OrderResaleStatusLabels, OrderResaleStatusBadgeColors,
+  createOrderResaleFormFromOrder, calculateOrderResaleTotal, buildOrderResaleInsertPayload,
+  getOrderResaleStatusDisplay, getOrderResaleStatusBadgeColor,
+} from './OrderResale';
 export { ImportItemFields, createImportItemFromProduct, buildImportItemsPayload, mapImportItemRowToForm, updateImportItemSubtotal, calculateImportTotal } from './ImportItem';
 export {
   ImportOrderFields,
@@ -25,6 +43,12 @@ export {
   getImportStatusDisplay, getImportStatusBadgeColor,
   getImportSourceTypeLabel, getImportSourceTypeBadgeColor,
 } from './ImportOrder';
+export {
+  ImportOrderResaleFields,
+  ImportOrderResaleStatus, ImportOrderResaleStatusLabels, ImportOrderResaleStatusBadgeColors,
+  createImportOrderResaleFormFromImportOrder, calculateImportOrderResaleTotal, buildImportOrderResaleInsertPayload,
+  getImportOrderResaleStatusDisplay, getImportOrderResaleStatusBadgeColor,
+} from './ImportOrderResale';
 export {
   EmployeeFields,
   EmployeeRole, EmployeeRoleLabels, EmployeeRoleBadgeColors,
@@ -37,6 +61,8 @@ export {
 export type { Customer, CustomerForm } from './Customer';
 export type { Product } from './Product';
 export type { OrderItem, OrderItemForm } from './OrderItem';
+export type { OrderResaleItem, OrderResaleItemForm } from './OrderResaleItem';
+export type { ImportOrderResaleItem, ImportOrderResaleItemForm } from './ImportOrderResaleItem';
 export type {
   Order,
   OrderForm,
@@ -46,8 +72,10 @@ export type {
   CustomerDiscoverySourceValue,
   OrderTypeValue,
 } from './Order';
+export type { OrderResale, OrderResaleForm, OrderResaleStatusValue } from './OrderResale';
 export type { ImportItem, ImportItemForm } from './ImportItem';
 export type { ImportOrder, ImportOrderForm, ImportOrderStatusValue, ImportOrderSourceTypeValue } from './ImportOrder';
+export type { ImportOrderResale, ImportOrderResaleForm, ImportOrderResaleStatusValue } from './ImportOrderResale';
 export type { Employee, EmployeeForm, EmployeeRoleValue, EmployeeStatusValue } from './Employee';
 
 // ── Shared constants ─────────────────────────
@@ -57,4 +85,21 @@ export { Tables, StorageBuckets } from './constants';
 export { formatCurrency, formatDate, formatDateTime } from './formatters';
 
 // ── Query fragments ──────────────────────────
-export { OrderSelectWithItems, OrderSelectWithCustomerAndItems, ProductSalesSelect, ImportOrderSelectWithItems, ImportItemSelectWithProductAndOrder } from './queries';
+export {
+  OrderSelectWithItems,
+  OrderSelectWithCustomerAndItems,
+  ProductSalesSelect,
+  RevenueOrderSelect,
+  RevenueImportOrderSelect,
+  RevenueOrderResaleSelect,
+  RevenueImportOrderResaleSelect,
+  DueSoonOrderSelect,
+  DueSoonImportOrderSelect,
+  ImportOrderSelectWithItems,
+  ImportItemSelectWithProductAndOrder,
+  ImportOrderSelectForAnalytics,
+  OrderResaleSelectWithItems,
+  OrderResaleSelectSummary,
+  ImportOrderResaleSelectWithItems,
+  ImportOrderResaleSelectSummary,
+} from './queries';

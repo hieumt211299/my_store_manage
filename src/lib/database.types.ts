@@ -109,6 +109,228 @@ export type Database = {
           },
         ]
       }
+      order_resale_items: {
+        Row: {
+          created_at: string | null
+          id: number
+          order_item_id: number
+          order_resale_id: number
+          product_id: number
+          quantity: number
+          resale_price: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          order_item_id: number
+          order_resale_id: number
+          product_id: number
+          quantity: number
+          resale_price: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          order_item_id?: number
+          order_resale_id?: number
+          product_id?: number
+          quantity?: number
+          resale_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_resale_items_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_resale_items_order_resale_id_fkey"
+            columns: ["order_resale_id"]
+            isOneToOne: false
+            referencedRelation: "order_resales"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_resale_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_resales: {
+        Row: {
+          bank_account_holder: string
+          bank_account_number: string
+          bank_name: string
+          created_at: string | null
+          created_by: string | null
+          customer_id_number: string
+          customer_name: string
+          customer_phone: string
+          expected_payment_date: string
+          id: number
+          order_id: number
+          paid_at: string | null
+          resale_date: string
+          status: string
+          total_amount: number
+          updated_at: string | null
+        }
+        Insert: {
+          bank_account_holder: string
+          bank_account_number: string
+          bank_name: string
+          created_at?: string | null
+          created_by?: string | null
+          customer_id_number: string
+          customer_name: string
+          customer_phone: string
+          expected_payment_date: string
+          id?: number
+          order_id: number
+          paid_at?: string | null
+          resale_date?: string
+          status?: string
+          total_amount?: number
+          updated_at?: string | null
+        }
+        Update: {
+          bank_account_holder?: string
+          bank_account_number?: string
+          bank_name?: string
+          created_at?: string | null
+          created_by?: string | null
+          customer_id_number?: string
+          customer_name?: string
+          customer_phone?: string
+          expected_payment_date?: string
+          id?: number
+          order_id?: number
+          paid_at?: string | null
+          resale_date?: string
+          status?: string
+          total_amount?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_resales_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      import_order_resale_items: {
+        Row: {
+          created_at: string | null
+          id: number
+          import_item_id: number
+          import_order_resale_id: number
+          product_id: number
+          quantity: number
+          resale_price: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          import_item_id: number
+          import_order_resale_id: number
+          product_id: number
+          quantity: number
+          resale_price: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          import_item_id?: number
+          import_order_resale_id?: number
+          product_id?: number
+          quantity?: number
+          resale_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_order_resale_items_import_item_id_fkey"
+            columns: ["import_item_id"]
+            isOneToOne: false
+            referencedRelation: "import_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "import_order_resale_items_import_order_resale_id_fkey"
+            columns: ["import_order_resale_id"]
+            isOneToOne: false
+            referencedRelation: "import_order_resales"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "import_order_resale_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      import_order_resales: {
+        Row: {
+          ancarat_cashier_name: string | null
+          ancarat_invoice_number: string | null
+          created_at: string | null
+          created_by: string | null
+          expected_received_date: string
+          id: number
+          import_order_id: number
+          received_at: string | null
+          resale_date: string
+          status: string
+          total_amount: number
+          updated_at: string | null
+        }
+        Insert: {
+          ancarat_cashier_name?: string | null
+          ancarat_invoice_number?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          expected_received_date: string
+          id?: number
+          import_order_id: number
+          received_at?: string | null
+          resale_date?: string
+          status?: string
+          total_amount?: number
+          updated_at?: string | null
+        }
+        Update: {
+          ancarat_cashier_name?: string | null
+          ancarat_invoice_number?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          expected_received_date?: string
+          id?: number
+          import_order_id?: number
+          received_at?: string | null
+          resale_date?: string
+          status?: string
+          total_amount?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_order_resales_import_order_id_fkey"
+            columns: ["import_order_id"]
+            isOneToOne: true
+            referencedRelation: "import_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           created_at: string | null
@@ -192,28 +414,43 @@ export type Database = {
       }
       products: {
         Row: {
+          available_quantity: number
           created_at: string | null
           deleted_at: string | null
           id: number
           image_url: string | null
+          incoming_quantity: number
           name: string
+          reserved_quantity: number
           sku: string
+          stock_quantity: number
+          average_price: number | null
         }
         Insert: {
+          available_quantity?: number
+          average_price?: number | null
           created_at?: string | null
           deleted_at?: string | null
           id?: number
           image_url?: string | null
+          incoming_quantity?: number
           name: string
+          reserved_quantity?: number
           sku: string
+          stock_quantity?: number
         }
         Update: {
+          available_quantity?: number
+          average_price?: number | null
           created_at?: string | null
           deleted_at?: string | null
           id?: number
           image_url?: string | null
+          incoming_quantity?: number
           name?: string
+          reserved_quantity?: number
           sku?: string
+          stock_quantity?: number
         }
         Relationships: []
       }

@@ -5,6 +5,7 @@ import type { ImportItem, ImportItemForm } from './ImportItem.ts';
 export const ImportOrderStatus = {
   PENDING: 'pending',
   COMPLETED: 'completed',
+  RESOLD_TO_ANCARAT: 'resold_to_ancarat',
 } as const;
 
 export type ImportOrderStatusValue = (typeof ImportOrderStatus)[keyof typeof ImportOrderStatus];
@@ -12,11 +13,13 @@ export type ImportOrderStatusValue = (typeof ImportOrderStatus)[keyof typeof Imp
 export const ImportOrderStatusLabels: Record<ImportOrderStatusValue, string> = {
   [ImportOrderStatus.PENDING]: 'Chưa hoàn thành',
   [ImportOrderStatus.COMPLETED]: 'Đã hoàn thành',
+  [ImportOrderStatus.RESOLD_TO_ANCARAT]: 'Đã bán lại cho Ancarat',
 };
 
 export const ImportOrderStatusBadgeColors: Record<ImportOrderStatusValue, string> = {
   [ImportOrderStatus.PENDING]: 'bg-yellow-100 text-yellow-800',
   [ImportOrderStatus.COMPLETED]: 'bg-green-100 text-green-800',
+  [ImportOrderStatus.RESOLD_TO_ANCARAT]: 'bg-purple-100 text-purple-800',
 };
 
 export const ImportOrderSourceType = {

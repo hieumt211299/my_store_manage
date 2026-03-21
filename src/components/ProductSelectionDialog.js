@@ -99,12 +99,15 @@ function ProductSelectionDialog({
                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Hình ảnh</th>
                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Sản phẩm</th>
                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">SKU</th>
+                  <th className="px-4 py-2 text-center text-sm font-medium text-gray-700">Chờ nhập</th>
+                  <th className="px-4 py-2 text-center text-sm font-medium text-gray-700">Đang giữ</th>
+                  <th className="px-4 py-2 text-center text-sm font-medium text-gray-700">Có tại cửa hàng</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredProducts.length === 0 ? (
                   <tr>
-                    <td colSpan="4" className="px-4 py-8 text-center text-gray-500">
+                    <td colSpan="7" className="px-4 py-8 text-center text-gray-500">
                       {searchTerm ? 'Không tìm thấy sản phẩm nào phù hợp' : 'Chưa có sản phẩm nào'}
                     </td>
                   </tr>
@@ -151,6 +154,15 @@ function ProductSelectionDialog({
                         </td>
                         <td className="px-4 py-2 font-medium">{product.name}</td>
                         <td className="px-4 py-2 text-gray-600">{product.sku}</td>
+                        <td className="px-4 py-2 text-center text-amber-600">
+                          {product[ProductFields.INCOMING_QUANTITY] || 0}
+                        </td>
+                        <td className="px-4 py-2 text-center text-blue-600">
+                          {product[ProductFields.RESERVED_QUANTITY] || 0}
+                        </td>
+                        <td className="px-4 py-2 text-center font-medium text-gray-700">
+                          {product[ProductFields.AVAILABLE_QUANTITY] || 0}
+                        </td>
                       </tr>
                     );
                   })

@@ -12,6 +12,7 @@ import {
 
 function ImportInfoCard({ importOrder, statusLoading, onUpdateStatus }) {
   const canChangeStatus = importOrder[ImportOrderFields.STATUS] === ImportOrderStatus.PENDING;
+  const isLockedStatus = importOrder[ImportOrderFields.STATUS] === ImportOrderStatus.RESOLD_TO_ANCARAT;
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
@@ -21,7 +22,7 @@ function ImportInfoCard({ importOrder, statusLoading, onUpdateStatus }) {
           <StatusBadge color={getImportStatusBadgeColor(importOrder[ImportOrderFields.STATUS])}>
             {getImportStatusDisplay(importOrder[ImportOrderFields.STATUS])}
           </StatusBadge>
-          {canChangeStatus && (
+          {canChangeStatus && !isLockedStatus && (
             <button
               onClick={() => onUpdateStatus(ImportOrderStatus.COMPLETED)}
               disabled={statusLoading}
@@ -32,6 +33,12 @@ function ImportInfoCard({ importOrder, statusLoading, onUpdateStatus }) {
           )}
         </div>
       </div>
+
+      {isLockedStatus && (
+        <div className="mb-4 rounded-lg border border-purple-200 bg-purple-50 px-4 py-3 text-sm text-purple-800">
+          Đơn nhập này đã được bán lại cho Ancarat và không thể cập nhật trạng thái thêm.
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Basic Info */}

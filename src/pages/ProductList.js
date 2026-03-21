@@ -35,6 +35,9 @@ function ProductList() {
           ${ProductFields.IMAGE_URL},
           ${ProductFields.CREATED_AT},
           ${ProductFields.DELETED_AT},
+          ${ProductFields.INCOMING_QUANTITY},
+          ${ProductFields.RESERVED_QUANTITY},
+          ${ProductFields.AVAILABLE_QUANTITY},
           ${ProductFields.STOCK_QUANTITY},
           ${ProductFields.AVERAGE_PRICE}
         `)
@@ -377,8 +380,22 @@ function ProductList() {
                 
                 <div className="mt-3 space-y-1">
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-600">Số lượng:</span>
-                    <span className="font-medium">{product[ProductFields.STOCK_QUANTITY] || 0}</span>
+                    <span className="text-gray-600">Chờ nhập:</span>
+                    <span className="font-medium text-amber-600">
+                      {product[ProductFields.INCOMING_QUANTITY] || 0}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-600">Đang giữ:</span>
+                    <span className="font-medium text-blue-600">
+                      {product[ProductFields.RESERVED_QUANTITY] || 0}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-600">Có tại cửa hàng:</span>
+                    <span className="font-medium">
+                      {product[ProductFields.AVAILABLE_QUANTITY] || 0}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-gray-600">Giá trung bình:</span>

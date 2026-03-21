@@ -11,13 +11,16 @@ import {
   FaSignOutAlt,
   FaChevronRight,
   FaWarehouse,
-  FaUserTie
+  FaUserTie,
+  FaExchangeAlt
 } from 'react-icons/fa';
 
 const menuItems = [
   { path: '/products', label: 'Sản phẩm', icon: FaBoxOpen },
   { path: '/imports', label: 'Nhập kho', icon: FaWarehouse },
+  { path: '/import-order-resales', label: 'Bán lại Ancarat', icon: FaExchangeAlt },
   { path: '/orders', label: 'Đơn hàng', icon: FaShoppingCart },
+  { path: '/order-resales', label: 'Khách bán lại', icon: FaExchangeAlt },
   { path: '/customers', label: 'Khách hàng', icon: FaUsers },
   { path: '/employees', label: 'Nhân viên', icon: FaUserTie },
   { 
@@ -26,8 +29,7 @@ const menuItems = [
     icon: FaChartBar,
     submenu: [
       { path: '/reports/revenue', label: 'Báo cáo doanh thu' },
-      { path: '/reports/products', label: 'Báo cáo sản phẩm' },
-      {path: '/reports/imports', label: 'Báo cáo nhập hàng' }
+      { path: '/reports/due-soon', label: 'Sắp tới hạn' }
     ]
   },
   { path: '/settings', label: 'Cài đặt', icon: FaCog },

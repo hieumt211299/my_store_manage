@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import DropdownMultiSelect from '../../../components/DropdownMultiSelect';
 import { supabase } from '../../../lib/supabase';
 import {
   Tables,
   CustomerFields,
-  OrderStatus,
+  OrderStatusOptions,
   getStatusDisplay,
 } from '../../../models';
 
@@ -147,16 +148,14 @@ function OrderListFilters({
               {/* Status Filter */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">📝 Trạng thái</label>
-                <select
-                  value={statusFilter}
-                  onChange={(e) => onStatusFilterChange(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Tất cả trạng thái</option>
-                  <option value={OrderStatus.STORE_HOLDS}>{getStatusDisplay(OrderStatus.STORE_HOLDS)}</option>
-                  <option value={OrderStatus.CUSTOMER_HOLDS}>{getStatusDisplay(OrderStatus.CUSTOMER_HOLDS)}</option>
-                  <option value={OrderStatus.RECEIVED}>{getStatusDisplay(OrderStatus.RECEIVED)}</option>
-                </select>
+                <DropdownMultiSelect
+                  values={statusFilter}
+                  onChange={onStatusFilterChange}
+                  options={OrderStatusOptions}
+                  placeholder="Chọn một hoặc nhiều trạng thái"
+                  searchPlaceholder="Tìm trạng thái..."
+                  emptyText="Không tìm thấy trạng thái"
+                />
               </div>
 
               {/* Customer Filter */}
@@ -255,11 +254,11 @@ function OrderListFilters({
               KH: {selectedCustomerName}
             </span>
           )}
-          {statusFilter && (
-            <span className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">
-              TT: {getStatusDisplay(statusFilter)}
+          {statusFilter.map((status) => (
+            <span key={status} className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">
+              TT: {getStatusDisplay(status)}
             </span>
-          )}
+          ))}
           <button onClick={handleClearAll} className="text-xs text-gray-500 hover:text-gray-700 ml-2">
             ✕ Xóa bộ lọc
           </button>

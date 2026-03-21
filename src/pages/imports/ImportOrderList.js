@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import Loading from '../../components/Loading';
 import PageHeader from '../../components/PageHeader';
@@ -20,26 +20,27 @@ import {
 
 function ImportOrderList() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [imports, setImports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
-  const [searchId, setSearchId] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+  const [searchId, setSearchId] = useState(searchParams.get('search') || '');
+  const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page')) || 1);
   const [totalImports, setTotalImports] = useState(0);
   const [itemsPerPage] = useState(10);
   
-  // Filter states
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
-  const [sourceFilter, setSourceFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  // Filter states - initialize from URL params
+  const [dateFrom, setDateFrom] = useState(searchParams.get('dateFrom') || '');
+  const [dateTo, setDateTo] = useState(searchParams.get('dateTo') || '');
+  const [sourceFilter, setSourceFilter] = useState(searchParams.get('source') || '');
+  const [statusFilter, setStatusFilter] = useState(searchParams.getAll('status') || []);
   
   // Sorting states
-  const [sortBy, setSortBy] = useState('created_at');
-  const [sortOrder, setSortOrder] = useState('desc');
+  const [sortBy, setSortBy] = useState(searchParams.get('sortBy') || 'created_at');
+  const [sortOrder, setSortOrder] = useState(searchParams.get('sortOrder') || 'desc');
   
   // Debounced search ID
-  const [debouncedSearchId, setDebouncedSearchId] = useState('');
+  const [debouncedSearchId, setDebouncedSearchId] = useState(searchParams.get('search') || '');
 
   // Fetch imports from database with pagination and search
   const fetchImports = useCallback(async () => {
@@ -70,7 +71,7 @@ function ImportOrderList() {
       if (dateFrom) query = query.gte(ImportOrderFields.IMPORT_DATE, dateFrom);
       if (dateTo) query = query.lte(ImportOrderFields.IMPORT_DATE, dateTo);
       if (sourceFilter) query = query.eq(ImportOrderFields.SOURCE_TYPE, sourceFilter);
-      if (statusFilter) query = query.eq(ImportOrderFields.STATUS, statusFilter);
+      if (statusFilter.length > 0) query = query.in(ImportOrderFields.STATUS, statusFilter);
 
       const { data, error, count } = await query;
 
@@ -84,6 +85,26 @@ function ImportOrderList() {
       setLoading(false);
     }
   }, [currentPage, debouncedSearchId, itemsPerPage, dateFrom, dateTo, sourceFilter, statusFilter, sortBy, sortOrder]);
+
+  // Update URL when state changes
+  useEffect(() => {
+    const params = new URLSearchParams();
+    
+    if (debouncedSearchId) params.set('search', debouncedSearchId);
+    if (currentPage > 1) params.set('page', currentPage.toString());
+    if (dateFrom) params.set('dateFrom', dateFrom);
+    if (dateTo) params.set('dateTo', dateTo);
+    if (sourceFilter) params.set('source', sourceFilter);
+    if (statusFilter.length > 0) statusFilter.forEach((status) => params.append('status', status));
+    if (sortBy !== 'created_at') params.set('sortBy', sortBy);
+    if (sortOrder !== 'desc') params.set('sortOrder', sortOrder);
+
+    const newSearch = params.toString();
+    const currentSearch = searchParams.toString();
+    if (newSearch !== currentSearch) {
+      setSearchParams(params, { replace: true });
+    }
+  }, [debouncedSearchId, currentPage, dateFrom, dateTo, sourceFilter, statusFilter, sortBy, sortOrder, searchParams, setSearchParams]);
 
   useEffect(() => {
     fetchImports();
@@ -106,7 +127,7 @@ function ImportOrderList() {
     setDateFrom('');
     setDateTo('');
     setSourceFilter('');
-    setStatusFilter('');
+    setStatusFilter([]);
     setCurrentPage(1);
   };
 
@@ -120,6 +141,14 @@ function ImportOrderList() {
     setCurrentPage(1);
   };
 
+  const handleLinkClick = (e, importId) => {
+    if (e.metaKey || e.ctrlKey || e.button === 1) {
+      return;
+    }
+    e.preventDefault();
+    navigate(`/imports/${importId}`);
+  };
+
   // Handle page change
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
@@ -127,10 +156,7 @@ function ImportOrderList() {
     }
   };
 
-  // Navigate to import detail
-  const handleImportClick = (importId) => {
-    navigate(`/imports/${importId}`);
-  };
+
 
   // Count active filters
   const getActiveFiltersCount = () => {
@@ -138,7 +164,7 @@ function ImportOrderList() {
     if (dateFrom) count++;
     if (dateTo) count++;
     if (sourceFilter) count++;
-    if (statusFilter) count++;
+    if (statusFilter.length > 0) count++;
     return count;
   };
 
@@ -235,50 +261,37 @@ function ImportOrderList() {
               </th>
               <th
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                onClick={() => handleSort('expected_return_date')}
+                onClick={() => handleSort(ImportOrderFields.EXPECTED_RETURN_DATE)}
               >
                 <div className="flex items-center space-x-1">
                   <span>Ngày dự kiến trả</span>
-                  <div className="flex flex-col">
-                    <svg
-                      className={`w-3 h-3 ${
-                        sortBy === 'expected_return_date' && sortOrder === 'asc' 
-                          ? 'text-blue-600' 
-                          : 'text-gray-400'
-                      }`}
-                      fill="currentColor"
-                      viewBox="0 0 12 12"
-                    >
-                      <path d="M6 4l4 4H2z" transform="rotate(180 6 6)" />
-                    </svg>
-                    <svg
-                      className={`w-3 h-3 ${
-                        sortBy === 'expected_return_date' && sortOrder === 'desc' 
-                          ? 'text-blue-600' 
-                          : 'text-gray-400'
-                      }`}
-                      fill="currentColor"
-                      viewBox="0 0 12 12"
-                    >
-                      <path d="M6 4l4 4H2z" />
-                    </svg>
-                  </div>
+                  {sortBy === ImportOrderFields.EXPECTED_RETURN_DATE && (
+                    <span className="text-blue-600">{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                  )}
+                </div>
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onClick={() => handleSort(ImportOrderFields.TOTAL_AMOUNT)}>
+                <div className="flex items-center space-x-1">
+                  <span>Tổng tiền</span>
+                  {sortBy === ImportOrderFields.TOTAL_AMOUNT && (
+                    <span className="text-blue-600">{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                  )}
                 </div>
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Tổng tiền
+                Trạng thái
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Trạng thái
+                Người tạo
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {loading ? (
-              <Loading type="table" message="Đang tải đơn nhập..." colSpan="6" />
+              <Loading type="table" message="Đang tải đơn nhập..." colSpan="7" />
             ) : imports.length === 0 ? (
               <tr>
-                <td colSpan="6" className="px-6 py-12 text-center">
+                <td colSpan="7" className="px-6 py-12 text-center">
                   <div className="text-gray-500">
                     {searchId ? 'Không tìm thấy đơn nhập' : 'Chưa có đơn nhập nào'}
                   </div>
@@ -294,39 +307,80 @@ function ImportOrderList() {
               </tr>
             ) : (
               imports.map((importOrder) => (
-                <tr
-                  key={importOrder[ImportOrderFields.ID]}
-                  onClick={() => handleImportClick(importOrder[ImportOrderFields.ID])}
-                  className="hover:bg-gray-50 cursor-pointer transition-colors"
-                >
+                <tr key={importOrder[ImportOrderFields.ID]} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    #{importOrder[ImportOrderFields.ID]}
+                    <Link 
+                      to={`/imports/${importOrder[ImportOrderFields.ID]}`}
+                      onClick={(e) => handleLinkClick(e, importOrder[ImportOrderFields.ID])}
+                      className="text-gray-900 hover:text-blue-600"
+                    >
+                      #{importOrder[ImportOrderFields.ID]}
+                    </Link>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      ImportOrderSourceTypeBadgeColors[importOrder[ImportOrderFields.SOURCE_TYPE]] || 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {ImportOrderSourceTypeLabels[importOrder[ImportOrderFields.SOURCE_TYPE]] || importOrder[ImportOrderFields.SOURCE_TYPE]}
-                    </span>
+                    <Link 
+                      to={`/imports/${importOrder[ImportOrderFields.ID]}`}
+                      onClick={(e) => handleLinkClick(e, importOrder[ImportOrderFields.ID])}
+                      className="block"
+                    >
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        ImportOrderSourceTypeBadgeColors[importOrder[ImportOrderFields.SOURCE_TYPE]] || 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {ImportOrderSourceTypeLabels[importOrder[ImportOrderFields.SOURCE_TYPE]] || importOrder[ImportOrderFields.SOURCE_TYPE]}
+                      </span>
+                    </Link>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {formatDate(importOrder[ImportOrderFields.IMPORT_DATE])}
+                    <Link 
+                      to={`/imports/${importOrder[ImportOrderFields.ID]}`}
+                      onClick={(e) => handleLinkClick(e, importOrder[ImportOrderFields.ID])}
+                      className="text-gray-900 hover:text-blue-600"
+                    >
+                      {formatDate(importOrder[ImportOrderFields.IMPORT_DATE])}
+                    </Link>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {importOrder[ImportOrderFields.EXPECTED_RETURN_DATE] 
-                      ? formatDate(importOrder[ImportOrderFields.EXPECTED_RETURN_DATE])
-                      : 'N/A'
-                    }
+                    <Link 
+                      to={`/imports/${importOrder[ImportOrderFields.ID]}`}
+                      onClick={(e) => handleLinkClick(e, importOrder[ImportOrderFields.ID])}
+                      className="text-gray-900 hover:text-blue-600"
+                    >
+                      {importOrder[ImportOrderFields.EXPECTED_RETURN_DATE] 
+                        ? formatDate(importOrder[ImportOrderFields.EXPECTED_RETURN_DATE])
+                        : 'N/A'
+                      }
+                    </Link>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600">
-                    {formatCurrency(importOrder[ImportOrderFields.TOTAL_AMOUNT])}
+                    <Link 
+                      to={`/imports/${importOrder[ImportOrderFields.ID]}`}
+                      onClick={(e) => handleLinkClick(e, importOrder[ImportOrderFields.ID])}
+                      className="text-green-600 hover:text-green-800"
+                    >
+                      {formatCurrency(importOrder[ImportOrderFields.TOTAL_AMOUNT])}
+                    </Link>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      getImportStatusBadgeColor(importOrder[ImportOrderFields.STATUS])
-                    }`}>
-                      {getImportStatusDisplay(importOrder[ImportOrderFields.STATUS])}
-                    </span>
+                    <Link 
+                      to={`/imports/${importOrder[ImportOrderFields.ID]}`}
+                      onClick={(e) => handleLinkClick(e, importOrder[ImportOrderFields.ID])}
+                      className="block"
+                    >
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        getImportStatusBadgeColor(importOrder[ImportOrderFields.STATUS])
+                      }`}>
+                        {getImportStatusDisplay(importOrder[ImportOrderFields.STATUS])}
+                      </span>
+                    </Link>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <Link 
+                      to={`/imports/${importOrder[ImportOrderFields.ID]}`}
+                      onClick={(e) => handleLinkClick(e, importOrder[ImportOrderFields.ID])}
+                      className="block text-gray-900 hover:text-blue-600"
+                    >
+                      <div className="text-sm">{importOrder[ImportOrderFields.CREATED_BY] || 'N/A'}</div>
+                    </Link>
                   </td>
                 </tr>
               ))

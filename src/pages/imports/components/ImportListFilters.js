@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import DropdownMultiSelect from '../../../components/DropdownMultiSelect';
 import {
   ImportOrderStatus,
   ImportOrderSourceType,
@@ -101,19 +102,18 @@ function ImportListFilters({
             {/* Status Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">📝 Trạng thái</label>
-              <select
-                value={statusFilter}
-                onChange={(e) => onStatusFilterChange(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Tất cả trạng thái</option>
-                <option value={ImportOrderStatus.PENDING}>
-                  {getImportStatusDisplay(ImportOrderStatus.PENDING)}
-                </option>
-                <option value={ImportOrderStatus.COMPLETED}>
-                  {getImportStatusDisplay(ImportOrderStatus.COMPLETED)}
-                </option>
-              </select>
+              <DropdownMultiSelect
+                values={statusFilter}
+                onChange={onStatusFilterChange}
+                options={[
+                  { value: ImportOrderStatus.PENDING, label: getImportStatusDisplay(ImportOrderStatus.PENDING) },
+                  { value: ImportOrderStatus.COMPLETED, label: getImportStatusDisplay(ImportOrderStatus.COMPLETED) },
+                  { value: ImportOrderStatus.RESOLD_TO_ANCARAT, label: getImportStatusDisplay(ImportOrderStatus.RESOLD_TO_ANCARAT) },
+                ]}
+                placeholder="Chọn một hoặc nhiều trạng thái"
+                searchPlaceholder="Tìm trạng thái..."
+                emptyText="Không tìm thấy trạng thái"
+              />
             </div>
 
             {/* Actions */}
@@ -156,11 +156,11 @@ function ImportListFilters({
               Nguồn: {ImportOrderSourceTypeLabels[sourceFilter]}
             </span>
           )}
-          {statusFilter && (
-            <span className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">
-              TT: {getImportStatusDisplay(statusFilter)}
+          {statusFilter.map((status) => (
+            <span key={status} className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">
+              TT: {getImportStatusDisplay(status)}
             </span>
-          )}
+          ))}
           <button onClick={handleClearAll} className="text-xs text-gray-500 hover:text-gray-700 ml-2">
             ✕ Xóa bộ lọc
           </button>

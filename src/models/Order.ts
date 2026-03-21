@@ -8,6 +8,7 @@ export const OrderStatus = {
   RECEIVED: 'received',
   CUSTOMER_HOLDS: 'customer_holds',
   STORE_HOLDS: 'store_holds',
+  RESOLD_TO_STORE: 'resold_to_store',
 } as const;
 
 export type OrderStatusValue = (typeof OrderStatus)[keyof typeof OrderStatus];
@@ -16,18 +17,27 @@ export const OrderStatusLabels: Record<OrderStatusValue, string> = {
   [OrderStatus.RECEIVED]: 'Đã nhận hàng',
   [OrderStatus.CUSTOMER_HOLDS]: 'Khách giữ phiếu',
   [OrderStatus.STORE_HOLDS]: 'Cửa hàng giữ phiếu',
+  [OrderStatus.RESOLD_TO_STORE]: 'Đã bán cho cửa hàng',
 };
+
+export const OrderStatusOptions = Object.entries(OrderStatusLabels).map(([value, label]) => ({
+  value,
+  label,
+  keywords: label,
+}));
 
 export const OrderStatusBadgeColors: Record<OrderStatusValue, string> = {
   [OrderStatus.RECEIVED]: 'bg-green-100 text-green-800',
   [OrderStatus.CUSTOMER_HOLDS]: 'bg-yellow-100 text-yellow-800',
   [OrderStatus.STORE_HOLDS]: 'bg-gray-100 text-gray-800',
+  [OrderStatus.RESOLD_TO_STORE]: 'bg-purple-100 text-purple-800',
 };
 
 export const OrderStatusChartColors: Record<OrderStatusValue, string> = {
   [OrderStatus.RECEIVED]: '#10B981',
   [OrderStatus.CUSTOMER_HOLDS]: '#F59E0B',
   [OrderStatus.STORE_HOLDS]: '#6B7280',
+  [OrderStatus.RESOLD_TO_STORE]: '#7C3AED',
 };
 
 export const PaymentMethod = {

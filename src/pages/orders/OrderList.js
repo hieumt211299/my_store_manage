@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import Loading from '../../components/Loading';
 import PageHeader from '../../components/PageHeader';
@@ -23,26 +23,27 @@ import {
 
 function OrderList() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
-  const [searchId, setSearchId] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+  const [searchId, setSearchId] = useState(searchParams.get('search') || '');
+  const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page')) || 1);
   const [totalOrders, setTotalOrders] = useState(0);
   const [itemsPerPage] = useState(10);
   
-  // Filter states
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
-  const [customerFilter, setCustomerFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  // Filter states - initialize from URL params
+  const [dateFrom, setDateFrom] = useState(searchParams.get('dateFrom') || '');
+  const [dateTo, setDateTo] = useState(searchParams.get('dateTo') || '');
+  const [customerFilter, setCustomerFilter] = useState(searchParams.get('customer') || '');
+  const [statusFilter, setStatusFilter] = useState(searchParams.getAll('status') || []);
   
   // Sorting states
-  const [sortBy, setSortBy] = useState('created_at');
-  const [sortOrder, setSortOrder] = useState('desc');
+  const [sortBy, setSortBy] = useState(searchParams.get('sortBy') || 'created_at');
+  const [sortOrder, setSortOrder] = useState(searchParams.get('sortOrder') || 'desc');
   
   // Debounced search ID
-  const [debouncedSearchId, setDebouncedSearchId] = useState('');
+  const [debouncedSearchId, setDebouncedSearchId] = useState(searchParams.get('search') || '');
 
   // Fetch orders from database with pagination and search
   const fetchOrders = useCallback(async () => {
@@ -62,7 +63,7 @@ function OrderList() {
       if (dateFrom) query = query.gte(OrderFields.CREATED_DATE, dateFrom);
       if (dateTo) query = query.lte(OrderFields.CREATED_DATE, dateTo);
       if (customerFilter) query = query.eq(OrderFields.CUSTOMER_ID, parseInt(customerFilter));
-      if (statusFilter) query = query.eq(OrderFields.STATUS, statusFilter);
+      if (statusFilter.length > 0) query = query.in(OrderFields.STATUS, statusFilter);
 
       const { data, error, count } = await query;
 
@@ -76,6 +77,29 @@ function OrderList() {
       setLoading(false);
     }
   }, [currentPage, debouncedSearchId, itemsPerPage, dateFrom, dateTo, customerFilter, statusFilter, sortBy, sortOrder]);
+
+  // Update URL when state changes
+  useEffect(() => {
+    const params = new URLSearchParams();
+    
+    if (debouncedSearchId) params.set('search', debouncedSearchId);
+    if (currentPage > 1) params.set('page', currentPage.toString());
+    if (dateFrom) params.set('dateFrom', dateFrom);
+    if (dateTo) params.set('dateTo', dateTo);
+    if (customerFilter) params.set('customer', customerFilter);
+    if (statusFilter.length > 0) {
+      statusFilter.forEach(status => params.append('status', status));
+    }
+    if (sortBy !== 'created_at') params.set('sortBy', sortBy);
+    if (sortOrder !== 'desc') params.set('sortOrder', sortOrder);
+
+    // Only update URL if params have changed
+    const newSearch = params.toString();
+    const currentSearch = searchParams.toString();
+    if (newSearch !== currentSearch) {
+      setSearchParams(params, { replace: true });
+    }
+  }, [debouncedSearchId, currentPage, dateFrom, dateTo, customerFilter, statusFilter, sortBy, sortOrder, searchParams, setSearchParams]);
 
   useEffect(() => {
     fetchOrders();
@@ -98,7 +122,7 @@ function OrderList() {
     setDateFrom('');
     setDateTo('');
     setCustomerFilter('');
-    setStatusFilter('');
+    setStatusFilter([]);
     setCurrentPage(1);
   };
 
@@ -112,12 +136,22 @@ function OrderList() {
     setCurrentPage(1);
   };
 
+  const handleLinkClick = (e, orderId) => {
+    // Allow default browser behavior for cmd+click, ctrl+click, middle click
+    if (e.metaKey || e.ctrlKey || e.button === 1) {
+      return;
+    }
+    // For normal clicks, prevent default and navigate
+    e.preventDefault();
+    navigate(`/orders/${orderId}`);
+  };
+
   const getActiveFiltersCount = () => {
     let count = 0;
     if (dateFrom) count++;
     if (dateTo) count++;
     if (customerFilter) count++;
-    if (statusFilter) count++;
+    if (statusFilter.length > 0) count++;
     return count;
   };
 
@@ -129,9 +163,7 @@ function OrderList() {
     if (page >= 1 && page <= totalPages) setCurrentPage(page);
   };
 
-  const handleOrderClick = (orderId) => {
-    navigate(`/orders/${orderId}`);
-  };
+
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -229,6 +261,9 @@ function OrderList() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
+            <Link>
+            
+            </Link>
             {loading ? (
               <Loading type="table" message="Đang tải đơn hàng..." colSpan="8" />
             ) : orders.length === 0 ? (
@@ -246,35 +281,87 @@ function OrderList() {
               </tr>
             ) : (
               orders.map((order) => (
-                <tr
-                  key={order[OrderFields.ID]}
-                  onClick={() => handleOrderClick(order[OrderFields.ID])}
-                  className="hover:bg-gray-50 cursor-pointer transition-colors"
-                >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{order[OrderFields.ID]}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {order.customers ? order.customers[CustomerFields.NAME] : order[OrderFields.CUSTOMER_NAME]}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {order.customers ? order.customers[CustomerFields.PHONE] : order[OrderFields.CUSTOMER_PHONE]}
-                    </div>
+                <tr key={order[OrderFields.ID]} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <Link 
+                      to={`/orders/${order[OrderFields.ID]}`}
+                      onClick={(e) => handleLinkClick(e, order[OrderFields.ID])}
+                      className="text-gray-900 hover:text-blue-600"
+                    >
+                      #{order[OrderFields.ID]}
+                    </Link>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <StatusBadge color={getOrderTypeBadgeColor(order[OrderFields.ORDER_TYPE])}>
-                      {getOrderTypeLabel(order[OrderFields.ORDER_TYPE])}
-                    </StatusBadge>
+                    <Link 
+                      to={`/orders/${order[OrderFields.ID]}`}
+                      onClick={(e) => handleLinkClick(e, order[OrderFields.ID])}
+                      className="block text-gray-900 hover:text-blue-600"
+                    >
+                      <div className="text-sm">
+                        {order.customers ? order.customers[CustomerFields.NAME] : order[OrderFields.CUSTOMER_NAME]}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {order.customers ? order.customers[CustomerFields.PHONE] : order[OrderFields.CUSTOMER_PHONE]}
+                      </div>
+                    </Link>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <StatusBadge color={getStatusBadgeColor(order[OrderFields.STATUS] || OrderStatus.STORE_HOLDS)}>
-                      {getStatusDisplay(order[OrderFields.STATUS] || OrderStatus.STORE_HOLDS)}
-                    </StatusBadge>
+                    <Link 
+                      to={`/orders/${order[OrderFields.ID]}`}
+                      onClick={(e) => handleLinkClick(e, order[OrderFields.ID])}
+                      className="block"
+                    >
+                      <StatusBadge color={getOrderTypeBadgeColor(order[OrderFields.ORDER_TYPE])}>
+                        {getOrderTypeLabel(order[OrderFields.ORDER_TYPE])}
+                      </StatusBadge>
+                    </Link>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatDate(order[OrderFields.CREATED_DATE])}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatDate(order[OrderFields.EXPECTED_DELIVERY_DATE])}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600">{formatCurrency(order[OrderFields.TOTAL_AMOUNT])}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{order[OrderFields.CREATED_BY] || 'N/A'}</div>
+                    <Link 
+                      to={`/orders/${order[OrderFields.ID]}`}
+                      onClick={(e) => handleLinkClick(e, order[OrderFields.ID])}
+                      className="block"
+                    >
+                      <StatusBadge color={getStatusBadgeColor(order[OrderFields.STATUS] || OrderStatus.STORE_HOLDS)}>
+                        {getStatusDisplay(order[OrderFields.STATUS] || OrderStatus.STORE_HOLDS)}
+                      </StatusBadge>
+                    </Link>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <Link 
+                      to={`/orders/${order[OrderFields.ID]}`}
+                      onClick={(e) => handleLinkClick(e, order[OrderFields.ID])}
+                      className="text-gray-900 hover:text-blue-600"
+                    >
+                      {formatDate(order[OrderFields.CREATED_DATE])}
+                    </Link>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <Link 
+                      to={`/orders/${order[OrderFields.ID]}`}
+                      onClick={(e) => handleLinkClick(e, order[OrderFields.ID])}
+                      className="text-gray-900 hover:text-blue-600"
+                    >
+                      {formatDate(order[OrderFields.EXPECTED_DELIVERY_DATE])}
+                    </Link>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600">
+                    <Link 
+                      to={`/orders/${order[OrderFields.ID]}`}
+                      onClick={(e) => handleLinkClick(e, order[OrderFields.ID])}
+                      className="text-green-600 hover:text-green-800"
+                    >
+                      {formatCurrency(order[OrderFields.TOTAL_AMOUNT])}
+                    </Link>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <Link 
+                      to={`/orders/${order[OrderFields.ID]}`}
+                      onClick={(e) => handleLinkClick(e, order[OrderFields.ID])}
+                      className="block text-gray-900 hover:text-blue-600"
+                    >
+                      <div className="text-sm">{order[OrderFields.CREATED_BY] || 'N/A'}</div>
+                    </Link>
                   </td>
                 </tr>
               ))

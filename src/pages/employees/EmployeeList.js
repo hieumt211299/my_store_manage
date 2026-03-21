@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import Loading from '../../components/Loading';
 import PageHeader from '../../components/PageHeader';
@@ -13,12 +13,13 @@ import {
 function EmployeeList() {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+  const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page')) || 1);
   const [totalEmployees, setTotalEmployees] = useState(0);
   const [itemsPerPage] = useState(15);
-  const [statusFilter] = useState('all');
-  const navigate = useNavigate();
+  const [statusFilter] = useState(searchParams.get('status') || 'all');
   const { addNotification } = useNotification();
 
   // Fetch employees from database with pagination and search
@@ -60,6 +61,21 @@ function EmployeeList() {
     }
   }, [currentPage, searchQuery, itemsPerPage, statusFilter, addNotification]);
 
+  // Update URL when state changes
+  useEffect(() => {
+    const params = new URLSearchParams();
+    
+    if (searchQuery) params.set('search', searchQuery);
+    if (currentPage > 1) params.set('page', currentPage.toString());
+    if (statusFilter !== 'all') params.set('status', statusFilter);
+
+    const newSearch = params.toString();
+    const currentSearch = searchParams.toString();
+    if (newSearch !== currentSearch) {
+      setSearchParams(params, { replace: true });
+    }
+  }, [searchQuery, currentPage, statusFilter, searchParams, setSearchParams]);
+
   useEffect(() => {
     fetchEmployees();
   }, [fetchEmployees]);
@@ -74,6 +90,14 @@ function EmployeeList() {
   const handleClearSearch = () => {
     setSearchQuery('');
     setCurrentPage(1);
+  };
+
+  const handleLinkClick = (e, employeeId) => {
+    if (e.metaKey || e.ctrlKey || e.button === 1) {
+      return;
+    }
+    e.preventDefault();
+    navigate(`/employees/${employeeId}`);
   };
 
 
@@ -176,22 +200,33 @@ function EmployeeList() {
                     employees.map((employee) => (
                       <tr 
                         key={employee.id} 
-                        className="hover:bg-gray-50 cursor-pointer"
-                        onClick={() => navigate(`/employees/${employee.id}`)}
+                        className="hover:bg-gray-50 transition-colors"
                       >
                         <td className="px-6 py-4">
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">
-                              {employee.full_name}
+                          <Link 
+                            to={`/employees/${employee.id}`}
+                            onClick={(e) => handleLinkClick(e, employee.id)}
+                            className="block text-gray-900 hover:text-blue-600"
+                          >
+                            <div>
+                              <div className="text-sm font-medium">
+                                {employee.full_name}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                Mã NV: {employee.employee_code}
+                              </div>
                             </div>
-                            <div className="text-sm text-gray-500">
-                              Mã NV: {employee.employee_code}
-                            </div>
-                          </div>
+                          </Link>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="text-sm text-gray-900">{employee.email}</div>
-                          <div className="text-sm text-gray-500">{employee.phone}</div>
+                          <Link 
+                            to={`/employees/${employee.id}`}
+                            onClick={(e) => handleLinkClick(e, employee.id)}
+                            className="block text-gray-900 hover:text-blue-600"
+                          >
+                            <div className="text-sm">{employee.email}</div>
+                            <div className="text-sm text-gray-500">{employee.phone}</div>
+                          </Link>
                         </td>
                       </tr>
                     ))
