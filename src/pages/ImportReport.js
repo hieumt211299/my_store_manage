@@ -56,19 +56,19 @@ function ImportReport() {
     }
   }, [dateRange, fetchData]);
 
-  // Calculate metrics
+  // Calculate metrics with defensive checks
   const summary = getImportSummary(importOrders);
   const importsByDate = groupImportsByDate(importOrders);
   
-  // Prepare data for status pie chart
-  const statusData = Object.entries(summary.importsByStatus).map(([status, count]) => ({
+  // Prepare data for status pie chart with safety checks
+  const statusData = Object.entries(summary.importsByStatus || {}).map(([status, count]) => ({
     name: ImportOrderStatusLabels[status] || status,
     value: count,
     color: status === 'completed' ? '#10B981' : '#F59E0B'
   }));
 
-  // Prepare data for source type pie chart
-  const sourceTypeData = Object.entries(summary.importsBySourceType).map(([sourceType, count]) => ({
+  // Prepare data for source type pie chart with safety checks
+  const sourceTypeData = Object.entries(summary.importsBySourceType || {}).map(([sourceType, count]) => ({
     name: ImportOrderSourceTypeLabels[sourceType] || sourceType,
     value: count,
     color: sourceType === 'ancarat' ? '#3B82F6' : '#8B5CF6'
@@ -86,9 +86,6 @@ function ImportReport() {
           </p>
           <p className="text-gray-600">
             Số đơn: {payload[0].payload.orders}
-          </p>
-          <p className="text-blue-600">
-            Số lượng sản phẩm: {payload[0].payload.itemsCount}
           </p>
         </div>
       );
@@ -156,15 +153,15 @@ function ImportReport() {
           </div>
         </div>
 
-        {/* Total Items Imported */}
+        {/* Completed Orders */}
         <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg p-6 text-white">
           <div className="flex items-center">
             <div className="flex-1">
-              <p className="text-orange-100 text-sm">Tổng sản phẩm</p>
-              <p className="text-2xl font-bold">{formatNumber(summary.totalItemsImported)}</p>
+              <p className="text-orange-100 text-sm">Đơn hoàn thành</p>
+              <p className="text-2xl font-bold">{formatNumber(summary.importsByStatus.completed || 0)}</p>
             </div>
             <div className="bg-orange-400 bg-opacity-50 rounded-full p-3">
-              <span className="text-2xl">🏷️</span>
+              <span className="text-2xl">✅</span>
             </div>
           </div>
         </div>

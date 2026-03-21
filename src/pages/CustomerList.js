@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import Loading from '../components/Loading';
 import {
@@ -12,11 +12,12 @@ function CustomerList() {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+  const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page')) || 1);
   const [totalCustomers, setTotalCustomers] = useState(0);
   const [itemsPerPage] = useState(15);
-  const navigate = useNavigate();
 
   // Fetch customers from database with pagination and search
   const fetchCustomers = useCallback(async () => {
@@ -51,6 +52,20 @@ function CustomerList() {
     }
   }, [currentPage, searchQuery, itemsPerPage]);
 
+  // Update URL when state changes
+  useEffect(() => {
+    const params = new URLSearchParams();
+    
+    if (searchQuery) params.set('search', searchQuery);
+    if (currentPage > 1) params.set('page', currentPage.toString());
+
+    const newSearch = params.toString();
+    const currentSearch = searchParams.toString();
+    if (newSearch !== currentSearch) {
+      setSearchParams(params, { replace: true });
+    }
+  }, [searchQuery, currentPage, searchParams, setSearchParams]);
+
   useEffect(() => {
     fetchCustomers();
   }, [fetchCustomers]);
@@ -65,6 +80,14 @@ function CustomerList() {
   const handleClearSearch = () => {
     setSearchQuery('');
     setCurrentPage(1);
+  };
+
+  const handleLinkClick = (e, customerId) => {
+    if (e.metaKey || e.ctrlKey || e.button === 1) {
+      return;
+    }
+    e.preventDefault();
+    navigate(`/customers/${customerId}`);
   };
 
   // Calculate total pages
@@ -180,11 +203,14 @@ function CustomerList() {
               customers.map((customer) => (
                 <tr 
                   key={customer[CustomerFields.ID]} 
-                  className="hover:bg-gray-50 cursor-pointer transition-colors"
-                  onClick={() => navigate(`/customers/${customer[CustomerFields.ID]}`)}
+                  className="hover:bg-gray-50 transition-colors"
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
+                    <Link 
+                      to={`/customers/${customer[CustomerFields.ID]}`}
+                      onClick={(e) => handleLinkClick(e, customer[CustomerFields.ID])}
+                      className="flex items-center text-gray-900 hover:text-blue-600"
+                    >
                       <div className="flex-shrink-0 h-10 w-10">
                         <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
                           <span className="text-sm font-medium text-gray-700">
@@ -193,33 +219,57 @@ function CustomerList() {
                         </div>
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium">
                           {customer[CustomerFields.NAME]}
                         </div>
                         <div className="text-sm text-gray-500">
                           ID: #{customer[CustomerFields.ID]}
                         </div>
                       </div>
-                    </div>
+                    </Link>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 font-mono">{customer[CustomerFields.ID_NUMBER]}</div>
-                    {customer[CustomerFields.ID_ISSUED_DATE] && (
-                      <div className="text-sm text-gray-500">
-                        Cấp: {formatDate(customer[CustomerFields.ID_ISSUED_DATE])}
-                      </div>
-                    )}
+                    <Link 
+                      to={`/customers/${customer[CustomerFields.ID]}`}
+                      onClick={(e) => handleLinkClick(e, customer[CustomerFields.ID])}
+                      className="block text-gray-900 hover:text-blue-600"
+                    >
+                      <div className="text-sm font-mono">{customer[CustomerFields.ID_NUMBER]}</div>
+                      {customer[CustomerFields.ID_ISSUED_DATE] && (
+                        <div className="text-sm text-gray-500">
+                          Cấp: {formatDate(customer[CustomerFields.ID_ISSUED_DATE])}
+                        </div>
+                      )}
+                    </Link>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 font-mono">{customer[CustomerFields.PHONE]}</div>
+                    <Link 
+                      to={`/customers/${customer[CustomerFields.ID]}`}
+                      onClick={(e) => handleLinkClick(e, customer[CustomerFields.ID])}
+                      className="text-gray-900 hover:text-blue-600 font-mono text-sm"
+                    >
+                      {customer[CustomerFields.PHONE]}
+                    </Link>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900 max-w-xs truncate" title={customer[CustomerFields.ADDRESS]}>
-                      {customer[CustomerFields.ADDRESS]}
-                    </div>
+                    <Link 
+                      to={`/customers/${customer[CustomerFields.ID]}`}
+                      onClick={(e) => handleLinkClick(e, customer[CustomerFields.ID])}
+                      className="block text-gray-900 hover:text-blue-600"
+                    >
+                      <div className="text-sm max-w-xs truncate" title={customer[CustomerFields.ADDRESS]}>
+                        {customer[CustomerFields.ADDRESS]}
+                      </div>
+                    </Link>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{formatDate(customer[CustomerFields.CREATED_AT])}</div>
+                    <Link 
+                      to={`/customers/${customer[CustomerFields.ID]}`}
+                      onClick={(e) => handleLinkClick(e, customer[CustomerFields.ID])}
+                      className="text-gray-900 hover:text-blue-600 text-sm"
+                    >
+                      {formatDate(customer[CustomerFields.CREATED_AT])}
+                    </Link>
                   </td>
                 </tr>
               ))

@@ -13,8 +13,11 @@ import {
   Tables,
   OrderFields,
   OrderStatus,
+  OrderType,
+  OrderResaleFields,
   OrderSelectWithItems,
   getStatusDisplay,
+  formatDate,
 } from '../../models';
 
 function OrderDetail() {
@@ -25,6 +28,7 @@ function OrderDetail() {
   const [notFound, setNotFound] = useState(false);
   const [fetchError, setFetchError] = useState(null);
   const [statusLoading, setStatusLoading] = useState(false);
+  const [orderResale, setOrderResale] = useState(null);
   const printRef = useRef(null);
 
   const handlePrint = useReactToPrint({
@@ -54,6 +58,15 @@ function OrderDetail() {
           }
         } else {
           setOrder(data);
+
+          const { data: resaleData, error: resaleError } = await supabase
+            .from(Tables.ORDER_RESALES)
+            .select(`${OrderResaleFields.ID}, ${OrderResaleFields.STATUS}, ${OrderResaleFields.EXPECTED_PAYMENT_DATE}`)
+            .eq(OrderResaleFields.ORDER_ID, id)
+            .maybeSingle();
+
+          if (resaleError) throw resaleError;
+          setOrderResale(resaleData);
         }
       } catch (error) {
         console.error('Error fetching order detail:', error);
@@ -97,6 +110,14 @@ function OrderDetail() {
     }
   };
 
+  const today = new Date().toISOString().split('T')[0];
+  const canCreateResale =
+    order?.[OrderFields.ORDER_TYPE] === OrderType.ORDER &&
+    order?.[OrderFields.STATUS] !== OrderStatus.RECEIVED &&
+    order?.[OrderFields.STATUS] !== OrderStatus.RESOLD_TO_STORE &&
+    order?.[OrderFields.EXPECTED_DELIVERY_DATE] >= today &&
+    !orderResale;
+
   if (loading) {
     return <Loading type="page" message="Đang tải chi tiết đơn hàng..." />;
   }
@@ -130,14 +151,48 @@ function OrderDetail() {
         title={`Chi tiết đơn hàng #${order.id}`}
         backTo="/orders"
         actions={
-          <button
-            onClick={handlePrint}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center"
-          >
-            🖨️ In phiếu
-          </button>
+          <>
+            {canCreateResale && (
+              <Link
+                to={`/order-resales/create?orderId=${order.id}`}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Bán cho cửa hàng
+              </Link>
+            )}
+            {orderResale && (
+              <Link
+                to={`/order-resales/${orderResale.id}`}
+                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+              >
+                Xem giao dịch bán lại
+              </Link>
+            )}
+            <button
+              onClick={handlePrint}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center"
+            >
+              🖨️ In phiếu
+            </button>
+          </>
         }
       />
+
+      {orderResale && (
+        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div>
+              <div className="font-semibold text-purple-900">Đơn hàng này đã được bán lại cho cửa hàng</div>
+              <div className="text-sm text-purple-700 mt-1">
+                Giao dịch #{orderResale.id} với ngày dự kiến chuyển tiền {formatDate(orderResale.expected_payment_date)}.
+              </div>
+            </div>
+            <Link to={`/order-resales/${orderResale.id}`} className="text-sm font-medium text-purple-700 hover:text-purple-900">
+              Mở chi tiết giao dịch
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Customer Info + Status */}
       <CustomerInfoCard order={order}>

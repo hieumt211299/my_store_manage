@@ -11,6 +11,10 @@ import {
 } from '../../../models';
 
 function OrderStatusSection({ order, statusLoading, onUpdateStatus }) {
+  const isLockedStatus =
+    order[OrderFields.STATUS] === OrderStatus.RECEIVED ||
+    order[OrderFields.STATUS] === OrderStatus.RESOLD_TO_STORE;
+
   return (
     <div className="mt-6 pt-6 border-t border-gray-200">
       <h3 className="text-lg font-medium text-gray-900 mb-4">Trạng thái đơn hàng</h3>
@@ -22,7 +26,7 @@ function OrderStatusSection({ order, statusLoading, onUpdateStatus }) {
           <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getStatusBadgeColor(order[OrderFields.STATUS] || OrderStatus.STORE_HOLDS)}`}>
             {getStatusDisplay(order[OrderFields.STATUS] || OrderStatus.STORE_HOLDS)}
           </span>
-          {order[OrderFields.STATUS] === OrderStatus.RECEIVED && (
+          {isLockedStatus && (
             <div className="text-xs text-green-600 mt-1">(Không thể thay đổi)</div>
           )}
         </div>
@@ -43,7 +47,7 @@ function OrderStatusSection({ order, statusLoading, onUpdateStatus }) {
       </div>
 
       {/* Status Update Dropdown */}
-      {order[OrderFields.STATUS] !== OrderStatus.RECEIVED && (
+      {!isLockedStatus && (
         <div className="flex items-center space-x-4">
           <label htmlFor="status-select" className="text-sm font-medium text-gray-700">
             Cập nhật trạng thái:

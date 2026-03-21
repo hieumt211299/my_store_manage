@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { Tables, CustomerFields } from '../models';
 
-function CustomerSearchInput({
+const CustomerSearchInput = React.memo(function CustomerSearchInput({
   value,
   onSelect,
   onClear,
@@ -22,21 +22,22 @@ function CustomerSearchInput({
     setSearchTerm(value || '');
   }, [value]);
 
+  const handleClickOutside = useCallback((event) => {
+    if (
+      dropdownRef.current && !dropdownRef.current.contains(event.target) &&
+      inputRef.current && !inputRef.current.contains(event.target)
+    ) {
+      setShowDropdown(false);
+    }
+  }, []);
+
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        dropdownRef.current && !dropdownRef.current.contains(event.target) &&
-        inputRef.current && !inputRef.current.contains(event.target)
-      ) {
-        setShowDropdown(false);
-      }
-    };
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
     };
-  }, []);
+  }, [handleClickOutside]);
 
   const searchCustomers = useCallback(async (term) => {
     if (!term || term.length < minSearchLength) {
@@ -65,7 +66,7 @@ function CustomerSearchInput({
     }
   }, [minSearchLength]);
 
-  const handleChange = (e) => {
+  const handleChange = useCallback((e) => {
     const val = e.target.value;
     setSearchTerm(val);
     if (onChange) onChange(val);
@@ -74,20 +75,30 @@ function CustomerSearchInput({
     debounceTimer.current = setTimeout(() => {
       searchCustomers(val);
     }, 300);
-  };
+  }, [onChange, searchCustomers]);
 
-  const handleSelect = (customer) => {
+  const handleSelect = useCallback((customer) => {
     setSearchTerm(customer[CustomerFields.ID_NUMBER]);
     setShowDropdown(false);
     if (onSelect) onSelect(customer);
-  };
+  }, [onSelect]);
 
-  const handleClear = () => {
+  const handleClear = useCallback(() => {
     setSearchTerm('');
     setResults([]);
     setShowDropdown(false);
     if (onClear) onClear();
-  };
+  }, [onClear]);
+
+  const inputClassName = useMemo(() => 
+    "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500",
+    []
+  );
+
+  const dropdownClassName = useMemo(() => 
+    "absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto",
+    []
+  );
 
   return (
     <div className="relative">
@@ -99,7 +110,7 @@ function CustomerSearchInput({
           type="text"
           value={searchTerm}
           onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className={inputClassName}
           placeholder="Nhập số CMND/CCCD để tìm kiếm..."
           disabled={disabled}
           required
@@ -124,7 +135,7 @@ function CustomerSearchInput({
       {showDropdown && results.length > 0 && (
         <div
           ref={dropdownRef}
-          className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+          className={dropdownClassName}
         >
           {results.map((customer) => (
             <div
@@ -149,6 +160,6 @@ function CustomerSearchInput({
       </div>
     </div>
   );
-}
+});
 
 export default CustomerSearchInput;

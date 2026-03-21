@@ -12,8 +12,12 @@ import ImportPrintTemplate from './components/ImportPrintTemplate';
 import {
   Tables,
   ImportOrderFields,
+  ImportOrderStatus,
+  ImportOrderSourceType,
+  ImportOrderResaleFields,
   ImportOrderSelectWithItems,
   getImportStatusDisplay,
+  formatDate,
 } from '../../models';
 
 function ImportOrderDetail() {
@@ -24,6 +28,7 @@ function ImportOrderDetail() {
   const [notFound, setNotFound] = useState(false);
   const [fetchError, setFetchError] = useState(null);
   const [statusLoading, setStatusLoading] = useState(false);
+  const [importOrderResale, setImportOrderResale] = useState(null);
   const printRef = useRef(null);
 
   const handlePrint = useReactToPrint({
@@ -54,6 +59,15 @@ function ImportOrderDetail() {
           }
         } else {
           setImportOrder(data);
+
+          const { data: resaleData, error: resaleError } = await supabase
+            .from(Tables.IMPORT_ORDER_RESALES)
+            .select(`${ImportOrderResaleFields.ID}, ${ImportOrderResaleFields.STATUS}, ${ImportOrderResaleFields.EXPECTED_RECEIVED_DATE}`)
+            .eq(ImportOrderResaleFields.IMPORT_ORDER_ID, id)
+            .maybeSingle();
+
+          if (resaleError) throw resaleError;
+          setImportOrderResale(resaleData);
         }
       } catch (error) {
         console.error('Error fetching import detail:', error);
@@ -105,6 +119,13 @@ function ImportOrderDetail() {
     }
   };
 
+  const today = new Date().toISOString().split('T')[0];
+  const canCreateResale =
+    importOrder?.[ImportOrderFields.SOURCE_TYPE] === ImportOrderSourceType.ANCARAT &&
+    importOrder?.[ImportOrderFields.STATUS] === ImportOrderStatus.PENDING &&
+    importOrder?.[ImportOrderFields.EXPECTED_RETURN_DATE] >= today &&
+    !importOrderResale;
+
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -154,16 +175,49 @@ function ImportOrderDetail() {
         title={`Chi tiết đơn nhập #${importOrder.id}`}
         backTo="/imports"
         actions={
-          <button
-            onClick={handlePrint}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center"
-          >
-            🖨️ In phiếu
-          </button>
+          <>
+            {canCreateResale && (
+              <Link
+                to={`/import-order-resales/create?importOrderId=${importOrder.id}`}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Bán lại cho Ancarat
+              </Link>
+            )}
+            {importOrderResale && (
+              <Link
+                to={`/import-order-resales/${importOrderResale.id}`}
+                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+              >
+                Xem giao dịch bán lại
+              </Link>
+            )}
+            <button
+              onClick={handlePrint}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center"
+            >
+              🖨️ In phiếu
+            </button>
+          </>
         }
       />
 
       <div className="space-y-6">
+        {importOrderResale && (
+          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <div>
+                <div className="font-semibold text-purple-900">Đơn nhập này đã được bán lại cho Ancarat</div>
+                <div className="text-sm text-purple-700 mt-1">
+                  Giao dịch #{importOrderResale.id} với ngày dự kiến nhận tiền {formatDate(importOrderResale.expected_received_date)}.
+                </div>
+              </div>
+              <Link to={`/import-order-resales/${importOrderResale.id}`} className="text-sm font-medium text-purple-700 hover:text-purple-900">
+                Mở chi tiết giao dịch
+              </Link>
+            </div>
+          </div>
+        )}
         <ImportInfoCard 
           importOrder={importOrder}
           statusLoading={statusLoading}

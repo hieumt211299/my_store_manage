@@ -1,6 +1,6 @@
 import React from 'react';
 
-function Loading({ type = 'page', message = 'Đang tải...', colSpan = 6, className = '' }) {
+const Loading = React.memo(function Loading({ type = 'page', message = 'Đang tải...', colSpan = 6, className = '' }) {
   // Loading cho trang (fullscreen)
   if (type === 'page') {
     return (
@@ -46,6 +46,6 @@ function Loading({ type = 'page', message = 'Đang tải...', colSpan = 6, class
       <span>{message}</span>
     </div>
   );
-}
+});
 
 export default Loading;

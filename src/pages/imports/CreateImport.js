@@ -65,6 +65,9 @@ function CreateImport() {
           ${ProductFields.NAME},
           ${ProductFields.SKU},
           ${ProductFields.IMAGE_URL},
+          ${ProductFields.INCOMING_QUANTITY},
+          ${ProductFields.RESERVED_QUANTITY},
+          ${ProductFields.AVAILABLE_QUANTITY},
           ${ProductFields.STOCK_QUANTITY},
           ${ProductFields.AVERAGE_PRICE}
         `)
