@@ -9,6 +9,7 @@ import ImportInfoCard from './components/ImportInfoCard';
 import ImportSourceInfo from './components/ImportSourceInfo';
 import ImportItemsDetail from './components/ImportItemsDetail';
 import ImportPrintTemplate from './components/ImportPrintTemplate';
+import ImportWarehouseReceiptTemplate from './components/ImportWarehouseReceiptTemplate';
 import {
   Tables,
   ImportOrderFields,
@@ -29,11 +30,19 @@ function ImportOrderDetail() {
   const [fetchError, setFetchError] = useState(null);
   const [statusLoading, setStatusLoading] = useState(false);
   const [importOrderResale, setImportOrderResale] = useState(null);
-  const printRef = useRef(null);
+  const [isPrintMenuOpen, setIsPrintMenuOpen] = useState(false);
+  const printMenuRef = useRef(null);
+  const printImportRef = useRef(null);
+  const printWarehouseRef = useRef(null);
 
-  const handlePrint = useReactToPrint({
-    contentRef: printRef,
+  const handleImportPrint = useReactToPrint({
+    contentRef: printImportRef,
     documentTitle: `Phieu-nhap-hang-${id}`,
+  });
+
+  const handleWarehousePrint = useReactToPrint({
+    contentRef: printWarehouseRef,
+    documentTitle: `Phieu-nhap-kho-${id}`,
   });
 
   useEffect(() => {
@@ -82,6 +91,20 @@ function ImportOrderDetail() {
     if (id) fetchImportDetail();
   }, [id, addNotification]);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (printMenuRef.current && !printMenuRef.current.contains(event.target)) {
+        setIsPrintMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const updateImportStatus = async (newStatus) => {
     try {
       setStatusLoading(true);
@@ -125,6 +148,24 @@ function ImportOrderDetail() {
     importOrder?.[ImportOrderFields.STATUS] === ImportOrderStatus.PENDING &&
     importOrder?.[ImportOrderFields.EXPECTED_RETURN_DATE] >= today &&
     !importOrderResale;
+
+  const printOptions = [
+    {
+      key: 'import',
+      label: 'In phiếu nhập hàng',
+      onClick: handleImportPrint,
+    },
+    {
+      key: 'warehouse',
+      label: 'In phiếu nhập kho',
+      onClick: handleWarehousePrint,
+    },
+  ];
+
+  const handlePrintOptionClick = (printAction) => {
+    setIsPrintMenuOpen(false);
+    printAction();
+  };
 
   if (loading) {
     return (
@@ -192,12 +233,32 @@ function ImportOrderDetail() {
                 Xem giao dịch bán lại
               </Link>
             )}
-            <button
-              onClick={handlePrint}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center"
-            >
-              🖨️ In phiếu
-            </button>
+            <div className="relative" ref={printMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsPrintMenuOpen((prev) => !prev)}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+              >
+                <span>🖨️</span>
+                <span>In phiếu</span>
+                <span className={`transition-transform ${isPrintMenuOpen ? 'rotate-180' : ''}`}>▼</span>
+              </button>
+
+              {isPrintMenuOpen && (
+                <div className="absolute right-0 z-20 mt-2 w-56 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
+                  {printOptions.map((option) => (
+                    <button
+                      key={option.key}
+                      type="button"
+                      onClick={() => handlePrintOptionClick(option.onClick)}
+                      className="block w-full px-4 py-3 text-left text-sm text-gray-700 transition-colors hover:bg-gray-50"
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </>
         }
       />
@@ -229,7 +290,8 @@ function ImportOrderDetail() {
 
       {/* Hidden Print Template */}
       <div style={{ display: 'none' }}>
-        <ImportPrintTemplate ref={printRef} importOrder={importOrder} />
+        <ImportPrintTemplate ref={printImportRef} importOrder={importOrder} />
+        <ImportWarehouseReceiptTemplate ref={printWarehouseRef} importOrder={importOrder} />
       </div>
     </div>
   );

@@ -189,17 +189,17 @@ function ProductList() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-7xl px-0 sm:px-2 lg:px-4">
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
+      <div className="mb-6 flex flex-col gap-4 md:mb-8 md:flex-row md:items-center md:justify-between">
         <h1 className="text-3xl font-bold text-gray-900">Danh sách sản phẩm</h1>
-        <div className="flex items-center space-x-4">
-          <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <span className="w-fit rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-500">
             {searchTerm ? `${filteredProducts.length} / ${products.length}` : `${products.length}`} sản phẩm
           </span>
           <button
             onClick={() => setShowCreateForm(!showCreateForm)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            className="w-full rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 sm:w-auto"
           >
             + Thêm sản phẩm
           </button>
@@ -306,7 +306,7 @@ function ProductList() {
               )}
             </div>
 
-            <div className="flex space-x-4">
+            <div className="flex flex-col gap-3 sm:flex-row">
               <button
                 type="submit"
                 disabled={uploading}

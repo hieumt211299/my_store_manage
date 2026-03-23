@@ -64,12 +64,12 @@ function ImportOrderResaleListFilters({
         </button>
 
         {showFilters && (
-          <div className="absolute top-full left-0 mt-2 w-96 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+          <div className="absolute top-full left-0 z-50 mt-2 w-[calc(100vw-2rem)] max-w-96 rounded-lg border border-gray-200 bg-white shadow-lg sm:w-96">
             <div className="p-4 space-y-4">
               {/* Date Range */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">📅 Ngày bán</label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <input
                     type="date"
                     value={dateFrom}
@@ -90,7 +90,7 @@ function ImportOrderResaleListFilters({
               {/* Received Date Range */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">💰 Ngày nhận tiền</label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <input
                     type="date"
                     value={receivedFrom}

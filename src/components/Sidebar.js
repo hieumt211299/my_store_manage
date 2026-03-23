@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { 
   FaBoxOpen, 
+  FaBars,
   FaShoppingCart, 
   FaUsers, 
   FaChartBar, 
@@ -10,6 +11,7 @@ import {
   FaPlus, 
   FaSignOutAlt,
   FaChevronRight,
+  FaTimes,
   FaWarehouse,
   FaUserTie,
   FaExchangeAlt
@@ -39,6 +41,7 @@ function Sidebar() {
   const { user, signOut } = useAuth();
   const location = useLocation();
   const [expandedMenus, setExpandedMenus] = useState({});
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -57,118 +60,154 @@ function Sidebar() {
   };
 
   // Check if current path is within a submenu
-  const isSubmenuActive = (submenu) => {
+  const isSubmenuActive = useCallback((submenu) => {
     return submenu.some(item => location.pathname.startsWith(item.path));
-  };
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const nextExpandedMenus = {};
+    menuItems.forEach((item) => {
+      if (item.submenu && isSubmenuActive(item.submenu)) {
+        nextExpandedMenus[item.key] = true;
+      }
+    });
+
+    setExpandedMenus((prev) => ({ ...prev, ...nextExpandedMenus }));
+    setIsMobileOpen(false);
+  }, [location.pathname, isSubmenuActive]);
 
   return (
-    <aside className="w-64 bg-white shadow-lg h-screen flex flex-col flex-shrink-0">
-      <div className="p-6 border-b border-gray-200 flex-shrink-0">
-        <h2 className="text-xl font-bold text-gray-800">MyApp</h2>
-        {user && (
-          <div className="mt-2">
-            <span className="text-sm text-gray-600">{user.email}</span>
-          </div>
-        )}
+    <>
+      <div className="fixed inset-x-0 top-0 z-30 flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 shadow-sm md:hidden">
+        <button
+          type="button"
+          onClick={() => setIsMobileOpen(true)}
+          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 text-gray-700"
+          aria-label="Mở menu"
+        >
+          <FaBars className="text-lg" />
+        </button>
+        <h2 className="text-lg font-bold text-gray-800">MyApp</h2>
+        <div className="w-10" />
       </div>
-      <nav className="flex-1 p-4 overflow-y-auto">
-        <ul className="space-y-2">
-          {menuItems.map((item) => (
-            <li key={item.path || item.key}>
-              {item.submenu ? (
-                // Collapsible menu item with submenu
-                <div>
-                  <button
-                    onClick={() => toggleSubmenu(item.key)}
-                    className={`flex items-center w-full p-3 rounded-lg transition-colors duration-200 ${
-                      isSubmenuActive(item.submenu) 
-                        ? 'bg-blue-50 text-blue-700' 
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                    }`}
-                  >
-                    <item.icon className="text-xl mr-3" />
-                    <span className="font-medium flex-1 text-left">{item.label}</span>
-                    <FaChevronRight className={`transform transition-transform duration-200 ${
-                      expandedMenus[item.key] ? 'rotate-90' : ''
-                    }`} />
-                  </button>
-                  
-                  {/* Submenu items */}
-                  <div className={`mt-1 ml-8 overflow-hidden transition-max-height duration-200 ease-in-out ${
-                    expandedMenus[item.key] ? 'max-h-40' : 'max-h-0'
-                  }`}>
-                    <ul className="space-y-1 py-2">
-                      {item.submenu.map((subItem) => (
-                        <li key={subItem.path}>
-                          <NavLink
-                            to={subItem.path}
-                            className={({ isActive }) =>
-                              `flex items-center p-2 pl-4 rounded-lg transition-colors duration-200 text-sm ${
-                                isActive 
-                                  ? 'bg-blue-100 text-blue-800 border-l-4 border-blue-700' 
-                                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                              }`
-                            }
-                          >
-                            {subItem.label}
-                          </NavLink>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              ) : (
-                // Regular menu item
-                <NavLink
-                  to={item.path}
-                  className={({ isActive }) =>
-                    `flex items-center p-3 rounded-lg transition-colors duration-200 ${
-                      isActive 
-                        ? 'bg-blue-50 text-blue-700 border-r-4 border-blue-700' 
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                    }`
-                  }
-                >
-                  <item.icon className="text-xl mr-3" />
-                  <span className="font-medium">{item.label}</span>
-                </NavLink>
-              )}
-            </li>
-          ))}
-        </ul>
-        
-        {/* Quick Action Buttons */}
-        <div className="mt-6 pt-4 border-t border-gray-200 space-y-3">
-          <NavLink
-            to="/orders/create"
-            className="flex items-center w-full p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+
+      {isMobileOpen && (
+        <button
+          type="button"
+          aria-label="Đóng menu"
+          className="fixed inset-0 z-30 bg-gray-900/40 md:hidden"
+          onClick={() => setIsMobileOpen(false)}
+        />
+      )}
+
+      <aside className={`fixed inset-y-0 left-0 z-40 flex h-screen w-64 flex-col bg-white shadow-lg transition-transform duration-300 md:static md:translate-x-0 md:flex-shrink-0 ${
+        isMobileOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
+        <div className="flex items-center justify-between border-b border-gray-200 p-6 md:justify-start">
+          <div>
+            <h2 className="text-xl font-bold text-gray-800">MyApp</h2>
+            {user && (
+              <div className="mt-2">
+                <span className="break-all text-sm text-gray-600">{user.email}</span>
+              </div>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsMobileOpen(false)}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 text-gray-700 md:hidden"
+            aria-label="Đóng menu"
           >
-            <FaPlus className="text-xl mr-3" />
-            <span className="font-medium">Tạo đơn hàng</span>
-          </NavLink>
-          
-          {/* <NavLink
-            to="/warranty/create"
-            className="flex items-center w-full p-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
-          >
-            <FaShieldAlt className="text-xl mr-3" />
-            <span className="font-medium">Tạo phiếu đảm bảo</span>
-          </NavLink> */}
-        </div>
-      </nav>
-      
-      {user && (
-        <div className="p-4 border-t border-gray-200 flex-shrink-0">
-          <button 
-            onClick={handleLogout} 
-            className="flex items-center w-full p-3 text-gray-600 hover:bg-red-50 hover:text-red-700 rounded-lg transition-colors duration-200"
-          >
-            <FaSignOutAlt className="text-xl mr-3" />
-            <span className="font-medium">Đăng xuất</span>
+            <FaTimes className="text-lg" />
           </button>
         </div>
-      )}
-    </aside>
+        <nav className="flex-1 overflow-y-auto p-4">
+          <ul className="space-y-2">
+            {menuItems.map((item) => (
+              <li key={item.path || item.key}>
+                {item.submenu ? (
+                  <div>
+                    <button
+                      onClick={() => toggleSubmenu(item.key)}
+                      className={`flex w-full items-center rounded-lg p-3 transition-colors duration-200 ${
+                        isSubmenuActive(item.submenu) 
+                          ? 'bg-blue-50 text-blue-700' 
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      }`}
+                    >
+                      <item.icon className="mr-3 text-xl" />
+                      <span className="flex-1 text-left font-medium">{item.label}</span>
+                      <FaChevronRight className={`transform transition-transform duration-200 ${
+                        expandedMenus[item.key] ? 'rotate-90' : ''
+                      }`} />
+                    </button>
+                    
+                    <div className={`mt-1 ml-8 overflow-hidden transition-all duration-200 ease-in-out ${
+                      expandedMenus[item.key] ? 'max-h-40' : 'max-h-0'
+                    }`}>
+                      <ul className="space-y-1 py-2">
+                        {item.submenu.map((subItem) => (
+                          <li key={subItem.path}>
+                            <NavLink
+                              to={subItem.path}
+                              className={({ isActive }) =>
+                                `flex items-center rounded-lg p-2 pl-4 text-sm transition-colors duration-200 ${
+                                  isActive 
+                                    ? 'border-l-4 border-blue-700 bg-blue-100 text-blue-800' 
+                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                }`
+                              }
+                            >
+                              {subItem.label}
+                            </NavLink>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                ) : (
+                  <NavLink
+                    to={item.path}
+                    className={({ isActive }) =>
+                      `flex items-center rounded-lg p-3 transition-colors duration-200 ${
+                        isActive 
+                          ? 'border-r-4 border-blue-700 bg-blue-50 text-blue-700' 
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      }`
+                    }
+                  >
+                    <item.icon className="mr-3 text-xl" />
+                    <span className="font-medium">{item.label}</span>
+                  </NavLink>
+                )}
+              </li>
+            ))}
+          </ul>
+          
+          <div className="mt-6 space-y-3 border-t border-gray-200 pt-4">
+            <NavLink
+              to="/orders/create"
+              className="flex w-full items-center rounded-lg bg-blue-600 p-3 text-white transition-colors duration-200 hover:bg-blue-700"
+            >
+              <FaPlus className="mr-3 text-xl" />
+              <span className="font-medium">Tạo đơn hàng</span>
+            </NavLink>
+          </div>
+        </nav>
+        
+        {user && (
+          <div className="flex-shrink-0 border-t border-gray-200 p-4">
+            <button 
+              onClick={handleLogout} 
+              className="flex w-full items-center rounded-lg p-3 text-gray-600 transition-colors duration-200 hover:bg-red-50 hover:text-red-700"
+            >
+              <FaSignOutAlt className="mr-3 text-xl" />
+              <span className="font-medium">Đăng xuất</span>
+            </button>
+          </div>
+        )}
+      </aside>
+    </>
   );
 }
 

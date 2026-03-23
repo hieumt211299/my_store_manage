@@ -103,12 +103,12 @@ function CustomerList() {
   // formatDate imported from models
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-7xl px-0 sm:px-2 lg:px-4">
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
+      <div className="mb-6 flex flex-col gap-3 md:mb-8 md:flex-row md:items-center md:justify-between">
         <h1 className="text-3xl font-bold text-gray-900">Quản lý khách hàng</h1>
-        <div className="flex items-center space-x-4">
-          <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+        <div className="flex items-center">
+          <span className="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-500">
             {totalCustomers} khách hàng
           </span>
         </div>
@@ -116,8 +116,8 @@ function CustomerList() {
 
       {/* Search */}
       <div className="mb-6">
-        <form onSubmit={handleSearch} className="flex items-center space-x-4">
-          <div className="flex-1 max-w-md">
+        <form onSubmit={handleSearch} className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div className="w-full md:max-w-md">
             <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
               Tìm kiếm khách hàng
             </label>
@@ -142,7 +142,7 @@ function CustomerList() {
             <button
               type="button"
               onClick={handleClearSearch}
-              className="mt-7 text-gray-500 hover:text-gray-700"
+              className="text-left text-gray-500 hover:text-gray-700 md:mb-2"
             >
               ✕ Xóa
             </button>
@@ -162,8 +162,12 @@ function CustomerList() {
       )}
 
       {/* Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
+      <div className="overflow-hidden rounded-lg bg-white shadow">
+        <div className="border-b border-gray-100 px-4 py-3 text-xs text-gray-500 sm:hidden">
+          Vuốt ngang để xem đầy đủ thông tin bảng.
+        </div>
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[900px] divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -276,18 +280,19 @@ function CustomerList() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="mt-6 flex items-center justify-between">
+        <div className="mt-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="text-sm text-gray-500">
             Trang {currentPage} / {totalPages} - 
             Hiển thị {(currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, totalCustomers)} 
             trong tổng số {totalCustomers} khách hàng
           </div>
           
-          <div className="flex space-x-1">
+          <div className="flex flex-wrap gap-1">
             {/* Previous button */}
             <button
               onClick={() => handlePageChange(currentPage - 1)}
