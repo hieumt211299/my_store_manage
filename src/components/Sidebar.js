@@ -84,6 +84,8 @@ function Sidebar() {
           onClick={() => setIsMobileOpen(true)}
           className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 text-gray-700"
           aria-label="Mở menu"
+          aria-expanded={isMobileOpen}
+          aria-controls="mobile-sidebar"
         >
           <FaBars className="text-lg" />
         </button>
@@ -100,7 +102,7 @@ function Sidebar() {
         />
       )}
 
-      <aside className={`fixed inset-y-0 left-0 z-40 flex h-screen w-64 flex-col bg-white shadow-lg transition-transform duration-300 md:static md:translate-x-0 md:flex-shrink-0 ${
+      <aside id="mobile-sidebar" className={`fixed inset-y-0 left-0 z-40 flex h-screen w-64 flex-col bg-white shadow-lg transition-transform duration-300 md:static md:translate-x-0 md:flex-shrink-0 ${
         isMobileOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         <div className="flex items-center justify-between border-b border-gray-200 p-6 md:justify-start">
