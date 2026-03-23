@@ -8,8 +8,8 @@ import PageHeader from '../../components/PageHeader';
 import ImportInfoCard from './components/ImportInfoCard';
 import ImportSourceInfo from './components/ImportSourceInfo';
 import ImportItemsDetail from './components/ImportItemsDetail';
-import ImportPrintTemplate from './components/ImportPrintTemplate';
-import ImportWarehouseReceiptTemplate from './components/ImportWarehouseReceiptTemplate';
+import ImportPrintTemplate from '../../components/print-templates/ImportPrintTemplate';
+import ImportWarehouseReceiptTemplate from '../../components/print-templates/ImportWarehouseReceiptTemplate';
 import {
   Tables,
   ImportOrderFields,

@@ -8,7 +8,7 @@ import {
   getImportStatusDisplay,
   formatCurrency,
   formatDate,
-} from '../../../models';
+} from '../../models';
 
 const ImportPrintTemplate = React.forwardRef(({ importOrder }, ref) => {
   if (!importOrder) return null;
