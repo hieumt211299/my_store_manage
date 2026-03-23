@@ -32,6 +32,7 @@ function ImportOrderDetail() {
   const [importOrderResale, setImportOrderResale] = useState(null);
   const [isPrintMenuOpen, setIsPrintMenuOpen] = useState(false);
   const printMenuRef = useRef(null);
+  const printButtonRef = useRef(null);
   const printImportRef = useRef(null);
   const printWarehouseRef = useRef(null);
 
@@ -162,8 +163,60 @@ function ImportOrderDetail() {
     },
   ];
 
+  useEffect(() => {
+    if (isPrintMenuOpen && printMenuRef.current) {
+      requestAnimationFrame(() => {
+        const firstItem = printMenuRef.current?.querySelector('[role="menuitem"]');
+        if (firstItem) firstItem.focus();
+      });
+    }
+  }, [isPrintMenuOpen]);
+
+  const handlePrintMenuKeyDown = (e) => {
+    if (!isPrintMenuOpen) return;
+
+    const items = Array.from(
+      printMenuRef.current?.querySelectorAll('[role="menuitem"]') ?? []
+    );
+    const currentIndex = items.indexOf(document.activeElement);
+
+    switch (e.key) {
+      case 'Escape':
+      case 'Tab':
+        e.preventDefault();
+        setIsPrintMenuOpen(false);
+        printButtonRef.current?.focus();
+        break;
+      case 'ArrowDown':
+        e.preventDefault();
+        if (items.length > 0) {
+          const next = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
+          items[next].focus();
+        }
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        if (items.length > 0) {
+          const prev = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
+          items[prev].focus();
+        }
+        break;
+      case 'Home':
+        e.preventDefault();
+        if (items.length > 0) items[0].focus();
+        break;
+      case 'End':
+        e.preventDefault();
+        if (items.length > 0) items[items.length - 1].focus();
+        break;
+      default:
+        break;
+    }
+  };
+
   const handlePrintOptionClick = (printAction) => {
     setIsPrintMenuOpen(false);
+    printButtonRef.current?.focus();
     printAction();
   };
 
@@ -233,10 +286,15 @@ function ImportOrderDetail() {
                 Xem giao dịch bán lại
               </Link>
             )}
-            <div className="relative" ref={printMenuRef}>
+            <div className="relative" ref={printMenuRef} onKeyDown={handlePrintMenuKeyDown}>
               <button
+                ref={printButtonRef}
                 type="button"
+                id="print-menu-button"
                 onClick={() => setIsPrintMenuOpen((prev) => !prev)}
+                aria-haspopup="menu"
+                aria-expanded={isPrintMenuOpen}
+                aria-controls="print-menu"
                 className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
               >
                 <span>🖨️</span>
@@ -245,11 +303,17 @@ function ImportOrderDetail() {
               </button>
 
               {isPrintMenuOpen && (
-                <div className="absolute right-0 z-20 mt-2 w-56 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
+                <div
+                  id="print-menu"
+                  role="menu"
+                  aria-labelledby="print-menu-button"
+                  className="absolute right-0 z-20 mt-2 w-56 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg"
+                >
                   {printOptions.map((option) => (
                     <button
                       key={option.key}
                       type="button"
+                      role="menuitem"
                       onClick={() => handlePrintOptionClick(option.onClick)}
                       className="block w-full px-4 py-3 text-left text-sm text-gray-700 transition-colors hover:bg-gray-50"
                     >
