@@ -231,7 +231,7 @@ const PrintWarehouseIssue = React.forwardRef(({ order }, ref) => {
 
       <div className="warehouse-top">
         <div className="warehouse-company">
-          <div className="warehouse-company-name">CÔNG TY TNHH KIM PHƯỢNG MAI SILVER& JEWLRY</div>
+          <div className="warehouse-company-name">CÔNG TY TNHH KIM PHƯỢNG MAI SILVER & JEWELRY</div>
           <div className="warehouse-company-address">43/44/20 Đỗ Thừa Luông, Phường Phú Thọ Hòa, TP Hồ Chí Minh</div>
         </div>
 
