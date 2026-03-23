@@ -32,6 +32,8 @@ function OrderDetail() {
   const [orderResale, setOrderResale] = useState(null);
   const [isPrintMenuOpen, setIsPrintMenuOpen] = useState(false);
   const printMenuRef = useRef(null);
+  const printMenuBtnRef = useRef(null);
+  const printMenuListRef = useRef(null);
   const orderPrintRef = useRef(null);
   const warehousePrintRef = useRef(null);
 
@@ -156,8 +158,25 @@ function OrderDetail() {
 
   const handlePrintOptionClick = (printAction) => {
     setIsPrintMenuOpen(false);
+    printMenuBtnRef.current?.focus();
     printAction();
   };
+
+  const handlePrintMenuKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      setIsPrintMenuOpen(false);
+      printMenuBtnRef.current?.focus();
+    }
+  };
+
+  useEffect(() => {
+    if (isPrintMenuOpen) {
+      requestAnimationFrame(() => {
+        const firstItem = printMenuListRef.current?.querySelector('[role="menuitem"]');
+        firstItem?.focus();
+      });
+    }
+  }, [isPrintMenuOpen]);
 
   if (loading) {
     return <Loading type="page" message="Đang tải chi tiết đơn hàng..." />;
@@ -212,7 +231,11 @@ function OrderDetail() {
             <div className="relative" ref={printMenuRef}>
               <button
                 type="button"
+                ref={printMenuBtnRef}
                 onClick={() => setIsPrintMenuOpen((prev) => !prev)}
+                aria-haspopup="true"
+                aria-expanded={isPrintMenuOpen}
+                aria-controls="order-print-menu"
                 className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
               >
                 <span>🖨️</span>
@@ -221,11 +244,18 @@ function OrderDetail() {
               </button>
 
               {isPrintMenuOpen && (
-                <div className="absolute right-0 z-20 mt-2 w-56 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
+                <div
+                  id="order-print-menu"
+                  role="menu"
+                  ref={printMenuListRef}
+                  onKeyDown={handlePrintMenuKeyDown}
+                  className="absolute right-0 z-20 mt-2 w-56 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg"
+                >
                   {printOptions.map((option) => (
                     <button
                       key={option.key}
                       type="button"
+                      role="menuitem"
                       onClick={() => handlePrintOptionClick(option.onClick)}
                       className="block w-full px-4 py-3 text-left text-sm text-gray-700 transition-colors hover:bg-gray-50"
                     >
