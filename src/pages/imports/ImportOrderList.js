@@ -175,14 +175,14 @@ function ImportOrderList() {
   const totalPages = Math.ceil(totalImports / itemsPerPage);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-7xl px-0 sm:px-2 lg:px-4">
       <PageHeader
         title="Danh sách đơn nhập"
         subtitle="Quản lý đơn nhập hàng từ Ancarat và khách bán"
         actions={
           <Link
             to="/imports/create"
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            className="inline-flex w-full items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 sm:w-auto"
           >
             + Tạo đơn nhập
           </Link>
@@ -212,7 +212,7 @@ function ImportOrderList() {
       </div>
 
 {/* Filter Bar */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex items-center space-x-4">
           <ImportListFilters
           dateFrom={dateFrom}
@@ -227,7 +227,7 @@ function ImportOrderList() {
           activeFiltersCount={activeFiltersCount}
         />
         </div>
-        <div className="text-sm text-gray-500">
+        <div className="text-sm text-gray-500 lg:text-right">
           {totalActiveFilters > 0 ? (
             <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full">
               {totalActiveFilters} bộ lọc đang áp dụng
@@ -240,8 +240,12 @@ function ImportOrderList() {
      
 
       {/* Table */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
+      <div className="overflow-hidden rounded-lg bg-white shadow-md">
+        <div className="border-b border-gray-100 px-4 py-3 text-xs text-gray-500 sm:hidden">
+          Vuốt ngang để xem đầy đủ thông tin bảng.
+        </div>
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[920px] divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -387,6 +391,7 @@ function ImportOrderList() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       {totalPages > 1 && (

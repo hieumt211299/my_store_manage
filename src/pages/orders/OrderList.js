@@ -166,14 +166,14 @@ function OrderList() {
 
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-7xl px-0 sm:px-2 lg:px-4">
       <PageHeader
         title="Quản lý đơn hàng"
         badge={`${totalOrders} đơn hàng`}
         actions={
           <Link
             to="/orders/create"
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            className="inline-flex w-full items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 sm:w-auto"
           >
             + Tạo đơn hàng
           </Link>
@@ -194,7 +194,7 @@ function OrderList() {
       </div>
 
       {/* Filter Bar */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex items-center space-x-4">
           <OrderListFilters
             dateFrom={dateFrom}
@@ -209,7 +209,7 @@ function OrderList() {
             activeFiltersCount={activeFiltersCount}
           />
         </div>
-        <div className="text-sm text-gray-500">
+        <div className="text-sm text-gray-500 lg:text-right">
           {totalActiveFilters > 0 ? (
             <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full">
               {totalActiveFilters} bộ lọc đang áp dụng
@@ -232,142 +232,144 @@ function OrderList() {
       )}
 
       {/* Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên khách hàng</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loại Phiếu</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onClick={() => handleSort('created_at')}>
-                <div className="flex items-center space-x-1">
-                  <span>Ngày tạo</span>
-                  {sortBy === 'created_at' && (
-                    <span className="text-blue-600">{sortOrder === 'asc' ? '↑' : '↓'}</span>
-                  )}
-                </div>
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onClick={() => handleSort(OrderFields.EXPECTED_DELIVERY_DATE)}>
-                <div className="flex items-center space-x-1">
-                  <span>Ngày giao dự kiến</span>
-                  {sortBy === OrderFields.EXPECTED_DELIVERY_DATE && (
-                    <span className="text-blue-600">{sortOrder === 'asc' ? '↑' : '↓'}</span>
-                  )}
-                </div>
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tổng tiền</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Người tạo</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            <Link>
-            
-            </Link>
-            {loading ? (
-              <Loading type="table" message="Đang tải đơn hàng..." colSpan="8" />
-            ) : orders.length === 0 ? (
+      <div className="overflow-hidden rounded-lg bg-white shadow">
+        <div className="border-b border-gray-100 px-4 py-3 text-xs text-gray-500 sm:hidden">
+          Vuốt ngang để xem đầy đủ thông tin bảng.
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[980px] divide-y divide-gray-200">
+            <thead className="bg-gray-50">
               <tr>
-                <td colSpan="8" className="px-6 py-12 text-center">
-                  <div className="text-gray-500">
-                    {searchId ? 'Không tìm thấy đơn hàng' : 'Chưa có đơn hàng nào'}
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">ID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Tên khách hàng</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Loại Phiếu</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Trạng thái</th>
+                <th className="cursor-pointer px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 hover:bg-gray-100" onClick={() => handleSort('created_at')}>
+                  <div className="flex items-center space-x-1">
+                    <span>Ngày tạo</span>
+                    {sortBy === 'created_at' && (
+                      <span className="text-blue-600">{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                    )}
                   </div>
-                  {!searchId && (
-                    <Link to="/orders/create" className="mt-2 inline-block text-blue-600 hover:text-blue-800">
-                      Tạo đơn hàng đầu tiên
-                    </Link>
-                  )}
-                </td>
+                </th>
+                <th className="cursor-pointer px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 hover:bg-gray-100" onClick={() => handleSort(OrderFields.EXPECTED_DELIVERY_DATE)}>
+                  <div className="flex items-center space-x-1">
+                    <span>Ngày giao dự kiến</span>
+                    {sortBy === OrderFields.EXPECTED_DELIVERY_DATE && (
+                      <span className="text-blue-600">{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                    )}
+                  </div>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Tổng tiền</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Người tạo</th>
               </tr>
-            ) : (
-              orders.map((order) => (
-                <tr key={order[OrderFields.ID]} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    <Link 
-                      to={`/orders/${order[OrderFields.ID]}`}
-                      onClick={(e) => handleLinkClick(e, order[OrderFields.ID])}
-                      className="text-gray-900 hover:text-blue-600"
-                    >
-                      #{order[OrderFields.ID]}
-                    </Link>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <Link 
-                      to={`/orders/${order[OrderFields.ID]}`}
-                      onClick={(e) => handleLinkClick(e, order[OrderFields.ID])}
-                      className="block text-gray-900 hover:text-blue-600"
-                    >
-                      <div className="text-sm">
-                        {order.customers ? order.customers[CustomerFields.NAME] : order[OrderFields.CUSTOMER_NAME]}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {order.customers ? order.customers[CustomerFields.PHONE] : order[OrderFields.CUSTOMER_PHONE]}
-                      </div>
-                    </Link>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <Link 
-                      to={`/orders/${order[OrderFields.ID]}`}
-                      onClick={(e) => handleLinkClick(e, order[OrderFields.ID])}
-                      className="block"
-                    >
-                      <StatusBadge color={getOrderTypeBadgeColor(order[OrderFields.ORDER_TYPE])}>
-                        {getOrderTypeLabel(order[OrderFields.ORDER_TYPE])}
-                      </StatusBadge>
-                    </Link>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <Link 
-                      to={`/orders/${order[OrderFields.ID]}`}
-                      onClick={(e) => handleLinkClick(e, order[OrderFields.ID])}
-                      className="block"
-                    >
-                      <StatusBadge color={getStatusBadgeColor(order[OrderFields.STATUS] || OrderStatus.STORE_HOLDS)}>
-                        {getStatusDisplay(order[OrderFields.STATUS] || OrderStatus.STORE_HOLDS)}
-                      </StatusBadge>
-                    </Link>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <Link 
-                      to={`/orders/${order[OrderFields.ID]}`}
-                      onClick={(e) => handleLinkClick(e, order[OrderFields.ID])}
-                      className="text-gray-900 hover:text-blue-600"
-                    >
-                      {formatDate(order[OrderFields.CREATED_DATE])}
-                    </Link>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <Link 
-                      to={`/orders/${order[OrderFields.ID]}`}
-                      onClick={(e) => handleLinkClick(e, order[OrderFields.ID])}
-                      className="text-gray-900 hover:text-blue-600"
-                    >
-                      {formatDate(order[OrderFields.EXPECTED_DELIVERY_DATE])}
-                    </Link>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600">
-                    <Link 
-                      to={`/orders/${order[OrderFields.ID]}`}
-                      onClick={(e) => handleLinkClick(e, order[OrderFields.ID])}
-                      className="text-green-600 hover:text-green-800"
-                    >
-                      {formatCurrency(order[OrderFields.TOTAL_AMOUNT])}
-                    </Link>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <Link 
-                      to={`/orders/${order[OrderFields.ID]}`}
-                      onClick={(e) => handleLinkClick(e, order[OrderFields.ID])}
-                      className="block text-gray-900 hover:text-blue-600"
-                    >
-                      <div className="text-sm">{order[OrderFields.CREATED_BY] || 'N/A'}</div>
-                    </Link>
+            </thead>
+            <tbody className="divide-y divide-gray-200 bg-white">
+              {loading ? (
+                <Loading type="table" message="Đang tải đơn hàng..." colSpan="8" />
+              ) : orders.length === 0 ? (
+                <tr>
+                  <td colSpan="8" className="px-6 py-12 text-center">
+                    <div className="text-gray-500">
+                      {searchId ? 'Không tìm thấy đơn hàng' : 'Chưa có đơn hàng nào'}
+                    </div>
+                    {!searchId && (
+                      <Link to="/orders/create" className="mt-2 inline-block text-blue-600 hover:text-blue-800">
+                        Tạo đơn hàng đầu tiên
+                      </Link>
+                    )}
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                orders.map((order) => (
+                  <tr key={order[OrderFields.ID]} className="transition-colors hover:bg-gray-50">
+                    <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
+                      <Link 
+                        to={`/orders/${order[OrderFields.ID]}`}
+                        onClick={(e) => handleLinkClick(e, order[OrderFields.ID])}
+                        className="text-gray-900 hover:text-blue-600"
+                      >
+                        #{order[OrderFields.ID]}
+                      </Link>
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4">
+                      <Link 
+                        to={`/orders/${order[OrderFields.ID]}`}
+                        onClick={(e) => handleLinkClick(e, order[OrderFields.ID])}
+                        className="block text-gray-900 hover:text-blue-600"
+                      >
+                        <div className="text-sm">
+                          {order.customers ? order.customers[CustomerFields.NAME] : order[OrderFields.CUSTOMER_NAME]}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {order.customers ? order.customers[CustomerFields.PHONE] : order[OrderFields.CUSTOMER_PHONE]}
+                        </div>
+                      </Link>
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4">
+                      <Link 
+                        to={`/orders/${order[OrderFields.ID]}`}
+                        onClick={(e) => handleLinkClick(e, order[OrderFields.ID])}
+                        className="block"
+                      >
+                        <StatusBadge color={getOrderTypeBadgeColor(order[OrderFields.ORDER_TYPE])}>
+                          {getOrderTypeLabel(order[OrderFields.ORDER_TYPE])}
+                        </StatusBadge>
+                      </Link>
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4">
+                      <Link 
+                        to={`/orders/${order[OrderFields.ID]}`}
+                        onClick={(e) => handleLinkClick(e, order[OrderFields.ID])}
+                        className="block"
+                      >
+                        <StatusBadge color={getStatusBadgeColor(order[OrderFields.STATUS] || OrderStatus.STORE_HOLDS)}>
+                          {getStatusDisplay(order[OrderFields.STATUS] || OrderStatus.STORE_HOLDS)}
+                        </StatusBadge>
+                      </Link>
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                      <Link 
+                        to={`/orders/${order[OrderFields.ID]}`}
+                        onClick={(e) => handleLinkClick(e, order[OrderFields.ID])}
+                        className="text-gray-900 hover:text-blue-600"
+                      >
+                        {formatDate(order[OrderFields.CREATED_DATE])}
+                      </Link>
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                      <Link 
+                        to={`/orders/${order[OrderFields.ID]}`}
+                        onClick={(e) => handleLinkClick(e, order[OrderFields.ID])}
+                        className="text-gray-900 hover:text-blue-600"
+                      >
+                        {formatDate(order[OrderFields.EXPECTED_DELIVERY_DATE])}
+                      </Link>
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm font-bold text-green-600">
+                      <Link 
+                        to={`/orders/${order[OrderFields.ID]}`}
+                        onClick={(e) => handleLinkClick(e, order[OrderFields.ID])}
+                        className="text-green-600 hover:text-green-800"
+                      >
+                        {formatCurrency(order[OrderFields.TOTAL_AMOUNT])}
+                      </Link>
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4">
+                      <Link 
+                        to={`/orders/${order[OrderFields.ID]}`}
+                        onClick={(e) => handleLinkClick(e, order[OrderFields.ID])}
+                        className="block text-gray-900 hover:text-blue-600"
+                      >
+                        <div className="text-sm">{order[OrderFields.CREATED_BY] || 'N/A'}</div>
+                      </Link>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <Pagination

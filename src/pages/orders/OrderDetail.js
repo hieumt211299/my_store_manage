@@ -3,7 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
 import { supabase } from '../../lib/supabase';
 import { useNotification } from '../../contexts/NotificationContext';
-import PrintOrder from '../../components/PrintOrder';
+import PrintOrder from '../../components/print-templates/PrintOrder';
+import PrintWarehouseIssue from '../../components/print-templates/PrintWarehouseIssue';
 import Loading from '../../components/Loading';
 import PageHeader from '../../components/PageHeader';
 import CustomerInfoCard from './components/CustomerInfoCard';
@@ -29,11 +30,19 @@ function OrderDetail() {
   const [fetchError, setFetchError] = useState(null);
   const [statusLoading, setStatusLoading] = useState(false);
   const [orderResale, setOrderResale] = useState(null);
-  const printRef = useRef(null);
+  const [isPrintMenuOpen, setIsPrintMenuOpen] = useState(false);
+  const printMenuRef = useRef(null);
+  const orderPrintRef = useRef(null);
+  const warehousePrintRef = useRef(null);
 
-  const handlePrint = useReactToPrint({
-    contentRef: printRef,
+  const handleOrderPrint = useReactToPrint({
+    contentRef: orderPrintRef,
     documentTitle: `Phieu-dat-hang-${id}`,
+  });
+
+  const handleWarehousePrint = useReactToPrint({
+    contentRef: warehousePrintRef,
+    documentTitle: `Phieu-xuat-kho-${id}`,
   });
 
   useEffect(() => {
@@ -81,6 +90,20 @@ function OrderDetail() {
     if (id) fetchOrderDetail();
   }, [id, addNotification]);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (printMenuRef.current && !printMenuRef.current.contains(event.target)) {
+        setIsPrintMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const updateOrderStatus = async (newStatus) => {
     try {
       setStatusLoading(true);
@@ -117,6 +140,24 @@ function OrderDetail() {
     order?.[OrderFields.STATUS] !== OrderStatus.RESOLD_TO_STORE &&
     order?.[OrderFields.EXPECTED_DELIVERY_DATE] >= today &&
     !orderResale;
+
+  const printOptions = [
+    {
+      key: 'order',
+      label: 'In phiếu đặt hàng',
+      onClick: handleOrderPrint,
+    },
+    {
+      key: 'warehouse',
+      label: 'In phiếu xuất kho',
+      onClick: handleWarehousePrint,
+    },
+  ];
+
+  const handlePrintOptionClick = (printAction) => {
+    setIsPrintMenuOpen(false);
+    printAction();
+  };
 
   if (loading) {
     return <Loading type="page" message="Đang tải chi tiết đơn hàng..." />;
@@ -168,12 +209,32 @@ function OrderDetail() {
                 Xem giao dịch bán lại
               </Link>
             )}
-            <button
-              onClick={handlePrint}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center"
-            >
-              🖨️ In phiếu
-            </button>
+            <div className="relative" ref={printMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsPrintMenuOpen((prev) => !prev)}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+              >
+                <span>🖨️</span>
+                <span>In phiếu</span>
+                <span className={`transition-transform ${isPrintMenuOpen ? 'rotate-180' : ''}`}>▼</span>
+              </button>
+
+              {isPrintMenuOpen && (
+                <div className="absolute right-0 z-20 mt-2 w-56 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
+                  {printOptions.map((option) => (
+                    <button
+                      key={option.key}
+                      type="button"
+                      onClick={() => handlePrintOptionClick(option.onClick)}
+                      className="block w-full px-4 py-3 text-left text-sm text-gray-700 transition-colors hover:bg-gray-50"
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </>
         }
       />
@@ -208,7 +269,8 @@ function OrderDetail() {
 
       {/* Hidden Print Template */}
       <div style={{ display: 'none' }}>
-        <PrintOrder ref={printRef} order={order} />
+        <PrintOrder ref={orderPrintRef} order={order} />
+        <PrintWarehouseIssue ref={warehousePrintRef} order={order} />
       </div>
     </div>
   );

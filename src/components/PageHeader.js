@@ -10,18 +10,18 @@ function PageHeader({
   badge,
 }) {
   return (
-    <div className="flex items-center justify-between mb-8">
-      <div className="flex items-center space-x-4">
+    <div className="mb-6 flex flex-col gap-4 md:mb-8 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:space-x-4 sm:gap-0">
         {backTo && (
           <Link to={backTo} className="text-gray-500 hover:text-gray-700">
             {backLabel}
           </Link>
         )}
         <div>
-          <div className="flex items-center space-x-4">
-            <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:space-x-4 sm:gap-0">
+            <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">{title}</h1>
             {badge && (
-              <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+              <span className="w-fit rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-500">
                 {badge}
               </span>
             )}
@@ -29,7 +29,7 @@ function PageHeader({
           {subtitle && <p className="text-gray-600 mt-1">{subtitle}</p>}
         </div>
       </div>
-      {actions && <div className="flex items-center space-x-4">{actions}</div>}
+      {actions && <div className="flex w-full flex-wrap items-center gap-3 md:w-auto md:justify-end">{actions}</div>}
     </div>
   );
 }

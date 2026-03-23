@@ -163,7 +163,7 @@ function OrderResaleList() {
   const activeFiltersCount = getActiveFiltersCount();
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-7xl px-0 sm:px-2 lg:px-4">
       <PageHeader
         title="Bán đơn cho cửa hàng"
         subtitle="Quản lý các giao dịch cửa hàng mua lại đơn hàng từ khách."
@@ -210,8 +210,12 @@ function OrderResaleList() {
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
+      <div className="overflow-hidden rounded-lg bg-white shadow">
+        <div className="border-b border-gray-100 px-4 py-3 text-xs text-gray-500 sm:hidden">
+          Vuốt ngang để xem đầy đủ thông tin bảng.
+        </div>
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[920px] divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã GD</th>
@@ -334,6 +338,7 @@ function OrderResaleList() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       <Pagination

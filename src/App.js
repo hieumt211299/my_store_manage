@@ -28,8 +28,8 @@ function AppContent() {
   return (
     <div className="flex h-screen bg-gray-100 overflow-hidden">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-6">
+      <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden pt-16 md:pt-0">
+        <div className="p-4 sm:p-6">
           <Routes>
             <Route path="/" element={<Navigate to="/products" replace />} />
             <Route path="/products" element={<ProductList />} />

@@ -113,17 +113,17 @@ function EmployeeList() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-7xl px-0 sm:px-2 lg:px-4">
       <PageHeader
         title="Quản lý nhân viên"
         actions={
-          <div className="flex items-center space-x-4">
-            <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+            <span className="w-fit rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-500">
               {totalEmployees} nhân viên
             </span>
             <button
               onClick={() => navigate('/employees/create')}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium"
+              className="w-full rounded-md bg-blue-500 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600 sm:w-auto"
             >
               Thêm nhân viên
             </button>
@@ -133,8 +133,8 @@ function EmployeeList() {
 
       {/* Filters */}
       <div className="mb-6 bg-white p-4 rounded-lg shadow-sm">
-        <form onSubmit={handleSearch} className="flex flex-col sm:flex-row items-start sm:items-end space-y-4 sm:space-y-0 sm:space-x-4">
-          <div className="flex-1 max-w-md">
+        <form onSubmit={handleSearch} className="flex flex-col gap-4 sm:flex-row sm:items-end">
+          <div className="w-full sm:max-w-md sm:flex-1">
             <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
               Tìm kiếm nhân viên
             </label>
@@ -148,10 +148,10 @@ function EmployeeList() {
             />
           </div>
           
-          <div className="flex space-x-2">
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
             <button
               type="submit"
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium"
+              className="rounded-md bg-blue-500 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600"
             >
               Tìm kiếm
             </button>
@@ -159,7 +159,7 @@ function EmployeeList() {
               <button
                 type="button"
                 onClick={handleClearSearch}
-                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium"
+                className="rounded-md bg-gray-500 px-4 py-2 text-sm font-medium text-white hover:bg-gray-600"
               >
                 Xóa bộ lọc
               </button>
@@ -173,9 +173,12 @@ function EmployeeList() {
       ) : (
         <>
           {/* Employee Table */}
-          <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+          <div className="overflow-hidden rounded-lg bg-white shadow-sm">
+            <div className="border-b border-gray-100 px-4 py-3 text-xs text-gray-500 sm:hidden">
+              Vuốt ngang để xem đầy đủ thông tin bảng.
+            </div>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
+              <table className="w-full min-w-[640px] divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">

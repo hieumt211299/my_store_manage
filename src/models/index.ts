@@ -82,7 +82,7 @@ export type { Employee, EmployeeForm, EmployeeRoleValue, EmployeeStatusValue } f
 export { Tables, StorageBuckets } from './constants';
 
 // ── Formatting utilities ─────────────────────
-export { formatCurrency, formatDate, formatDateTime } from './formatters';
+export { formatCurrency, formatDate, formatDateTime, numberToVietnameseCurrencyWords } from './formatters';
 
 // ── Query fragments ──────────────────────────
 export {

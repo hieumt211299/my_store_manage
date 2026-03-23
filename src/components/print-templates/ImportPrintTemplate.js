@@ -8,7 +8,7 @@ import {
   getImportStatusDisplay,
   formatCurrency,
   formatDate,
-} from '../../../models';
+} from '../../models';
 
 const ImportPrintTemplate = React.forwardRef(({ importOrder }, ref) => {
   if (!importOrder) return null;
@@ -20,7 +20,55 @@ const ImportPrintTemplate = React.forwardRef(({ importOrder }, ref) => {
     sum + item[ImportItemFields.QUANTITY], 0) || 0;
 
   return (
-    <div ref={ref} className="print-container bg-white p-8 max-w-4xl mx-auto">
+    <div ref={ref} className="print-container">
+      <style>{`
+        @media print {
+          @page {
+            size: A4;
+            margin: 15mm;
+          }
+          body * {
+            visibility: hidden;
+          }
+          .print-container, .print-container * {
+            visibility: visible;
+          }
+          .print-container {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+          }
+        }
+
+        .print-container {
+          background: #fff;
+          padding: 32px;
+          max-width: 896px;
+          margin: 0 auto;
+        }
+
+        @media print {
+          .print-container {
+            font-size: 12px;
+            max-width: none;
+            margin: 0;
+            padding: 20px;
+          }
+          
+          .print-container h1 {
+            font-size: 24px;
+          }
+          
+          .print-container h3 {
+            font-size: 14px;
+          }
+          
+          .print-container table {
+            font-size: 11px;
+          }
+        }
+      `}</style>
       {/* Header */}
       <div className="border-b-2 border-black pb-4 mb-6">
         <div className="text-center">
@@ -208,29 +256,6 @@ const ImportPrintTemplate = React.forwardRef(({ importOrder }, ref) => {
       <div className="text-center text-xs text-gray-500 mt-8 border-t border-gray-300 pt-4">
         Phiếu nhập hàng được tạo tự động • In lúc: {new Date().toLocaleString('vi-VN')}
       </div>
-
-      <style jsx>{`
-        @media print {
-          .print-container {
-            font-size: 12px;
-            max-width: none;
-            margin: 0;
-            padding: 20px;
-          }
-          
-          .print-container h1 {
-            font-size: 24px;
-          }
-          
-          .print-container h3 {
-            font-size: 14px;
-          }
-          
-          .print-container table {
-            font-size: 11px;
-          }
-        }
-      `}</style>
     </div>
   );
 });

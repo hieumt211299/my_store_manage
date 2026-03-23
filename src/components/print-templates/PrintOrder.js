@@ -6,7 +6,7 @@ import {
   formatCurrency,
   formatDate,
   formatDateTime,
-} from '../models';
+} from '../../models';
 
 const PrintOrder = React.forwardRef(({ order }, ref) => {
   // formatCurrency, formatDate, formatDateTime imported from models
