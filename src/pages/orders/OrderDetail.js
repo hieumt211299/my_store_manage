@@ -146,7 +146,9 @@ function OrderDetail() {
   const printOptions = [
     {
       key: 'order',
-      label: 'In phiếu đặt hàng',
+      label: order?.[OrderFields.ORDER_TYPE] === OrderType.WARRANTY
+        ? 'In phiếu đảm bảo'
+        : 'In hợp đồng bán hàng',
       onClick: handleOrderPrint,
     },
     {
