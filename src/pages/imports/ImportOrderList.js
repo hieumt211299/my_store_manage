@@ -35,12 +35,31 @@ function ImportOrderList() {
   const [sourceFilter, setSourceFilter] = useState(searchParams.get('source') || '');
   const [statusFilter, setStatusFilter] = useState(searchParams.getAll('status') || []);
   
+  // Product search states
+  const [productFilter, setProductFilter] = useState(
+    searchParams.get('productId') || ''
+  );
+  const [quantity, setQuantity] = useState(
+    searchParams.get('quantity') ? parseInt(searchParams.get('quantity')) : null
+  );
+  
   // Sorting states
   const [sortBy, setSortBy] = useState(searchParams.get('sortBy') || 'created_at');
   const [sortOrder, setSortOrder] = useState(searchParams.get('sortOrder') || 'desc');
   
   // Debounced search ID
   const [debouncedSearchId, setDebouncedSearchId] = useState(searchParams.get('search') || '');
+
+  // Handle apply filters callback from ImportListFilters
+  const handleApplyFilters = useCallback((filters) => {
+    setDateFrom(filters.dateFrom);
+    setDateTo(filters.dateTo);
+    setSourceFilter(filters.sourceFilter);
+    setStatusFilter(filters.statusFilter);
+    setProductFilter(filters.productFilter);
+    setQuantity(filters.quantity);
+    setCurrentPage(1); // Reset pagination when filters change
+  }, []);
 
   // Fetch imports from database with pagination and search
   const fetchImports = useCallback(async () => {
@@ -52,8 +71,12 @@ function ImportOrderList() {
       let query = supabase
         .from(Tables.IMPORT_ORDERS)
         .select(ImportOrderSelectWithItems, { count: 'exact' })
-        .order(sortBy, { ascending: sortOrder === 'asc' })
-        .range(offset, offset + itemsPerPage - 1);
+        .order(sortBy, { ascending: sortOrder === 'asc' });
+
+      // Only apply pagination if no product search (since we need all data for client-side filtering)
+      if (!productFilter && !quantity) {
+        query = query.range(offset, offset + itemsPerPage - 1);
+      }
 
       // Search by ID or Ancarat invoice number
       if (debouncedSearchId && debouncedSearchId.trim()) {
@@ -76,15 +99,45 @@ function ImportOrderList() {
       const { data, error, count } = await query;
 
       if (error) throw error;
-      setImports(data || []);
-      setTotalImports(count || 0);
+      
+      let filteredData = data || [];
+      let finalCount = count || 0;
+      
+      // Client-side product filtering 
+      // TODO: Optimize with Supabase RPC function for better performance with large datasets
+      if (productFilter || quantity) {
+        filteredData = filteredData.filter(importOrder => {
+          return importOrder.import_items && importOrder.import_items.some(item => {
+            let matches = true;
+            
+            if (productFilter && item.products) {
+              matches = matches && item.products.id.toString() === productFilter;
+            }
+            
+            if (quantity) {
+              matches = matches && item.quantity === quantity;
+            }
+            
+            return matches;
+          });
+        });
+        finalCount = filteredData.length;
+        
+        // Re-paginate filtered results
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        filteredData = filteredData.slice(startIndex, endIndex);
+      }
+
+      setImports(filteredData);
+      setTotalImports(finalCount);
     } catch (error) {
       console.error('Error fetching imports:', error);
       setMessage(`Lỗi tải đơn nhập: ${error.message}`);
     } finally {
       setLoading(false);
     }
-  }, [currentPage, debouncedSearchId, itemsPerPage, dateFrom, dateTo, sourceFilter, statusFilter, sortBy, sortOrder]);
+  }, [currentPage, debouncedSearchId, itemsPerPage, dateFrom, dateTo, sourceFilter, statusFilter, productFilter, quantity, sortBy, sortOrder]);
 
   // Update URL when state changes
   useEffect(() => {
@@ -96,6 +149,8 @@ function ImportOrderList() {
     if (dateTo) params.set('dateTo', dateTo);
     if (sourceFilter) params.set('source', sourceFilter);
     if (statusFilter.length > 0) statusFilter.forEach((status) => params.append('status', status));
+    if (productFilter) params.set('productId', productFilter);
+    if (quantity) params.set('quantity', quantity.toString());
     if (sortBy !== 'created_at') params.set('sortBy', sortBy);
     if (sortOrder !== 'desc') params.set('sortOrder', sortOrder);
 
@@ -104,7 +159,7 @@ function ImportOrderList() {
     if (newSearch !== currentSearch) {
       setSearchParams(params, { replace: true });
     }
-  }, [debouncedSearchId, currentPage, dateFrom, dateTo, sourceFilter, statusFilter, sortBy, sortOrder, searchParams, setSearchParams]);
+  }, [debouncedSearchId, currentPage, dateFrom, dateTo, sourceFilter, statusFilter, productFilter, quantity, sortBy, sortOrder, searchParams, setSearchParams]);
 
   useEffect(() => {
     fetchImports();
@@ -128,6 +183,8 @@ function ImportOrderList() {
     setDateTo('');
     setSourceFilter('');
     setStatusFilter([]);
+    setProductFilter('');
+    setQuantity(null);
     setCurrentPage(1);
   };
 
@@ -165,6 +222,8 @@ function ImportOrderList() {
     if (dateTo) count++;
     if (sourceFilter) count++;
     if (statusFilter.length > 0) count++;
+    if (productFilter) count++;
+    if (quantity) count++;
     return count;
   };
 
@@ -219,10 +278,9 @@ function ImportOrderList() {
           dateTo={dateTo}
           sourceFilter={sourceFilter}
           statusFilter={statusFilter}
-          onDateFromChange={setDateFrom}
-          onDateToChange={setDateTo}
-          onSourceFilterChange={setSourceFilter}
-          onStatusFilterChange={setStatusFilter}
+          productFilter={productFilter}
+          quantity={quantity}
+          onApplyFilters={handleApplyFilters}
           onClearFilters={handleClearFilters}
           activeFiltersCount={activeFiltersCount}
         />

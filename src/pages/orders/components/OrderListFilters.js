@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import DropdownMultiSelect from '../../../components/DropdownMultiSelect';
-import { supabase } from '../../../lib/supabase';
+import SearchInputDropdown from '../../../components/SearchInputDropdown';
 import {
   Tables,
   CustomerFields,
@@ -12,92 +12,41 @@ function OrderListFilters({
   dateFrom,
   dateTo,
   customerFilter,
+  productFilter,
   statusFilter,
   onDateFromChange,
   onDateToChange,
   onCustomerFilterChange,
+  onProductFilterChange,
   onStatusFilterChange,
   onClearFilters,
   activeFiltersCount,
 }) {
   const [showFilters, setShowFilters] = useState(false);
-  const [customers, setCustomers] = useState([]);
-  const [filteredCustomers, setFilteredCustomers] = useState([]);
-  const [customerSearchTerm, setCustomerSearchTerm] = useState('');
-  const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
   const [selectedCustomerName, setSelectedCustomerName] = useState('');
+  const [selectedProductName, setSelectedProductName] = useState('');
 
-  const fetchCustomers = useCallback(async () => {
-    try {
-      const { data, error } = await supabase
-        .from(Tables.CUSTOMERS)
-        .select(`${CustomerFields.ID}, ${CustomerFields.NAME}, ${CustomerFields.ID_NUMBER}`)
-        .order(CustomerFields.NAME);
-      if (error) throw error;
-      setCustomers(data || []);
-    } catch (error) {
-      console.error('Error fetching customers:', error);
-    }
-  }, []);
 
-  useEffect(() => {
-    fetchCustomers();
-  }, [fetchCustomers]);
-
-  useEffect(() => {
-    if (customers.length > 0) {
-      setFilteredCustomers(customers.slice(0, 10));
-    }
-  }, [customers]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (!event.target.closest('.filter-dropdown')) {
         setShowFilters(false);
       }
-      if (!event.target.closest('.customer-search-container')) {
-        setShowCustomerDropdown(false);
-      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleCustomerSearch = (searchTerm) => {
-    setCustomerSearchTerm(searchTerm);
-    if (searchTerm.length === 0) {
-      setFilteredCustomers(customers.slice(0, 10));
-      setShowCustomerDropdown(customers.length > 0);
-    } else if (searchTerm.length >= 1) {
-      const filtered = customers.filter(c =>
-        c[CustomerFields.NAME].toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c[CustomerFields.ID_NUMBER].includes(searchTerm)
-      );
-      setFilteredCustomers(filtered.slice(0, 10));
-      setShowCustomerDropdown(filtered.length > 0);
-    } else {
-      setFilteredCustomers([]);
-      setShowCustomerDropdown(false);
-    }
+  const handleCustomerChange = (customerId, customerData) => {
+    onCustomerFilterChange(customerId);
+    setSelectedCustomerName(customerData ? customerData[CustomerFields.NAME] : '');
   };
 
-  const handleSelectCustomer = (customer) => {
-    onCustomerFilterChange(customer[CustomerFields.ID]);
-    setSelectedCustomerName(customer[CustomerFields.NAME]);
-    setCustomerSearchTerm(`${customer[CustomerFields.NAME]} (${customer[CustomerFields.ID_NUMBER]})`);
-    setShowCustomerDropdown(false);
-  };
-
-  const handleClearCustomer = () => {
-    onCustomerFilterChange('');
-    setSelectedCustomerName('');
-    setCustomerSearchTerm('');
-    setShowCustomerDropdown(false);
-  };
 
   const handleClearAll = () => {
-    setCustomerSearchTerm('');
     setSelectedCustomerName('');
+    setSelectedProductName('');
     setShowFilters(false);
     onClearFilters();
   };
@@ -159,60 +108,29 @@ function OrderListFilters({
               </div>
 
               {/* Customer Filter */}
-              <div className="relative customer-search-container">
-                <label className="block text-sm font-medium text-gray-700 mb-2">👤 Khách hàng</label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={customerSearchTerm}
-                    onChange={(e) => handleCustomerSearch(e.target.value)}
-                    onFocus={() => {
-                      if (!showCustomerDropdown && customers.length > 0) {
-                        setFilteredCustomers(customers.slice(0, 10));
-                        setShowCustomerDropdown(true);
-                      }
-                    }}
-                    placeholder="Tìm kiếm khách hàng..."
-                    className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  {selectedCustomerName && (
-                    <button
-                      onClick={handleClearCustomer}
-                      className="absolute right-2 top-2 text-gray-400 hover:text-gray-600"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
+              <SearchInputDropdown
+                tableName={Tables.CUSTOMERS}
+                selectedId={customerFilter}
+                selectedDisplayName={selectedCustomerName}
+                onSelectionChange={handleCustomerChange}
+                label="Khách hàng"
+                emoji="👤"
+                placeholder="Tìm kiếm khách hàng..."
+                className="relative customer-search-container"
+                fields={{
+                  id: CustomerFields.ID,
+                  name: CustomerFields.NAME,
+                  searchFields: [CustomerFields.NAME, CustomerFields.ID_NUMBER],
+                  displayFields: [CustomerFields.ID_NUMBER]
+                }}
+                formatDisplayText={(customer) => `${customer[CustomerFields.NAME]} (${customer[CustomerFields.ID_NUMBER]})`}
+                formatDropdownItem={(customer) => ({
+                  primary: customer[CustomerFields.NAME],
+                  secondary: `CCCD: ${customer[CustomerFields.ID_NUMBER]}`
+                })}
+              />
 
-                {showCustomerDropdown && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto z-10">
-                    {filteredCustomers.length > 0 ? (
-                      <>
-                        {filteredCustomers.map((customer) => (
-                          <div
-                            key={customer[CustomerFields.ID]}
-                            onClick={() => handleSelectCustomer(customer)}
-                            className="px-3 py-2 cursor-pointer hover:bg-blue-50 border-b border-gray-100 last:border-b-0"
-                          >
-                            <div className="font-medium text-gray-900">{customer[CustomerFields.NAME]}</div>
-                            <div className="text-sm text-gray-600">CCCD: {customer[CustomerFields.ID_NUMBER]}</div>
-                          </div>
-                        ))}
-                        {customers.length > 10 && filteredCustomers.length === 10 && !customerSearchTerm && (
-                          <div className="px-3 py-2 text-xs text-gray-500 text-center border-t border-gray-100">
-                            Nhập để tìm kiếm thêm khách hàng...
-                          </div>
-                        )}
-                      </>
-                    ) : (
-                      <div className="px-3 py-2 text-gray-500 text-sm">
-                        {customerSearchTerm ? 'Không tìm thấy khách hàng nào' : 'Chưa có khách hàng nào'}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
+              {/* Product Filter */}
 
               {/* Actions */}
               <div className="flex justify-between pt-3 border-t border-gray-200">
@@ -252,6 +170,11 @@ function OrderListFilters({
           {customerFilter && selectedCustomerName && (
             <span className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">
               KH: {selectedCustomerName}
+            </span>
+          )}
+          {productFilter && selectedProductName && (
+            <span className="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full">
+              SP: {selectedProductName}
             </span>
           )}
           {statusFilter.map((status) => (

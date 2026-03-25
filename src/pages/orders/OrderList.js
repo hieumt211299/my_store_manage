@@ -37,6 +37,7 @@ function OrderList() {
   const [dateTo, setDateTo] = useState(searchParams.get('dateTo') || '');
   const [customerFilter, setCustomerFilter] = useState(searchParams.get('customer') || '');
   const [statusFilter, setStatusFilter] = useState(searchParams.getAll('status') || []);
+  const [productFilter, setProductFilter] = useState(searchParams.get('productId') || '');
   
   // Sorting states
   const [sortBy, setSortBy] = useState(searchParams.get('sortBy') || 'created_at');
@@ -54,8 +55,12 @@ function OrderList() {
       let query = supabase
         .from(Tables.ORDERS)
         .select(OrderSelectWithCustomerAndItems, { count: 'exact' })
-        .order(sortBy, { ascending: sortOrder === 'asc' })
-        .range(offset, offset + itemsPerPage - 1);
+        .order(sortBy, { ascending: sortOrder === 'asc' });
+
+      // Only apply pagination if no product search (since we need all data for client-side filtering)
+      if (!productFilter) {
+        query = query.range(offset, offset + itemsPerPage - 1);
+      }
 
       if (debouncedSearchId && debouncedSearchId.trim()) {
         query = query.eq(OrderFields.ID, parseInt(debouncedSearchId.trim()));
@@ -68,15 +73,33 @@ function OrderList() {
       const { data, error, count } = await query;
 
       if (error) throw error;
-      setOrders(data || []);
-      setTotalOrders(count || 0);
+      
+      let filteredData = data || [];
+      
+      // Client-side product filtering 
+      if (productFilter) {
+        filteredData = filteredData.filter(order => {
+          return order.order_items && order.order_items.some(item => {
+            return item.products && item.products.id.toString() === productFilter;
+          });
+        });
+        
+        // Apply pagination to filtered results
+        const total = filteredData.length;
+        filteredData = filteredData.slice(offset, offset + itemsPerPage);
+        setTotalOrders(total);
+      } else {
+        setTotalOrders(count || 0);
+      }
+      
+      setOrders(filteredData);
     } catch (error) {
       console.error('Error fetching orders:', error);
       setMessage(`Lỗi tải đơn hàng: ${error.message}`);
     } finally {
       setLoading(false);
     }
-  }, [currentPage, debouncedSearchId, itemsPerPage, dateFrom, dateTo, customerFilter, statusFilter, sortBy, sortOrder]);
+  }, [currentPage, debouncedSearchId, itemsPerPage, dateFrom, dateTo, customerFilter, statusFilter, productFilter, sortBy, sortOrder]);
 
   // Update URL when state changes
   useEffect(() => {
@@ -87,6 +110,7 @@ function OrderList() {
     if (dateFrom) params.set('dateFrom', dateFrom);
     if (dateTo) params.set('dateTo', dateTo);
     if (customerFilter) params.set('customer', customerFilter);
+    if (productFilter) params.set('productId', productFilter);
     if (statusFilter.length > 0) {
       statusFilter.forEach(status => params.append('status', status));
     }
@@ -99,7 +123,7 @@ function OrderList() {
     if (newSearch !== currentSearch) {
       setSearchParams(params, { replace: true });
     }
-  }, [debouncedSearchId, currentPage, dateFrom, dateTo, customerFilter, statusFilter, sortBy, sortOrder, searchParams, setSearchParams]);
+  }, [debouncedSearchId, currentPage, dateFrom, dateTo, customerFilter, statusFilter, productFilter, sortBy, sortOrder, searchParams, setSearchParams]);
 
   useEffect(() => {
     fetchOrders();
@@ -123,6 +147,7 @@ function OrderList() {
     setDateTo('');
     setCustomerFilter('');
     setStatusFilter([]);
+    setProductFilter('');
     setCurrentPage(1);
   };
 
@@ -151,6 +176,7 @@ function OrderList() {
     if (dateFrom) count++;
     if (dateTo) count++;
     if (customerFilter) count++;
+    if (productFilter) count++;
     if (statusFilter.length > 0) count++;
     return count;
   };
@@ -200,10 +226,12 @@ function OrderList() {
             dateFrom={dateFrom}
             dateTo={dateTo}
             customerFilter={customerFilter}
+            productFilter={productFilter}
             statusFilter={statusFilter}
             onDateFromChange={setDateFrom}
             onDateToChange={setDateTo}
             onCustomerFilterChange={setCustomerFilter}
+            onProductFilterChange={setProductFilter}
             onStatusFilterChange={setStatusFilter}
             onClearFilters={handleClearFilters}
             activeFiltersCount={activeFiltersCount}

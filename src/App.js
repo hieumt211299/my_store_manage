@@ -14,7 +14,7 @@ import CustomerList from './pages/CustomerList';
 import CustomerDetail from './pages/CustomerDetail';
 import CreateWarranty from './pages/CreateWarranty';
 import PrintWarranty from './pages/PrintWarranty';
-import { ReportsLayout, RevenueReport, DueSoonReport } from './pages/reports';
+import { ReportsLayout, RevenueReport, DueSoonReport, PurchaseLedgerReport } from './pages/reports';
 import Login from './pages/Login';
 import './App.css';
 
@@ -56,6 +56,7 @@ function AppContent() {
               <Route index element={<Navigate to="/reports/revenue" replace />} />
               <Route path="revenue" element={<RevenueReport />} />
               <Route path="due-soon" element={<DueSoonReport />} />
+              <Route path="purchase-ledger" element={<PurchaseLedgerReport />} />
             </Route>
             <Route path="/settings" element={<PagePlaceholder title="Settings" />} />
           </Routes>

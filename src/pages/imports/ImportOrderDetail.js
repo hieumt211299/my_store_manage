@@ -10,6 +10,7 @@ import ImportSourceInfo from './components/ImportSourceInfo';
 import ImportItemsDetail from './components/ImportItemsDetail';
 import ImportPrintTemplate from '../../components/print-templates/ImportPrintTemplate';
 import ImportWarehouseReceiptTemplate from '../../components/print-templates/ImportWarehouseReceiptTemplate';
+import ImportSellerCommitmentTemplate from '../../components/print-templates/ImportSellerCommitmentTemplate';
 import {
   Tables,
   ImportOrderFields,
@@ -36,6 +37,7 @@ function ImportOrderDetail() {
   const printMenuListRef = useRef(null);
   const printImportRef = useRef(null);
   const printWarehouseRef = useRef(null);
+  const printSellerCommitmentRef = useRef(null);
 
   const handleImportPrint = useReactToPrint({
     contentRef: printImportRef,
@@ -45,6 +47,11 @@ function ImportOrderDetail() {
   const handleWarehousePrint = useReactToPrint({
     contentRef: printWarehouseRef,
     documentTitle: `Phieu-nhap-kho-${id}`,
+  });
+
+  const handleSellerCommitmentPrint = useReactToPrint({
+    contentRef: printSellerCommitmentRef,
+    documentTitle: `Bien-ban-cam-ket-ban-tai-san-${id}`,
   });
 
   useEffect(() => {
@@ -150,6 +157,7 @@ function ImportOrderDetail() {
     importOrder?.[ImportOrderFields.STATUS] === ImportOrderStatus.PENDING &&
     importOrder?.[ImportOrderFields.EXPECTED_RETURN_DATE] >= today &&
     !importOrderResale;
+  const isCustomerImport = importOrder?.[ImportOrderFields.SOURCE_TYPE] === ImportOrderSourceType.CUSTOMER;
 
   const printOptions = [
     {
@@ -162,6 +170,15 @@ function ImportOrderDetail() {
       label: 'In phiếu nhập kho',
       onClick: handleWarehousePrint,
     },
+    ...(isCustomerImport
+      ? [
+          {
+            key: 'seller-commitment',
+            label: 'In biên bản cam kết bán tài sản',
+            onClick: handleSellerCommitmentPrint,
+          },
+        ]
+      : []),
   ];
 
   const handlePrintOptionClick = (printAction) => {
@@ -322,6 +339,7 @@ function ImportOrderDetail() {
       <div style={{ display: 'none' }}>
         <ImportPrintTemplate ref={printImportRef} importOrder={importOrder} />
         <ImportWarehouseReceiptTemplate ref={printWarehouseRef} importOrder={importOrder} />
+        <ImportSellerCommitmentTemplate ref={printSellerCommitmentRef} importOrder={importOrder} />
       </div>
     </div>
   );

@@ -13,6 +13,11 @@ function ReportsLayout() {
       label: 'Sắp tới hạn',
       icon: '⏰'
     },
+    {
+      path: '/reports/purchase-ledger',
+      label: 'Bảng kê thu mua',
+      icon: '🧾'
+    },
   ];
 
   return (
@@ -20,7 +25,7 @@ function ReportsLayout() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Báo cáo</h1>
-        <p className="text-gray-600">Theo dõi dòng tiền và các đơn sắp tới hạn cần xử lý</p>
+        <p className="text-gray-600">Theo dõi dòng tiền, bảng kê thu mua và các đơn sắp tới hạn cần xử lý</p>
       </div>
 
       {/* Navigation Tabs */}
