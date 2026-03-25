@@ -86,8 +86,16 @@ function SearchInputDropdown({
   }, [selectedId, items, fields.id, formatDisplayText]);
 
   useEffect(() => {
+    const rootClassName = (className || '').split(/\s+/).find(Boolean);
+
     const handleClickOutside = (event) => {
-      if (!event.target.closest(`.${className.split(' ')[1]}`)) {
+      // If we don't have a valid root class, treat clicks as outside to avoid invalid selectors
+      if (!rootClassName) {
+        setShowDropdown(false);
+        return;
+      }
+
+      if (!event.target.closest(`.${rootClassName}`)) {
         setShowDropdown(false);
       }
     };
