@@ -49,34 +49,39 @@ function ImportListFilters({
     });
   }, [dateFrom, dateTo, sourceFilter, statusFilter, productFilter, quantity]);
 
-  // Fetch product name when productFilter prop changes
+  // Fetch product name whenever productFilter prop changes
   useEffect(() => {
-    if (productFilter && !selectedProductName) {
-      const fetchProductName = async () => {
-        try {
-          const { data: product, error } = await supabase
-            .from(Tables.PRODUCTS)
-            .select(`${ProductFields.ID}, ${ProductFields.NAME}, ${ProductFields.SKU}`)
-            .eq(ProductFields.ID, productFilter)
-            .single();
-            
-          if (error) throw error;
-          
-          if (product) {
-            const displayName = product[ProductFields.SKU] ? 
-              `${product[ProductFields.NAME]} (${product[ProductFields.SKU]})` : 
-              product[ProductFields.NAME];
-            setSelectedProductName(displayName);
-          }
-        } catch (error) {
-          console.error('Error fetching product name:', error);
-        }
-      };
-      
-      fetchProductName();
+    if (!productFilter) {
+      setSelectedProductName('');
+      return;
     }
-  }, [productFilter, selectedProductName]);
 
+    const fetchProductName = async () => {
+      try {
+        const { data: product, error } = await supabase
+          .from(Tables.PRODUCTS)
+          .select(`${ProductFields.ID}, ${ProductFields.NAME}, ${ProductFields.SKU}`)
+          .eq(ProductFields.ID, productFilter)
+          .single();
+
+        if (error) throw error;
+
+        if (product) {
+          const displayName = product[ProductFields.SKU]
+            ? `${product[ProductFields.NAME]} (${product[ProductFields.SKU]})`
+            : product[ProductFields.NAME];
+          setSelectedProductName(displayName);
+        } else {
+          setSelectedProductName('');
+        }
+      } catch (error) {
+        console.error('Error fetching product name:', error);
+        setSelectedProductName('');
+      }
+    };
+
+    fetchProductName();
+  }, [productFilter]);
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (!event.target.closest('.filter-dropdown')) {
