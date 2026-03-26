@@ -39,6 +39,15 @@ function OrderResaleList() {
   
   const itemsPerPage = 10;
 
+  const handleApplyFilters = useCallback((filters) => {
+    setDateFrom(filters.dateFrom || '');
+    setDateTo(filters.dateTo || '');
+    setPaymentFrom(filters.paymentFrom || '');
+    setPaymentTo(filters.paymentTo || '');
+    setStatusFilter(filters.statusFilter || []);
+    setCurrentPage(1);
+  }, []);
+
   const fetchItems = useCallback(async () => {
     try {
       setLoading(true);
@@ -189,11 +198,7 @@ function OrderResaleList() {
           paymentFrom={paymentFrom}
           paymentTo={paymentTo}
           statusFilter={statusFilter}
-          onDateFromChange={setDateFrom}
-          onDateToChange={setDateTo}
-          onPaymentFromChange={setPaymentFrom}
-          onPaymentToChange={setPaymentTo}
-          onStatusFilterChange={setStatusFilter}
+          onApplyFilters={handleApplyFilters}
           onClearFilters={handleClearFilters}
           activeFiltersCount={activeFiltersCount}
         />

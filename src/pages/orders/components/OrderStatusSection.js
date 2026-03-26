@@ -8,6 +8,8 @@ import {
   getPaymentMethodBadgeColor,
   getCustomerTypeLabel,
   getCustomerTypeBadgeColor,
+  getOrderTypeLabel,
+  getOrderTypeBadgeColor,
 } from '../../../models';
 
 function OrderStatusSection({ order, statusLoading, onUpdateStatus }) {
@@ -20,7 +22,7 @@ function OrderStatusSection({ order, statusLoading, onUpdateStatus }) {
       <h3 className="text-lg font-medium text-gray-900 mb-4">Trạng thái đơn hàng</h3>
 
       {/* Info Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
         <div className="bg-gray-50 p-4 rounded-lg">
           <div className="text-sm font-medium text-gray-700 mb-1">Trạng thái hiện tại</div>
           <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getStatusBadgeColor(order[OrderFields.STATUS] || OrderStatus.STORE_HOLDS)}`}>
@@ -42,6 +44,13 @@ function OrderStatusSection({ order, statusLoading, onUpdateStatus }) {
           <div className="text-sm font-medium text-gray-700 mb-1">Loại khách hàng</div>
           <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getCustomerTypeBadgeColor(order[OrderFields.CUSTOMER_TYPE])}`}>
             {getCustomerTypeLabel(order[OrderFields.CUSTOMER_TYPE])}
+          </span>
+        </div>
+
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <div className="text-sm font-medium text-gray-700 mb-1">Loại phiếu</div>
+          <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getOrderTypeBadgeColor(order[OrderFields.ORDER_TYPE])}`}>
+            {getOrderTypeLabel(order[OrderFields.ORDER_TYPE])}
           </span>
         </div>
       </div>

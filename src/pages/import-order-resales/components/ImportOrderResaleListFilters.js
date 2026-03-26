@@ -11,15 +11,28 @@ function ImportOrderResaleListFilters({
   receivedFrom,
   receivedTo,
   statusFilter,
-  onDateFromChange,
-  onDateToChange,
-  onReceivedFromChange,
-  onReceivedToChange,
-  onStatusFilterChange,
+  onApplyFilters,
   onClearFilters,
   activeFiltersCount,
 }) {
   const [showFilters, setShowFilters] = useState(false);
+  const [localFilters, setLocalFilters] = useState({
+    dateFrom: dateFrom || '',
+    dateTo: dateTo || '',
+    receivedFrom: receivedFrom || '',
+    receivedTo: receivedTo || '',
+    statusFilter: statusFilter || [],
+  });
+
+  useEffect(() => {
+    setLocalFilters({
+      dateFrom: dateFrom || '',
+      dateTo: dateTo || '',
+      receivedFrom: receivedFrom || '',
+      receivedTo: receivedTo || '',
+      statusFilter: statusFilter || [],
+    });
+  }, [dateFrom, dateTo, receivedFrom, receivedTo, statusFilter]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -35,6 +48,23 @@ function ImportOrderResaleListFilters({
     setShowFilters(false);
     onClearFilters();
   };
+
+  const updateLocalFilter = (key, value) => {
+    setLocalFilters((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleApply = () => {
+    setShowFilters(false);
+    onApplyFilters(localFilters);
+  };
+
+  const hasPendingChanges = (
+    localFilters.dateFrom !== (dateFrom || '') ||
+    localFilters.dateTo !== (dateTo || '') ||
+    localFilters.receivedFrom !== (receivedFrom || '') ||
+    localFilters.receivedTo !== (receivedTo || '') ||
+    JSON.stringify(localFilters.statusFilter) !== JSON.stringify(statusFilter || [])
+  );
 
   // Convert status enum to options for DropdownMultiSelect
   const statusOptions = Object.values(ImportOrderResaleStatus).map(status => ({
@@ -60,6 +90,9 @@ function ImportOrderResaleListFilters({
               {activeFiltersCount}
             </span>
           )}
+          {hasPendingChanges && (
+            <span className="bg-orange-500 w-2 h-2 rounded-full" title="Có thay đổi chưa áp dụng"></span>
+          )}
           <span className={`transform transition-transform ${showFilters ? 'rotate-180' : ''}`}>▼</span>
         </button>
 
@@ -72,15 +105,15 @@ function ImportOrderResaleListFilters({
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <input
                     type="date"
-                    value={dateFrom}
-                    onChange={(e) => onDateFromChange(e.target.value)}
+                    value={localFilters.dateFrom}
+                    onChange={(e) => updateLocalFilter('dateFrom', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Từ ngày"
                   />
                   <input
                     type="date"
-                    value={dateTo}
-                    onChange={(e) => onDateToChange(e.target.value)}
+                    value={localFilters.dateTo}
+                    onChange={(e) => updateLocalFilter('dateTo', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Đến ngày"
                   />
@@ -93,15 +126,15 @@ function ImportOrderResaleListFilters({
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <input
                     type="date"
-                    value={receivedFrom}
-                    onChange={(e) => onReceivedFromChange(e.target.value)}
+                    value={localFilters.receivedFrom}
+                    onChange={(e) => updateLocalFilter('receivedFrom', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Từ ngày"
                   />
                   <input
                     type="date"
-                    value={receivedTo}
-                    onChange={(e) => onReceivedToChange(e.target.value)}
+                    value={localFilters.receivedTo}
+                    onChange={(e) => updateLocalFilter('receivedTo', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Đến ngày"
                   />
@@ -112,8 +145,8 @@ function ImportOrderResaleListFilters({
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">📝 Trạng thái</label>
                 <DropdownMultiSelect
-                  values={statusFilter}
-                  onChange={onStatusFilterChange}
+                  values={localFilters.statusFilter}
+                  onChange={(values) => updateLocalFilter('statusFilter', values)}
                   options={statusOptions}
                   placeholder="Chọn một hoặc nhiều trạng thái"
                   searchPlaceholder="Tìm trạng thái..."
@@ -130,12 +163,25 @@ function ImportOrderResaleListFilters({
                 >
                   ✕ Xóa tất cả
                 </button>
-                <button
-                  onClick={() => setShowFilters(false)}
-                  className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
-                >
-                  Đóng
-                </button>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => setShowFilters(false)}
+                    className="px-4 py-2 bg-gray-600 text-white text-sm rounded-md hover:bg-gray-700"
+                  >
+                    Đóng
+                  </button>
+                  <button
+                    onClick={handleApply}
+                    className={`px-4 py-2 text-sm rounded-md transition-colors ${
+                      hasPendingChanges
+                        ? 'bg-blue-600 text-white hover:bg-blue-700'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                    disabled={!hasPendingChanges}
+                  >
+                    Áp dụng
+                  </button>
+                </div>
               </div>
             </div>
           </div>

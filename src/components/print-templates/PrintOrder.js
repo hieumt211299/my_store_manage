@@ -8,16 +8,20 @@ import {
   formatDateTime,
   numberToVietnameseCurrencyWords,
 } from '../../models';
-
-const COMPANY_NAME = 'CÔNG TY TNHH KIM PHƯỢNG MAI SILVER & JEWELRY';
-const COMPANY_ADDRESS = '43/44/20 Đỗ Thừa Luông, P. Phú Thọ Hòa, TP. Hồ Chí Minh';
-const COMPANY_TAX_CODE = '046075000054';
-const COMPANY_PHONE = '0912452288';
-const COMPANY_REPRESENTATIVE = 'TRẦN PHƯƠNG MAI';
-const COMPANY_ROLE = 'Giám đốc';
-const COMPANY_BANK_ACCOUNT = '521868';
-const COMPANY_BANK_NAME = 'Ngân hàng TMCP Kỹ Thương Việt Nam';
-const COMPANY_ACCOUNT_HOLDER = 'Công ty TNHH Kim Phượng Mai Silver & Jewelry';
+import {
+  COMPANY_BANK_ACCOUNT_HOLDER,
+  COMPANY_BANK_ACCOUNT_NUMBER,
+  COMPANY_BANK_NAME,
+  COMPANY_DISPLAY_NAME,
+  COMPANY_HEAD_OFFICE_ADDRESS,
+  COMPANY_HOTLINE,
+  COMPANY_LEGAL_NAME,
+  COMPANY_PHONE,
+  COMPANY_REPRESENTATIVE_NAME,
+  COMPANY_REPRESENTATIVE_TITLE,
+  COMPANY_STORE_ADDRESS,
+  COMPANY_TAX_CODE,
+} from '../../config/companyInfo';
 
 const extractMaterialPurity = (productName) => {
   if (!productName) return '';
@@ -225,10 +229,10 @@ const renderWarrantyTemplate = (order) => (
     `}</style>
 
     <div className="print-header">
-      <h1>KIM PHƯỢNG MAI Silver &amp; Jewelry</h1>
-      <div className="address">Trụ sở: 43/44/20 Đỗ Thừa Luông, Phường Phú Thọ Hòa, TP Hồ Chí Minh</div>
-      <div className="address">ĐC bán hàng: 100e Gò Dầu, Phường Tân Sơn Nhì, TP Hồ Chí Minh, Việt Nam</div>
-      <div className="hotline">Hotline: 08.665.888.15</div>
+      <h1>{COMPANY_DISPLAY_NAME}</h1>
+      <div className="address">Trụ sở: {COMPANY_HEAD_OFFICE_ADDRESS}</div>
+      <div className="address">ĐC bán hàng: {COMPANY_STORE_ADDRESS}</div>
+      <div className="hotline">Hotline: {COMPANY_HOTLINE}</div>
     </div>
 
     <div className="print-title">PHIẾU ĐẢM BẢO</div>
@@ -535,7 +539,7 @@ const renderSalesContractTemplate = (order) => {
 
       <div className="contract-top">
         <div className="contract-company">
-          <div className="name">{COMPANY_NAME}</div>
+          <div className="name">{COMPANY_LEGAL_NAME}</div>
           <div className="number">Số: {order[OrderFields.ID]}</div>
         </div>
         <div className="contract-country">
@@ -553,11 +557,11 @@ const renderSalesContractTemplate = (order) => {
       <div className="contract-party">
         <div className="contract-party-row">
           <span className="label">BÊN A:</span>
-          <span className="value"><strong>{COMPANY_NAME}</strong></span>
+          <span className="value"><strong>{COMPANY_LEGAL_NAME}</strong></span>
         </div>
         <div className="contract-party-row">
           <span className="label">Địa chỉ:</span>
-          <span className="value">{COMPANY_ADDRESS}</span>
+          <span className="value">{COMPANY_HEAD_OFFICE_ADDRESS}</span>
         </div>
         <div className="contract-party-row">
           <span className="label">Mã số thuế:</span>
@@ -568,8 +572,8 @@ const renderSalesContractTemplate = (order) => {
           <span className="value">{COMPANY_PHONE}</span>
         </div>
         <div className="contract-party-row contract-party-inline">
-          <span><strong>Đại diện:</strong> {COMPANY_REPRESENTATIVE}</span>
-          <span><strong>Chức vụ:</strong> {COMPANY_ROLE}</span>
+          <span><strong>Đại diện:</strong> {COMPANY_REPRESENTATIVE_NAME}</span>
+          <span><strong>Chức vụ:</strong> {COMPANY_REPRESENTATIVE_TITLE}</span>
         </div>
       </div>
 
@@ -640,7 +644,7 @@ const renderSalesContractTemplate = (order) => {
           <li>
             Phương thức thanh toán: {order[OrderFields.PAYMENT_METHOD] === PaymentMethod.BANK ? 'Chuyển khoản' : 'Tiền mặt'}.
             {order[OrderFields.PAYMENT_METHOD] === PaymentMethod.BANK && (
-              <> Bên B thanh toán cho Bên A bằng hình thức chuyển khoản vào tài khoản sau: STK: {COMPANY_BANK_ACCOUNT} - {COMPANY_BANK_NAME}. Chủ tài khoản: {COMPANY_ACCOUNT_HOLDER}.</>
+              <> Bên B thanh toán cho Bên A bằng hình thức chuyển khoản vào tài khoản sau: STK: {COMPANY_BANK_ACCOUNT_NUMBER} - {COMPANY_BANK_NAME}. Chủ tài khoản: {COMPANY_BANK_ACCOUNT_HOLDER}.</>
             )}
           </li>
         </ul>

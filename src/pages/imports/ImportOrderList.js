@@ -50,6 +50,8 @@ function ImportOrderList() {
   // Debounced search ID
   const [debouncedSearchId, setDebouncedSearchId] = useState(searchParams.get('search') || '');
 
+  const normalizedProductFilter = productFilter ? String(productFilter) : '';
+
   // Handle apply filters callback from ImportListFilters
   const handleApplyFilters = useCallback((filters) => {
     setDateFrom(filters.dateFrom);
@@ -74,7 +76,7 @@ function ImportOrderList() {
         .order(sortBy, { ascending: sortOrder === 'asc' });
 
       // Only apply pagination if no product search (since we need all data for client-side filtering)
-      if (!productFilter && !quantity) {
+      if (!normalizedProductFilter && !quantity) {
         query = query.range(offset, offset + itemsPerPage - 1);
       }
 
@@ -105,13 +107,13 @@ function ImportOrderList() {
       
       // Client-side product filtering 
       // TODO: Optimize with Supabase RPC function for better performance with large datasets
-      if (productFilter || quantity) {
+      if (normalizedProductFilter || quantity) {
         filteredData = filteredData.filter(importOrder => {
           return importOrder.import_items && importOrder.import_items.some(item => {
             let matches = true;
             
-            if (productFilter && item.products) {
-              matches = matches && item.products.id.toString() === productFilter;
+            if (normalizedProductFilter) {
+              matches = matches && String(item.products?.id || '') === normalizedProductFilter;
             }
             
             if (quantity) {
@@ -137,7 +139,7 @@ function ImportOrderList() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, debouncedSearchId, itemsPerPage, dateFrom, dateTo, sourceFilter, statusFilter, productFilter, quantity, sortBy, sortOrder]);
+  }, [currentPage, debouncedSearchId, itemsPerPage, dateFrom, dateTo, sourceFilter, statusFilter, normalizedProductFilter, quantity, sortBy, sortOrder]);
 
   // Update URL when state changes
   useEffect(() => {
@@ -355,8 +357,17 @@ function ImportOrderList() {
               <tr>
                 <td colSpan="7" className="px-6 py-12 text-center">
                   <div className="text-gray-500">
-                    {searchId ? 'Không tìm thấy đơn nhập' : 'Chưa có đơn nhập nào'}
+                    {totalActiveFilters > 0
+                      ? 'Không tìm thấy đơn nhập phù hợp với bộ lọc hiện tại'
+                      : searchId
+                        ? 'Không tìm thấy đơn nhập'
+                        : 'Chưa có đơn nhập nào'}
                   </div>
+                  {productFilter && quantity && (
+                    <div className="mt-2 text-sm text-gray-400">
+                      Số lượng lọc theo số lượng thực tế của dòng nhập hàng, không theo chữ trong tên sản phẩm.
+                    </div>
+                  )}
                   {!searchId && (
                     <Link
                       to="/imports/create"

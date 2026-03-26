@@ -36,6 +36,15 @@ function ImportOrderResaleList() {
   const [sortOrder, setSortOrder] = useState(searchParams.get('sortOrder') || 'desc');
   const itemsPerPage = 10;
 
+  const handleApplyFilters = useCallback((filters) => {
+    setDateFrom(filters.dateFrom || '');
+    setDateTo(filters.dateTo || '');
+    setReceivedFrom(filters.receivedFrom || '');
+    setReceivedTo(filters.receivedTo || '');
+    setStatusFilter(filters.statusFilter || []);
+    setCurrentPage(1);
+  }, []);
+
   const fetchItems = useCallback(async () => {
     try {
       setLoading(true);
@@ -167,11 +176,7 @@ function ImportOrderResaleList() {
           receivedFrom={receivedFrom}
           receivedTo={receivedTo}
           statusFilter={statusFilter}
-          onDateFromChange={setDateFrom}
-          onDateToChange={setDateTo}
-          onReceivedFromChange={setReceivedFrom}
-          onReceivedToChange={setReceivedTo}
-          onStatusFilterChange={setStatusFilter}
+          onApplyFilters={handleApplyFilters}
           onClearFilters={handleClearFilters}
           activeFiltersCount={activeFiltersCount}
         />

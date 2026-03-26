@@ -113,7 +113,7 @@ function ImportListFilters({
         `${productItem[ProductFields.NAME]} (${productItem[ProductFields.SKU]})` : 
         productItem[ProductFields.NAME]) : '';
     setSelectedProductName(displayName);
-    updateLocalFilter('productFilter', productId || '');
+    updateLocalFilter('productFilter', productId ? String(productId) : '');
   };
   
   // Check if filters have pending changes
@@ -211,12 +211,12 @@ function ImportListFilters({
 
             {/* Product Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">📦 Sản phẩm</label>
               <SearchInputDropdown
                 tableName={Tables.PRODUCTS}
                 selectedId={localFilters.productFilter}
                 selectedDisplayName={selectedProductName}
                 onSelectionChange={handleProductChange}
+                label='Sản phẩm'
                 placeholder="Tìm kiếm sản phẩm..."
                 emoji="📦"
                 className="relative product-search-container"
