@@ -1,11 +1,12 @@
 import React from 'react';
 import { formatCurrency, numberToVietnameseCurrencyWords } from '../../models';
-
-const COMPANY_NAME = 'CÔNG TY TNHH KIM PHƯỢNG MAI SILVER & JEWELRY';
-const COMPANY_TAX_CODE = '046075000054';
-const COMPANY_ADDRESS = '43/44/20 Đỗ Thừa Luông, P. Phú Thọ Hòa, TP. Hồ Chí Minh';
-const COMPANY_PHONE = '0912452288';
-const PURCHASE_LOCATION = '100e Gò Dầu, Phường Tân Sơn Nhì, TP Hồ Chí Minh, Việt Nam';
+import {
+  COMPANY_HEAD_OFFICE_ADDRESS,
+  COMPANY_LEGAL_NAME,
+  COMPANY_PHONE,
+  COMPANY_STORE_ADDRESS,
+  COMPANY_TAX_CODE,
+} from '../../config/companyInfo';
 
 const formatDateValue = (dateValue) => {
   if (!dateValue) return '';
@@ -182,7 +183,7 @@ const PurchaseLedgerPrintTemplate = React.forwardRef(({ rows, totalAmount, dateF
       <div className="purchase-ledger-company">
         <div className="purchase-ledger-company-row">
           <span className="label">Tên doanh nghiệp:</span>
-          <span className="value">{COMPANY_NAME}</span>
+          <span className="value">{COMPANY_LEGAL_NAME}</span>
         </div>
         <div className="purchase-ledger-company-row">
           <span className="label">Mã số thuế:</span>
@@ -190,7 +191,7 @@ const PurchaseLedgerPrintTemplate = React.forwardRef(({ rows, totalAmount, dateF
         </div>
         <div className="purchase-ledger-company-row">
           <span className="label">Địa chỉ:</span>
-          <span className="value">{COMPANY_ADDRESS}</span>
+          <span className="value">{COMPANY_HEAD_OFFICE_ADDRESS}</span>
         </div>
         <div className="purchase-ledger-company-row">
           <span className="label">Số điện thoại:</span>
@@ -198,7 +199,7 @@ const PurchaseLedgerPrintTemplate = React.forwardRef(({ rows, totalAmount, dateF
         </div>
         <div className="purchase-ledger-company-row">
           <span className="label">Địa chỉ nơi tổ chức thu mua:</span>
-          <span className="value">{PURCHASE_LOCATION}</span>
+          <span className="value">{COMPANY_STORE_ADDRESS}</span>
         </div>
       </div>
 

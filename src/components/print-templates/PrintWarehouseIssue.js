@@ -1,7 +1,10 @@
 import React from 'react';
 import { OrderFields, formatCurrency, numberToVietnameseCurrencyWords } from '../../models';
-
-const FIXED_ADDRESS = '100E Gò Dầu, Phường Tân Sơn Nhì, Thành phố Hồ Chí Minh';
+import {
+  COMPANY_HEAD_OFFICE_ADDRESS,
+  COMPANY_LEGAL_NAME,
+  COMPANY_STORE_ADDRESS,
+} from '../../config/companyInfo';
 
 const getDateParts = (dateValue) => {
   const date = dateValue ? new Date(dateValue) : new Date();
@@ -231,8 +234,8 @@ const PrintWarehouseIssue = React.forwardRef(({ order }, ref) => {
 
       <div className="warehouse-top">
         <div className="warehouse-company">
-          <div className="warehouse-company-name">CÔNG TY TNHH KIM PHƯỢNG MAI SILVER & JEWELRY</div>
-          <div className="warehouse-company-address">43/44/20 Đỗ Thừa Luông, Phường Phú Thọ Hòa, TP Hồ Chí Minh</div>
+          <div className="warehouse-company-name">{COMPANY_LEGAL_NAME}</div>
+          <div className="warehouse-company-address">{COMPANY_HEAD_OFFICE_ADDRESS}</div>
         </div>
 
         <div className="warehouse-form-meta">
@@ -281,7 +284,7 @@ const PrintWarehouseIssue = React.forwardRef(({ order }, ref) => {
         </div>
         <div className="warehouse-info-row">
           <span className="label">- Địa điểm:</span>
-          <span className="value">{FIXED_ADDRESS}</span>
+          <span className="value">{COMPANY_STORE_ADDRESS}</span>
         </div>
       </div>
 

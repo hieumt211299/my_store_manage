@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { useNotification } from '../../contexts/NotificationContext';
 import PrintOrder from '../../components/print-templates/PrintOrder';
 import PrintWarehouseIssue from '../../components/print-templates/PrintWarehouseIssue';
+import WarrantySalesContractTemplate from '../../components/print-templates/WarrantySalesContractTemplate';
 import Loading from '../../components/Loading';
 import PageHeader from '../../components/PageHeader';
 import CustomerInfoCard from './components/CustomerInfoCard';
@@ -36,6 +37,7 @@ function OrderDetail() {
   const printMenuListRef = useRef(null);
   const orderPrintRef = useRef(null);
   const warehousePrintRef = useRef(null);
+  const warrantyContractPrintRef = useRef(null);
 
   const handleOrderPrint = useReactToPrint({
     contentRef: orderPrintRef,
@@ -45,6 +47,11 @@ function OrderDetail() {
   const handleWarehousePrint = useReactToPrint({
     contentRef: warehousePrintRef,
     documentTitle: `Phieu-xuat-kho-${id}`,
+  });
+
+  const handleWarrantyContractPrint = useReactToPrint({
+    contentRef: warrantyContractPrintRef,
+    documentTitle: `Hop-dong-ban-hang-${id}`,
   });
 
   useEffect(() => {
@@ -156,6 +163,15 @@ function OrderDetail() {
       label: 'In phiếu xuất kho',
       onClick: handleWarehousePrint,
     },
+    ...(order?.[OrderFields.ORDER_TYPE] === OrderType.WARRANTY
+      ? [
+          {
+            key: 'warranty-contract',
+            label: 'In hợp đồng bán hàng',
+            onClick: handleWarrantyContractPrint,
+          },
+        ]
+      : []),
   ];
 
   const handlePrintOptionClick = (printAction) => {
@@ -303,6 +319,7 @@ function OrderDetail() {
       <div style={{ display: 'none' }}>
         <PrintOrder ref={orderPrintRef} order={order} />
         <PrintWarehouseIssue ref={warehousePrintRef} order={order} />
+        <WarrantySalesContractTemplate ref={warrantyContractPrintRef} order={order} />
       </div>
     </div>
   );

@@ -46,6 +46,15 @@ function OrderList() {
   // Debounced search ID
   const [debouncedSearchId, setDebouncedSearchId] = useState(searchParams.get('search') || '');
 
+  const handleApplyFilters = useCallback((filters) => {
+    setDateFrom(filters.dateFrom || '');
+    setDateTo(filters.dateTo || '');
+    setCustomerFilter(filters.customerFilter || '');
+    setProductFilter(filters.productFilter || '');
+    setStatusFilter(filters.statusFilter || []);
+    setCurrentPage(1);
+  }, []);
+
   // Fetch orders from database with pagination and search
   const fetchOrders = useCallback(async () => {
     try {
@@ -228,11 +237,7 @@ function OrderList() {
             customerFilter={customerFilter}
             productFilter={productFilter}
             statusFilter={statusFilter}
-            onDateFromChange={setDateFrom}
-            onDateToChange={setDateTo}
-            onCustomerFilterChange={setCustomerFilter}
-            onProductFilterChange={setProductFilter}
-            onStatusFilterChange={setStatusFilter}
+            onApplyFilters={handleApplyFilters}
             onClearFilters={handleClearFilters}
             activeFiltersCount={activeFiltersCount}
           />

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import DropdownMultiSelect from '../../../components/DropdownMultiSelect';
 import SearchInputDropdown from '../../../components/SearchInputDropdown';
+import { supabase } from '../../../lib/supabase';
 import {
   Tables,
   CustomerFields,
+  ProductFields,
   OrderStatusOptions,
   getStatusDisplay,
 } from '../../../models';
@@ -14,19 +16,30 @@ function OrderListFilters({
   customerFilter,
   productFilter,
   statusFilter,
-  onDateFromChange,
-  onDateToChange,
-  onCustomerFilterChange,
-  onProductFilterChange,
-  onStatusFilterChange,
+  onApplyFilters,
   onClearFilters,
   activeFiltersCount,
 }) {
   const [showFilters, setShowFilters] = useState(false);
+  const [localFilters, setLocalFilters] = useState({
+    dateFrom: dateFrom || '',
+    dateTo: dateTo || '',
+    customerFilter: customerFilter || '',
+    productFilter: productFilter || '',
+    statusFilter: statusFilter || [],
+  });
   const [selectedCustomerName, setSelectedCustomerName] = useState('');
   const [selectedProductName, setSelectedProductName] = useState('');
 
-
+  useEffect(() => {
+    setLocalFilters({
+      dateFrom: dateFrom || '',
+      dateTo: dateTo || '',
+      customerFilter: customerFilter || '',
+      productFilter: productFilter || '',
+      statusFilter: statusFilter || [],
+    });
+  }, [dateFrom, dateTo, customerFilter, productFilter, statusFilter]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -38,11 +51,81 @@ function OrderListFilters({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    if (!customerFilter) {
+      setSelectedCustomerName('');
+      return;
+    }
+
+    const fetchCustomerName = async () => {
+      try {
+        const { data: customer, error } = await supabase
+          .from(Tables.CUSTOMERS)
+          .select(`${CustomerFields.ID}, ${CustomerFields.NAME}, ${CustomerFields.ID_NUMBER}`)
+          .eq(CustomerFields.ID, customerFilter)
+          .single();
+
+        if (error) throw error;
+
+        setSelectedCustomerName(
+          customer ? `${customer[CustomerFields.NAME]} (${customer[CustomerFields.ID_NUMBER]})` : ''
+        );
+      } catch (error) {
+        console.error('Error fetching customer name:', error);
+        setSelectedCustomerName('');
+      }
+    };
+
+    fetchCustomerName();
+  }, [customerFilter]);
+
+  useEffect(() => {
+    if (!productFilter) {
+      setSelectedProductName('');
+      return;
+    }
+
+    const fetchProductName = async () => {
+      try {
+        const { data: product, error } = await supabase
+          .from(Tables.PRODUCTS)
+          .select(`${ProductFields.ID}, ${ProductFields.NAME}, ${ProductFields.SKU}`)
+          .eq(ProductFields.ID, productFilter)
+          .single();
+
+        if (error) throw error;
+
+        setSelectedProductName(
+          product
+            ? product[ProductFields.SKU]
+              ? `${product[ProductFields.NAME]} (${product[ProductFields.SKU]})`
+              : product[ProductFields.NAME]
+            : ''
+        );
+      } catch (error) {
+        console.error('Error fetching product name:', error);
+        setSelectedProductName('');
+      }
+    };
+
+    fetchProductName();
+  }, [productFilter]);
+
   const handleCustomerChange = (customerId, customerData) => {
-    onCustomerFilterChange(customerId);
-    setSelectedCustomerName(customerData ? customerData[CustomerFields.NAME] : '');
+    updateLocalFilter('customerFilter', customerId || '');
+    setSelectedCustomerName(
+      customerData ? `${customerData[CustomerFields.NAME]} (${customerData[CustomerFields.ID_NUMBER]})` : ''
+    );
   };
 
+  const updateLocalFilter = (key, value) => {
+    setLocalFilters((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleApply = () => {
+    setShowFilters(false);
+    onApplyFilters(localFilters);
+  };
 
   const handleClearAll = () => {
     setSelectedCustomerName('');
@@ -50,6 +133,14 @@ function OrderListFilters({
     setShowFilters(false);
     onClearFilters();
   };
+
+  const hasPendingChanges = (
+    localFilters.dateFrom !== (dateFrom || '') ||
+    localFilters.dateTo !== (dateTo || '') ||
+    localFilters.customerFilter !== (customerFilter || '') ||
+    localFilters.productFilter !== (productFilter || '') ||
+    JSON.stringify(localFilters.statusFilter) !== JSON.stringify(statusFilter || [])
+  );
 
   return (
     <>
@@ -69,6 +160,9 @@ function OrderListFilters({
               {activeFiltersCount}
             </span>
           )}
+          {hasPendingChanges && (
+            <span className="bg-orange-500 w-2 h-2 rounded-full" title="Có thay đổi chưa áp dụng"></span>
+          )}
           <span className={`transform transition-transform ${showFilters ? 'rotate-180' : ''}`}>▼</span>
         </button>
 
@@ -81,14 +175,14 @@ function OrderListFilters({
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <input
                     type="date"
-                    value={dateFrom}
-                    onChange={(e) => onDateFromChange(e.target.value)}
+                    value={localFilters.dateFrom}
+                    onChange={(e) => updateLocalFilter('dateFrom', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <input
                     type="date"
-                    value={dateTo}
-                    onChange={(e) => onDateToChange(e.target.value)}
+                    value={localFilters.dateTo}
+                    onChange={(e) => updateLocalFilter('dateTo', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -98,8 +192,8 @@ function OrderListFilters({
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">📝 Trạng thái</label>
                 <DropdownMultiSelect
-                  values={statusFilter}
-                  onChange={onStatusFilterChange}
+                  values={localFilters.statusFilter}
+                  onChange={(values) => updateLocalFilter('statusFilter', values)}
                   options={OrderStatusOptions}
                   placeholder="Chọn một hoặc nhiều trạng thái"
                   searchPlaceholder="Tìm trạng thái..."
@@ -110,7 +204,7 @@ function OrderListFilters({
               {/* Customer Filter */}
               <SearchInputDropdown
                 tableName={Tables.CUSTOMERS}
-                selectedId={customerFilter}
+                selectedId={localFilters.customerFilter}
                 selectedDisplayName={selectedCustomerName}
                 onSelectionChange={handleCustomerChange}
                 label="Khách hàng"
@@ -141,12 +235,25 @@ function OrderListFilters({
                 >
                   ✕ Xóa tất cả
                 </button>
-                <button
-                  onClick={() => setShowFilters(false)}
-                  className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
-                >
-                  Đóng
-                </button>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => setShowFilters(false)}
+                    className="px-4 py-2 bg-gray-600 text-white text-sm rounded-md hover:bg-gray-700"
+                  >
+                    Đóng
+                  </button>
+                  <button
+                    onClick={handleApply}
+                    className={`px-4 py-2 text-sm rounded-md transition-colors ${
+                      hasPendingChanges
+                        ? 'bg-blue-600 text-white hover:bg-blue-700'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                    disabled={!hasPendingChanges}
+                  >
+                    Áp dụng
+                  </button>
+                </div>
               </div>
             </div>
           </div>

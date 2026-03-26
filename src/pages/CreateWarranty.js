@@ -3,6 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import {
+  COMPANY_DISPLAY_NAME,
+  COMPANY_HEAD_OFFICE_ADDRESS,
+  COMPANY_HOTLINE,
+  COMPANY_STORE_ADDRESS,
+} from '../config/companyInfo';
+import {
   Tables,
   ProductFields,
   PaymentMethod,
@@ -197,10 +203,10 @@ function CreateWarranty() {
           </head>
           <body>
             <div class="print-header">
-              <h1>KIM PHƯỢNG MAI Silver & Jewelry</h1>
-              <div class="address">Trụ sở: 43/44/20 Đỗ Thừa Luông, Phường Phú Thọ Hòa, TP Hồ Chí Minh</div>
-              <div class="address">ĐC bán hàng: 100e Gò Dầu, Phường Tân Sơn Nhì, TP Hồ Chí Minh, Việt Nam</div>
-              <div class="hotline">Hotline: 08.665.888.15</div>
+              <h1>${COMPANY_DISPLAY_NAME}</h1>
+              <div class="address">Trụ sở: ${COMPANY_HEAD_OFFICE_ADDRESS}</div>
+              <div class="address">ĐC bán hàng: ${COMPANY_STORE_ADDRESS}</div>
+              <div class="hotline">Hotline: ${COMPANY_HOTLINE}</div>
             </div>
             <div class="print-title">PHIẾU ĐẢM BẢO</div>
             <div class="print-info">

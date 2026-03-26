@@ -1,5 +1,11 @@
 import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import {
+  COMPANY_DISPLAY_NAME,
+  COMPANY_HEAD_OFFICE_ADDRESS,
+  COMPANY_HOTLINE,
+  COMPANY_STORE_ADDRESS,
+} from '../config/companyInfo';
 
 const PrintWarranty = React.forwardRef(({ warrantyData: propWarrantyData }, ref) => {
   const location = useLocation();
@@ -282,10 +288,10 @@ const PrintWarranty = React.forwardRef(({ warrantyData: propWarrantyData }, ref)
 
       {/* Header */}
       <div className="print-header">
-        <h1>KIM PHƯỢNG MAI Silver &amp; Jewelry</h1>
-        <div className="address">Trụ sở: 43/44/20 Đỗ Thừa Luông, Phường Phú Thọ Hòa, TP Hồ Chí Minh</div>
-        <div className="address">ĐC bán hàng: 100e Gò Dầu, Phường Tân Sơn Nhì, TP Hồ Chí Minh, Việt Nam</div>
-        <div className="hotline">Hotline: 08.665.888.15</div>
+        <h1>{COMPANY_DISPLAY_NAME}</h1>
+        <div className="address">Trụ sở: {COMPANY_HEAD_OFFICE_ADDRESS}</div>
+        <div className="address">ĐC bán hàng: {COMPANY_STORE_ADDRESS}</div>
+        <div className="hotline">Hotline: {COMPANY_HOTLINE}</div>
       </div>
 
       {/* Title */}
