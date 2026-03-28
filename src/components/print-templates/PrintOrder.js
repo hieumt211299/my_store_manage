@@ -661,11 +661,10 @@ const renderSalesContractTemplate = (order) => {
 
         <div className="contract-section-title">Điều 3: Điều khoản cam kết chung</div>
         <ul className="contract-bullets">
-          <li>Bên A chỉ trả hàng cho bên B khi bên B xuất trình Hợp đồng mua bán và CCCD/hộ chiếu có thông tin đúng như trong hợp đồng này.</li>
-          <li>Đến ngày hẹn trả hàng nhưng bên B không đến nhận và không thông báo cho bên A thì mặc định lịch hẹn trả hàng lùi thêm 30 ngày.</li>
-          <li>Đối với hợp đồng không đặt cọc 100% và sau 10 ngày theo lịch hẹn trả hàng mà bên B vẫn không thanh toán đủ thì sẽ bị mất cọc và hợp đồng sẽ hết hiệu lực.</li>
-          <li>Đối với hợp đồng thanh toán cọc 100%, bên B yêu cầu hủy hợp đồng trước lịch hẹn trả hàng, bên A sẽ hoàn lại giá trị tương ứng theo giá niêm yết mua vào tại thời điểm hủy hợp đồng.</li>
-          <li>Bên A có trách nhiệm giao hàng đúng thời hạn cam kết. Trong trường hợp bên A trả hàng cho bên B chậm hơn 3 ngày kể từ ngày trả hàng, bên A sẽ bồi thường cho bên B 2% tổng giá trị hợp đồng và vẫn phải trả hàng.</li>
+          <li>Bên A chỉ giao/trả hàng khi Bên B xuất trình Hợp đồng mua bán và CCCD/hộ chiếu có thông tin trùng khớp với hợp đồng.</li>
+          <li>Nếu đến ngày hẹn mà Bên B không đến nhận hàng và không thông báo, lịch giao/trả hàng được tự động gia hạn thêm 30 ngày.</li>
+          <li>Đối với hợp đồng đã thanh toán 100%, trong thời gian chờ nhận hàng, nếu Bên B yêu cầu thanh lý/hủy đơn hàng trước hạn, Bên A hoàn trả số tiền theo giá niêm yết mua vào tại thời điểm thanh lý do Bên A công bố.</li>
+          <li>Bên A có trách nhiệm giao/trả hàng đúng hạn. Nếu chậm quá 05 ngày, Bên A phải bồi thường 2% giá trị hợp đồng và vẫn phải tiếp tục giao/trả hàng.</li>
         </ul>
 
         <div className="contract-section-title">Điều 4: Hiệu lực thỏa thuận</div>

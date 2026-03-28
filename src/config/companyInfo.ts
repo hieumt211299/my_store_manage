@@ -7,7 +7,7 @@ export const COMPANY_STORE_ADDRESS = '100e Gò Dầu, Phường Tân Sơn Nhì, 
 export const COMPANY_PHONE = '0866588815';
 export const COMPANY_HOTLINE = '0866588815';
 
-export const COMPANY_TAX_CODE = '046075000054';
+export const COMPANY_TAX_CODE = '0319343562';
 
 export const COMPANY_REPRESENTATIVE_NAME = 'TRẦN PHƯƠNG MAI';
 export const COMPANY_REPRESENTATIVE_TITLE = 'Giám đốc';
