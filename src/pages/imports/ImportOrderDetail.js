@@ -8,7 +8,7 @@ import PageHeader from '../../components/PageHeader';
 import ImportInfoCard from './components/ImportInfoCard';
 import ImportSourceInfo from './components/ImportSourceInfo';
 import ImportItemsDetail from './components/ImportItemsDetail';
-import ImportPrintTemplate from '../../components/print-templates/ImportPrintTemplate';
+import ImportPurchaseContractTemplate from '../../components/print-templates/ImportPurchaseContractTemplate';
 import ImportWarehouseReceiptTemplate from '../../components/print-templates/ImportWarehouseReceiptTemplate';
 import ImportSellerCommitmentTemplate from '../../components/print-templates/ImportSellerCommitmentTemplate';
 import {
@@ -160,11 +160,15 @@ function ImportOrderDetail() {
   const isCustomerImport = importOrder?.[ImportOrderFields.SOURCE_TYPE] === ImportOrderSourceType.CUSTOMER;
 
   const printOptions = [
-    {
-      key: 'import',
-      label: 'In phiếu nhập hàng',
-      onClick: handleImportPrint,
-    },
+    ...(isCustomerImport
+      ? [
+          {
+            key: 'import-contract',
+            label: 'In hợp đồng mua bán',
+            onClick: handleImportPrint,
+          },
+        ]
+      : []),
     {
       key: 'warehouse',
       label: 'In phiếu nhập kho',
@@ -337,7 +341,7 @@ function ImportOrderDetail() {
 
       {/* Hidden Print Template */}
       <div style={{ display: 'none' }}>
-        <ImportPrintTemplate ref={printImportRef} importOrder={importOrder} />
+        <ImportPurchaseContractTemplate ref={printImportRef} importOrder={importOrder} />
         <ImportWarehouseReceiptTemplate ref={printWarehouseRef} importOrder={importOrder} />
         <ImportSellerCommitmentTemplate ref={printSellerCommitmentRef} importOrder={importOrder} />
       </div>
