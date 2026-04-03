@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   OrderFields,
   PaymentMethod,
@@ -7,7 +7,8 @@ import {
   formatDate,
   formatDateTime,
   numberToVietnameseCurrencyWords,
-} from '../../models';
+  toTitleCase,
+} from "../../models";
 import {
   COMPANY_BANK_ACCOUNT_HOLDER,
   COMPANY_BANK_ACCOUNT_NUMBER,
@@ -21,15 +22,17 @@ import {
   COMPANY_REPRESENTATIVE_TITLE,
   COMPANY_STORE_ADDRESS,
   COMPANY_TAX_CODE,
-} from '../../config/companyInfo';
+} from "../../config/companyInfo";
 
 const extractMaterialPurity = (productName) => {
-  if (!productName) return '';
+  if (!productName) return "";
 
   const normalizedName = String(productName).trim();
-  const match = normalizedName.match(/(\d{3,4}\s?(?:k|K|K\b|%|‰)?|\d+\s?(?:L|l|ly|lượng))/);
+  const match = normalizedName.match(
+    /(\d{3,4}\s?(?:k|K|K\b|%|‰)?|\d+\s?(?:L|l|ly|lượng))/,
+  );
 
-  return match ? match[0].trim() : '';
+  return match ? match[0].trim() : "";
 };
 
 const formatContractDate = (dateValue) => {
@@ -226,7 +229,9 @@ const renderWarrantyTemplate = (order) => (
       .print-signatures .sign-col .sign-space {
         height: 70px;
       }
-    `}</style>
+      .print-signatures .sign-col .name {
+        margin-top: 4px;
+      }    `}</style>
 
     <div className="print-header">
       <h1>{COMPANY_DISPLAY_NAME}</h1>
@@ -245,10 +250,10 @@ const renderWarrantyTemplate = (order) => (
         <span>Ngày: {formatDateTime(order[OrderFields.CREATED_AT])}</span>
       </div>
       <div className="print-info-row">
-        <span>Nhân viên bán hàng: {order[OrderFields.CREATED_BY]}</span>
+        <span>Nhân viên bán hàng: {toTitleCase(order[OrderFields.CREATED_BY]) || ''}</span>
       </div>
       <div className="print-info-row">
-        <span>Khách hàng: {order[OrderFields.CUSTOMER_NAME]}</span>
+        <span>Khách hàng: {toTitleCase(order[OrderFields.CUSTOMER_NAME]) || ''}</span>
       </div>
       <div className="print-info-row">
         <span>SĐT: {order[OrderFields.CUSTOMER_PHONE]}</span>
@@ -259,7 +264,9 @@ const renderWarrantyTemplate = (order) => (
         </div>
         <div className="issued-group">
           {order[OrderFields.CUSTOMER_ID_ISSUED_DATE] && (
-            <span>Ngày cấp: {formatDate(order[OrderFields.CUSTOMER_ID_ISSUED_DATE])}</span>
+            <span>
+              Ngày cấp: {formatDate(order[OrderFields.CUSTOMER_ID_ISSUED_DATE])}
+            </span>
           )}
         </div>
       </div>
@@ -271,23 +278,25 @@ const renderWarrantyTemplate = (order) => (
     <table className="print-table">
       <thead>
         <tr>
-          <th style={{ width: '40px' }}>STT</th>
+          <th style={{ width: "40px" }}>STT</th>
           <th>TÊN HÀNG HÓA</th>
-          <th style={{ width: '50px' }}>ĐVT</th>
-          <th style={{ width: '40px' }}>SL</th>
-          <th style={{ width: '100px' }}>ĐƠN GIÁ</th>
-          <th style={{ width: '120px' }}>THÀNH TIỀN</th>
+          <th style={{ width: "50px" }}>ĐVT</th>
+          <th style={{ width: "40px" }}>SL</th>
+          <th style={{ width: "100px" }}>ĐƠN GIÁ</th>
+          <th style={{ width: "120px" }}>THÀNH TIỀN</th>
         </tr>
       </thead>
       <tbody>
         {order.order_items?.map((item, index) => (
           <tr key={item.id || index}>
             <td className="center">{index + 1}</td>
-            <td>{item.products?.name || 'Sản phẩm không xác định'}</td>
+            <td>{item.products?.name || "Sản phẩm không xác định"}</td>
             <td className="center">Cái</td>
             <td className="center">{item.quantity}</td>
             <td className="right">{formatCurrency(item.selling_price)}</td>
-            <td className="right">{formatCurrency(item.quantity * item.selling_price)}</td>
+            <td className="right">
+              {formatCurrency(item.quantity * item.selling_price)}
+            </td>
           </tr>
         ))}
       </tbody>
@@ -295,7 +304,9 @@ const renderWarrantyTemplate = (order) => (
 
     <div className="print-total-row">
       <div className="total-label">TỔNG THANH TOÁN</div>
-      <div className="total-value">{formatCurrency(order[OrderFields.TOTAL_AMOUNT])}</div>
+      <div className="total-value">
+        {formatCurrency(order[OrderFields.TOTAL_AMOUNT])}
+      </div>
     </div>
 
     <div className="print-footer-info">
@@ -306,7 +317,11 @@ const renderWarrantyTemplate = (order) => (
       <div className="print-payment-row">
         <span>
           <span className="bold">Hình thức thanh toán: </span>
-          <span>{order[OrderFields.PAYMENT_METHOD] === PaymentMethod.BANK ? 'Chuyển khoản' : 'Tiền mặt'}</span>
+          <span>
+            {order[OrderFields.PAYMENT_METHOD] === PaymentMethod.BANK
+              ? "Chuyển khoản"
+              : "Tiền mặt"}
+          </span>
         </span>
       </div>
     </div>
@@ -322,16 +337,22 @@ const renderWarrantyTemplate = (order) => (
         <div className="subtitle">(Ký, họ tên)</div>
         <div className="sign-space"></div>
         {order[OrderFields.CREATED_BY] && (
-          <div className="subtitle" style={{ fontStyle: 'normal', marginTop: '8px' }}>
-            {order[OrderFields.CREATED_BY]}
+          <div
+            className="subtitle"
+            style={{ fontStyle: "normal", marginTop: "8px" }}
+          >
+            {toTitleCase(order[OrderFields.CREATED_BY])}
           </div>
         )}
       </div>
       <div className="sign-col">
-        <div className="title">Ngày {formatDate(order[OrderFields.CREATED_DATE])}</div>
+        <div className="title">
+          Ngày {formatDate(order[OrderFields.CREATED_DATE])}
+        </div>
         <div className="title">Khách hàng</div>
         <div className="subtitle">(Ký, họ tên)</div>
         <div className="sign-space"></div>
+        <div className="name">{toTitleCase(order[OrderFields.CUSTOMER_NAME]) || ""}</div>
       </div>
     </div>
   </>
@@ -341,7 +362,9 @@ const renderSalesContractTemplate = (order) => {
   const items = order.order_items || [];
   const totalAmount = order[OrderFields.TOTAL_AMOUNT] || 0;
   const totalAmountInWords = numberToVietnameseCurrencyWords(totalAmount);
-  const contractDate = formatContractDate(order[OrderFields.CREATED_AT] || order[OrderFields.CREATED_DATE]);
+  const contractDate = formatContractDate(
+    order[OrderFields.CREATED_AT] || order[OrderFields.CREATED_DATE],
+  );
   const customerIssuedDate = order[OrderFields.CUSTOMER_ID_ISSUED_DATE]
     ? formatDate(order[OrderFields.CUSTOMER_ID_ISSUED_DATE])
     : null;
@@ -535,7 +558,10 @@ const renderSalesContractTemplate = (order) => {
         .contract-signatures .space {
           height: 110px;
         }
-      `}</style>
+        .contract-signatures .name {
+          font-weight: bold;
+          margin-top: 8px;
+        }      `}</style>
 
       <div className="contract-top">
         <div className="contract-company">
@@ -551,13 +577,16 @@ const renderSalesContractTemplate = (order) => {
 
       <div className="contract-title">Hợp đồng mua bán</div>
       <div className="contract-subtitle">
-        Hợp đồng này được lập ngày {contractDate.day} tháng {contractDate.month} năm {contractDate.year} được thực hiện bởi các bên tham gia dưới đây:
+        Hợp đồng này được lập ngày {contractDate.day} tháng {contractDate.month}{" "}
+        năm {contractDate.year} được thực hiện bởi các bên tham gia dưới đây:
       </div>
 
       <div className="contract-party">
         <div className="contract-party-row">
           <span className="label">BÊN A:</span>
-          <span className="value"><strong>{COMPANY_LEGAL_NAME}</strong></span>
+          <span className="value">
+            <strong>{COMPANY_LEGAL_NAME}</strong>
+          </span>
         </div>
         <div className="contract-party-row">
           <span className="label">Địa chỉ:</span>
@@ -572,35 +601,48 @@ const renderSalesContractTemplate = (order) => {
           <span className="value">{COMPANY_PHONE}</span>
         </div>
         <div className="contract-party-row contract-party-inline">
-          <span><strong>Đại diện:</strong> {COMPANY_REPRESENTATIVE_NAME}</span>
-          <span><strong>Chức vụ:</strong> {COMPANY_REPRESENTATIVE_TITLE}</span>
+          <span>
+            <strong>Đại diện:</strong> {COMPANY_REPRESENTATIVE_NAME}
+          </span>
+          <span>
+            <strong>Chức vụ:</strong> {COMPANY_REPRESENTATIVE_TITLE}
+          </span>
         </div>
       </div>
 
       <div className="contract-party">
         <div className="contract-party-row">
           <span className="label">BÊN B:</span>
-          <span className="value"><strong>{order[OrderFields.CUSTOMER_NAME] || 'N/A'}</strong></span>
+          <span className="value">
+            <strong>{toTitleCase(order[OrderFields.CUSTOMER_NAME]) || "N/A"}</strong>
+          </span>
         </div>
         <div className="contract-party-row">
           <span className="label">Địa chỉ:</span>
-          <span className="value">{order[OrderFields.CUSTOMER_ADDRESS] || 'N/A'}</span>
+          <span className="value">
+            {order[OrderFields.CUSTOMER_ADDRESS] || "N/A"}
+          </span>
         </div>
         <div className="contract-party-row">
           <span className="label">CCCD:</span>
           <span className="value">
-            {order[OrderFields.CUSTOMER_ID_NUMBER] || 'N/A'}
-            {customerIssuedDate ? ` - Ngày cấp: ${customerIssuedDate}` : ''}
+            {order[OrderFields.CUSTOMER_ID_NUMBER] || "N/A"}
+            {customerIssuedDate ? ` - Ngày cấp: ${customerIssuedDate}` : ""}
           </span>
         </div>
         <div className="contract-party-row">
           <span className="label">Số điện thoại:</span>
-          <span className="value">{order[OrderFields.CUSTOMER_PHONE] || 'N/A'}</span>
+          <span className="value">
+            {order[OrderFields.CUSTOMER_PHONE] || "N/A"}
+          </span>
         </div>
       </div>
 
       <div className="contract-paragraph">
-        Trên cơ sở sự đồng thuận của Bên A và Bên B trong việc thoả thuận xác lập về nghĩa vụ, quyền lợi của hai Bên, hai bên nhất trí thiết lập bản Hợp đồng này và cùng cam kết thực hiện nghiêm chỉnh nội dung của Hợp đồng với những điều khoản sau:
+        Trên cơ sở sự đồng thuận của Bên A và Bên B trong việc thoả thuận xác
+        lập về nghĩa vụ, quyền lợi của hai Bên, hai bên nhất trí thiết lập bản
+        Hợp đồng này và cùng cam kết thực hiện nghiêm chỉnh nội dung của Hợp
+        đồng với những điều khoản sau:
       </div>
 
       <div className="contract-section-title">Điều 1: Giá trị hợp đồng</div>
@@ -611,23 +653,29 @@ const renderSalesContractTemplate = (order) => {
       <table className="contract-table">
         <thead>
           <tr>
-            <th style={{ width: '42px' }}>STT</th>
+            <th style={{ width: "42px" }}>STT</th>
             <th>Tên hàng</th>
-            <th style={{ width: '110px' }}>HL vàng/bạc</th>
-            <th style={{ width: '70px' }}>SL (cái)</th>
-            <th style={{ width: '120px' }}>Đơn giá (VND)</th>
-            <th style={{ width: '128px' }}>Thành tiền (VND)</th>
+            <th style={{ width: "110px" }}>HL vàng/bạc</th>
+            <th style={{ width: "70px" }}>SL (cái)</th>
+            <th style={{ width: "120px" }}>Đơn giá (VND)</th>
+            <th style={{ width: "128px" }}>Thành tiền (VND)</th>
           </tr>
         </thead>
         <tbody>
           {items.map((item, index) => (
             <tr key={item.id || index}>
               <td className="center">{index + 1}</td>
-              <td>{item.products?.name || 'Sản phẩm không xác định'}</td>
-              <td className="center">{extractMaterialPurity(item.products?.name)}</td>
+              <td>{item.products?.name || "Sản phẩm không xác định"}</td>
+              <td className="center">
+                {extractMaterialPurity(item.products?.name)}
+              </td>
               <td className="center">{item.quantity || 0}</td>
               <td className="right">{formatCurrency(item.selling_price)}</td>
-              <td className="right">{formatCurrency((item.quantity || 0) * (item.selling_price || 0))}</td>
+              <td className="right">
+                {formatCurrency(
+                  (item.quantity || 0) * (item.selling_price || 0),
+                )}
+              </td>
             </tr>
           ))}
         </tbody>
@@ -639,39 +687,82 @@ const renderSalesContractTemplate = (order) => {
       </ul>
 
       <div className="contract-page-break">
-        <div className="contract-section-title">Điều 2: Thời hạn giao hàng và phương thức thanh toán</div>
+        <div className="contract-section-title">
+          Điều 2: Thời hạn giao hàng và phương thức thanh toán
+        </div>
         <ul className="contract-bullets">
           <li>
-            Phương thức thanh toán: {order[OrderFields.PAYMENT_METHOD] === PaymentMethod.BANK ? 'Chuyển khoản' : 'Tiền mặt'}.
+            Phương thức thanh toán:{" "}
+            {order[OrderFields.PAYMENT_METHOD] === PaymentMethod.BANK
+              ? "Chuyển khoản"
+              : "Tiền mặt"}
+            .
             {order[OrderFields.PAYMENT_METHOD] === PaymentMethod.BANK && (
-              <> Bên B thanh toán cho Bên A bằng hình thức chuyển khoản vào tài khoản sau: STK: {COMPANY_BANK_ACCOUNT_NUMBER} - {COMPANY_BANK_NAME}. Chủ tài khoản: {COMPANY_BANK_ACCOUNT_HOLDER}.</>
+              <>
+                {" "}
+                Bên B thanh toán cho Bên A bằng hình thức chuyển khoản vào tài
+                khoản sau: STK: {COMPANY_BANK_ACCOUNT_NUMBER} -{" "}
+                {COMPANY_BANK_NAME}. Chủ tài khoản:{" "}
+                {COMPANY_BANK_ACCOUNT_HOLDER}.
+              </>
             )}
           </li>
         </ul>
 
-        <div className="contract-paragraph"><strong>2. Phương thức mua hàng</strong></div>
         <div className="contract-paragraph">
-          Bên B đặt cọc cho Bên A số tiền {formatCurrency(totalAmount)} ({totalAmountInWords}) để xác nhận đơn hàng mua.
+          <strong>2. Phương thức mua hàng</strong>
+        </div>
+        <div className="contract-paragraph">
+          Bên B đặt cọc cho Bên A số tiền {formatCurrency(totalAmount)} (
+          {totalAmountInWords}) để xác nhận đơn hàng mua.
         </div>
 
-        <div className="contract-paragraph"><strong>3. Thời hạn giao hàng</strong></div>
         <div className="contract-paragraph">
-          Bên A có trách nhiệm giao hàng cho Bên B trước ngày {formatDate(order[OrderFields.EXPECTED_DELIVERY_DATE])} theo đơn hàng đã được xác nhận sau khi Bên B hoàn tất thanh toán tiền đặt cọc.
+          <strong>3. Thời hạn giao hàng</strong>
+        </div>
+        <div className="contract-paragraph">
+          Bên A có trách nhiệm giao hàng cho Bên B trước ngày{" "}
+          {formatDate(order[OrderFields.EXPECTED_DELIVERY_DATE])} theo đơn hàng
+          đã được xác nhận sau khi Bên B hoàn tất thanh toán tiền đặt cọc.
         </div>
 
-        <div className="contract-section-title">Điều 3: Điều khoản cam kết chung</div>
+        <div className="contract-section-title">
+          Điều 3: Điều khoản cam kết chung
+        </div>
         <ul className="contract-bullets">
-          <li>Bên A chỉ giao/trả hàng khi Bên B xuất trình Hợp đồng mua bán và CCCD/hộ chiếu có thông tin trùng khớp với hợp đồng.</li>
-          <li>Nếu đến ngày hẹn mà Bên B không đến nhận hàng và không thông báo, lịch giao/trả hàng được tự động gia hạn thêm 30 ngày.</li>
-          <li>Đối với hợp đồng đã thanh toán 100%, trong thời gian chờ nhận hàng, nếu Bên B yêu cầu thanh lý/hủy đơn hàng trước hạn, Bên A hoàn trả số tiền theo giá niêm yết mua vào tại thời điểm thanh lý do Bên A công bố.</li>
-          <li>Bên A có trách nhiệm giao/trả hàng đúng hạn. Nếu chậm quá 05 ngày, Bên A phải bồi thường 2% giá trị hợp đồng và vẫn phải tiếp tục giao/trả hàng.</li>
+          <li>
+            Bên A chỉ giao/trả hàng khi Bên B xuất trình Hợp đồng mua bán và
+            CCCD/hộ chiếu có thông tin trùng khớp với hợp đồng.
+          </li>
+          <li>
+            Nếu đến ngày hẹn mà Bên B không đến nhận hàng và không thông báo,
+            lịch giao/trả hàng được tự động gia hạn thêm 30 ngày.
+          </li>
+          <li>
+            Đối với hợp đồng đã thanh toán 100%, trong thời gian chờ nhận hàng,
+            nếu Bên B yêu cầu thanh lý/hủy đơn hàng trước hạn, Bên A hoàn trả số
+            tiền theo giá niêm yết mua vào tại thời điểm thanh lý do Bên A công
+            bố.
+          </li>
+          <li>
+            Bên A có trách nhiệm giao/trả hàng đúng hạn. Nếu chậm quá 05 ngày,
+            Bên A phải bồi thường 2% giá trị hợp đồng và vẫn phải tiếp tục
+            giao/trả hàng.
+          </li>
         </ul>
 
-        <div className="contract-section-title">Điều 4: Hiệu lực thỏa thuận</div>
+        <div className="contract-section-title">
+          Điều 4: Hiệu lực thỏa thuận
+        </div>
         <ul className="contract-bullets">
           <li>Hợp đồng có giá trị kể từ ngày ký.</li>
-          <li>Hợp đồng sẽ hết hiệu lực ngay sau khi bên B giao đủ tiền và nhận đủ hàng hoặc khi hết hạn thanh toán theo điều 3.</li>
-          <li>Hợp đồng này được lập thành 02 bản, có giá trị pháp lý như nhau.</li>
+          <li>
+            Hợp đồng sẽ hết hiệu lực ngay sau khi bên B giao đủ tiền và nhận đủ
+            hàng hoặc khi hết hạn thanh toán theo điều 3.
+          </li>
+          <li>
+            Hợp đồng này được lập thành 02 bản, có giá trị pháp lý như nhau.
+          </li>
         </ul>
 
         <div className="contract-signatures">
@@ -679,11 +770,15 @@ const renderSalesContractTemplate = (order) => {
             <div className="title">Bên A</div>
             <div className="subtitle">(Ký và ghi rõ họ tên)</div>
             <div className="space" />
+            <div className="name">{COMPANY_REPRESENTATIVE_NAME}</div>
           </div>
           <div className="sign-col">
             <div className="title">Bên B</div>
             <div className="subtitle">(Ký và ghi rõ họ tên)</div>
             <div className="space" />
+            <div className="name">
+              {toTitleCase(order[OrderFields.CUSTOMER_NAME]) || "N/A"}
+            </div>
           </div>
         </div>
       </div>
@@ -703,6 +798,6 @@ const PrintOrder = React.forwardRef(({ order }, ref) => {
   );
 });
 
-PrintOrder.displayName = 'PrintOrder';
+PrintOrder.displayName = "PrintOrder";
 
 export default PrintOrder;
