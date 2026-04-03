@@ -83,6 +83,7 @@ export { Tables, StorageBuckets } from './constants';
 
 // ── Formatting utilities ─────────────────────
 export { formatCurrency, formatDate, formatDateTime, numberToVietnameseCurrencyWords } from './formatters';
+export { toTitleCase, capitalize, toUpperCase, toLowerCase, trim } from '../utils/stringHelpers';
 
 // ── Query fragments ──────────────────────────
 export {
