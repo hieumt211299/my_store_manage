@@ -1,10 +1,11 @@
-import React from 'react';
+import React from "react";
 import {
   OrderFields,
   formatCurrency,
   formatDate,
   numberToVietnameseCurrencyWords,
-} from '../../models';
+  toTitleCase,
+} from "../../models";
 import {
   COMPANY_HEAD_OFFICE_ADDRESS,
   COMPANY_LEGAL_NAME,
@@ -13,15 +14,16 @@ import {
   COMPANY_REPRESENTATIVE_TITLE,
   COMPANY_STORE_ADDRESS,
   COMPANY_TAX_CODE,
-} from '../../config/companyInfo';
-
+} from "../../config/companyInfo";
 const extractMaterialPurity = (productName) => {
-  if (!productName) return '';
+  if (!productName) return "";
 
   const normalizedName = String(productName).trim();
-  const match = normalizedName.match(/(\d{3,4}\s?(?:k|K|K\b|%|‰)?|\d+\s?(?:L|l|ly|lượng))/);
+  const match = normalizedName.match(
+    /(\d{3,4}\s?(?:k|K|K\b|%|‰)?|\d+\s?(?:L|l|ly|lượng))/,
+  );
 
-  return match ? match[0].trim() : '';
+  return match ? match[0].trim() : "";
 };
 
 const formatContractDate = (dateValue) => {
@@ -40,13 +42,17 @@ const WarrantySalesContractTemplate = React.forwardRef(({ order }, ref) => {
   const items = order.order_items || [];
   const totalAmount = order[OrderFields.TOTAL_AMOUNT] || 0;
   const totalAmountInWords = numberToVietnameseCurrencyWords(totalAmount);
-  const contractDate = formatContractDate(order[OrderFields.CREATED_AT] || order[OrderFields.CREATED_DATE]);
+  const contractDate = formatContractDate(
+    order[OrderFields.CREATED_AT] || order[OrderFields.CREATED_DATE],
+  );
   const customerIssuedDate = order[OrderFields.CUSTOMER_ID_ISSUED_DATE]
     ? formatDate(order[OrderFields.CUSTOMER_ID_ISSUED_DATE])
     : null;
   const deliveryDate = order[OrderFields.EXPECTED_DELIVERY_DATE]
     ? formatDate(order[OrderFields.EXPECTED_DELIVERY_DATE])
-    : formatDate(order[OrderFields.CREATED_DATE] || order[OrderFields.CREATED_AT]);
+    : formatDate(
+        order[OrderFields.CREATED_DATE] || order[OrderFields.CREATED_AT],
+      );
 
   return (
     <div ref={ref} className="print-warranty-contract-container">
@@ -232,7 +238,9 @@ const WarrantySalesContractTemplate = React.forwardRef(({ order }, ref) => {
         .contract-signatures .space {
           height: 110px;
         }
-      `}</style>
+        .contract-signatures .name {
+          margin-top: 8px;
+        }      `}</style>
 
       <div className="contract-top">
         <div className="contract-company">
@@ -248,35 +256,44 @@ const WarrantySalesContractTemplate = React.forwardRef(({ order }, ref) => {
 
       <div className="contract-title">Hợp đồng mua bán</div>
       <div className="contract-subtitle">
-        Hợp đồng này được lập ngày {contractDate.day} tháng {contractDate.month} năm {contractDate.year} được thực hiện bởi các bên tham gia dưới đây:
+        Hợp đồng này được lập ngày {contractDate.day} tháng {contractDate.month}{" "}
+        năm {contractDate.year} được thực hiện bởi các bên tham gia dưới đây:
       </div>
 
       <div className="contract-party">
         <div className="contract-party-row">
           <span className="label">BÊN A:</span>
-          <span className="value"><strong>{order[OrderFields.CUSTOMER_NAME] || 'N/A'}</strong></span>
+          <span className="value">
+            <strong>{toTitleCase(order[OrderFields.CUSTOMER_NAME]) || "N/A"}</strong>
+          </span>
         </div>
         <div className="contract-party-row">
           <span className="label">Địa chỉ:</span>
-          <span className="value">{order[OrderFields.CUSTOMER_ADDRESS] || 'N/A'}</span>
+          <span className="value">
+            {order[OrderFields.CUSTOMER_ADDRESS] || "N/A"}
+          </span>
         </div>
         <div className="contract-party-row">
           <span className="label">CCCD:</span>
           <span className="value">
-            {order[OrderFields.CUSTOMER_ID_NUMBER] || 'N/A'}
-            {customerIssuedDate ? ` - Ngày cấp: ${customerIssuedDate}` : ''}
+            {order[OrderFields.CUSTOMER_ID_NUMBER] || "N/A"}
+            {customerIssuedDate ? ` - Ngày cấp: ${customerIssuedDate}` : ""}
           </span>
         </div>
         <div className="contract-party-row">
           <span className="label">Số điện thoại:</span>
-          <span className="value">{order[OrderFields.CUSTOMER_PHONE] || 'N/A'}</span>
+          <span className="value">
+            {order[OrderFields.CUSTOMER_PHONE] || "N/A"}
+          </span>
         </div>
       </div>
 
       <div className="contract-party">
         <div className="contract-party-row">
           <span className="label">BÊN B:</span>
-          <span className="value"><strong>{COMPANY_LEGAL_NAME}</strong></span>
+          <span className="value">
+            <strong>{COMPANY_LEGAL_NAME}</strong>
+          </span>
         </div>
         <div className="contract-party-row">
           <span className="label">Địa chỉ:</span>
@@ -291,13 +308,20 @@ const WarrantySalesContractTemplate = React.forwardRef(({ order }, ref) => {
           <span className="value">{COMPANY_PHONE}</span>
         </div>
         <div className="contract-party-row contract-party-inline">
-          <span><strong>Đại diện:</strong> {COMPANY_REPRESENTATIVE_NAME}</span>
-          <span><strong>Chức vụ:</strong> {COMPANY_REPRESENTATIVE_TITLE}</span>
+          <span>
+            <strong>Đại diện:</strong> {COMPANY_REPRESENTATIVE_NAME}
+          </span>
+          <span>
+            <strong>Chức vụ:</strong> {COMPANY_REPRESENTATIVE_TITLE}
+          </span>
         </div>
       </div>
 
       <div className="contract-paragraph">
-        Trên cơ sở sự đồng thuận của Bên A và Bên B trong việc thoả thuận xác lập về nghĩa vụ, quyền lợi của hai Bên, hai bên nhất trí thiết lập bản Hợp đồng này và cùng cam kết thực hiện nghiêm chỉnh nội dung của Hợp đồng với những điều khoản sau:
+        Trên cơ sở sự đồng thuận của Bên A và Bên B trong việc thoả thuận xác
+        lập về nghĩa vụ, quyền lợi của hai Bên, hai bên nhất trí thiết lập bản
+        Hợp đồng này và cùng cam kết thực hiện nghiêm chỉnh nội dung của Hợp
+        đồng với những điều khoản sau:
       </div>
 
       <div className="contract-section-title">Điều 1: Giá trị hợp đồng</div>
@@ -308,23 +332,29 @@ const WarrantySalesContractTemplate = React.forwardRef(({ order }, ref) => {
       <table className="contract-table">
         <thead>
           <tr>
-            <th style={{ width: '42px' }}>STT</th>
+            <th style={{ width: "42px" }}>STT</th>
             <th>Tên hàng</th>
-            <th style={{ width: '110px' }}>HL vàng/bạc</th>
-            <th style={{ width: '70px' }}>SL (cái)</th>
-            <th style={{ width: '120px' }}>Đơn giá (VND)</th>
-            <th style={{ width: '128px' }}>Thành tiền (VND)</th>
+            <th style={{ width: "110px" }}>HL vàng/bạc</th>
+            <th style={{ width: "70px" }}>SL (cái)</th>
+            <th style={{ width: "120px" }}>Đơn giá (VND)</th>
+            <th style={{ width: "128px" }}>Thành tiền (VND)</th>
           </tr>
         </thead>
         <tbody>
           {items.map((item, index) => (
             <tr key={item.id || index}>
               <td className="center">{index + 1}</td>
-              <td>{item.products?.name || 'Sản phẩm không xác định'}</td>
-              <td className="center">{extractMaterialPurity(item.products?.name)}</td>
+              <td>{item.products?.name || "Sản phẩm không xác định"}</td>
+              <td className="center">
+                {extractMaterialPurity(item.products?.name)}
+              </td>
               <td className="center">{item.quantity || 0}</td>
               <td className="right">{formatCurrency(item.selling_price)}</td>
-              <td className="right">{formatCurrency((item.quantity || 0) * (item.selling_price || 0))}</td>
+              <td className="right">
+                {formatCurrency(
+                  (item.quantity || 0) * (item.selling_price || 0),
+                )}
+              </td>
             </tr>
           ))}
         </tbody>
@@ -336,21 +366,44 @@ const WarrantySalesContractTemplate = React.forwardRef(({ order }, ref) => {
       </ul>
 
       <div className="contract-page-break">
-        <div className="contract-section-title">Điều 2: Giao hàng và phương thức thanh toán</div>
+        <div className="contract-section-title">
+          Điều 2: Giao hàng và phương thức thanh toán
+        </div>
         <ul className="contract-bullets">
           <li>Thời gian giao hàng: {deliveryDate}</li>
           <li>Địa điểm giao hàng: {COMPANY_STORE_ADDRESS}</li>
-          <li>Bên B có trách nhiệm giao hàng đúng số lượng, chất lượng và chủng loại như đã thỏa thuận.</li>
+          <li>
+            Bên B có trách nhiệm giao hàng đúng số lượng, chất lượng và chủng
+            loại như đã thỏa thuận.
+          </li>
           <li>Bên B có trách nhiệm kiểm tra hàng hóa khi nhận.</li>
         </ul>
 
         <div className="contract-section-title">Điều 3: Cam kết chung</div>
         <ul className="contract-bullets">
-          <li>Hai bên cam kết các thông tin cung cấp trong hợp đồng là đúng sự thật và chịu hoàn toàn trách nhiệm trước pháp luật về các thông tin này.</li>
-          <li>Hai bên cam kết thực hiện đầy đủ các điều khoản đã thỏa thuận trong hợp đồng. Mọi sửa đổi, bổ sung (nếu có) phải được lập thành văn bản và có chữ ký xác nhận của cả hai bên.</li>
-          <li>Trong quá trình thực hiện hợp đồng, nếu phát sinh vướng mắc, hai bên sẽ chủ động trao đổi trên tinh thần hợp tác, tôn trọng và cùng có lợi.</li>
-          <li>Trường hợp một bên vi phạm nghĩa vụ gây thiệt hại cho bên còn lại thì phải chịu trách nhiệm bồi thường theo quy định của pháp luật.</li>
-          <li>Hai bên đã đọc, hiểu rõ toàn bộ nội dung hợp đồng, đồng ý với tất cả các điều khoản và tự nguyện ký kết hợp đồng này.</li>
+          <li>
+            Hai bên cam kết các thông tin cung cấp trong hợp đồng là đúng sự
+            thật và chịu hoàn toàn trách nhiệm trước pháp luật về các thông tin
+            này.
+          </li>
+          <li>
+            Hai bên cam kết thực hiện đầy đủ các điều khoản đã thỏa thuận trong
+            hợp đồng. Mọi sửa đổi, bổ sung (nếu có) phải được lập thành văn bản
+            và có chữ ký xác nhận của cả hai bên.
+          </li>
+          <li>
+            Trong quá trình thực hiện hợp đồng, nếu phát sinh vướng mắc, hai bên
+            sẽ chủ động trao đổi trên tinh thần hợp tác, tôn trọng và cùng có
+            lợi.
+          </li>
+          <li>
+            Trường hợp một bên vi phạm nghĩa vụ gây thiệt hại cho bên còn lại
+            thì phải chịu trách nhiệm bồi thường theo quy định của pháp luật.
+          </li>
+          <li>
+            Hai bên đã đọc, hiểu rõ toàn bộ nội dung hợp đồng, đồng ý với tất cả
+            các điều khoản và tự nguyện ký kết hợp đồng này.
+          </li>
         </ul>
 
         <div className="contract-signatures">
@@ -358,11 +411,15 @@ const WarrantySalesContractTemplate = React.forwardRef(({ order }, ref) => {
             <div className="title">Bên A</div>
             <div className="subtitle">(Ký và ghi rõ họ tên)</div>
             <div className="space" />
+            <div className="name">{COMPANY_REPRESENTATIVE_NAME}</div>
           </div>
           <div className="sign-col">
             <div className="title">Bên B</div>
             <div className="subtitle">(Ký và ghi rõ họ tên)</div>
             <div className="space" />
+            <div className="name">
+              {toTitleCase(order[OrderFields.CUSTOMER_NAME]) || "N/A"}
+            </div>
           </div>
         </div>
       </div>
@@ -370,6 +427,6 @@ const WarrantySalesContractTemplate = React.forwardRef(({ order }, ref) => {
   );
 });
 
-WarrantySalesContractTemplate.displayName = 'WarrantySalesContractTemplate';
+WarrantySalesContractTemplate.displayName = "WarrantySalesContractTemplate";
 
 export default WarrantySalesContractTemplate;

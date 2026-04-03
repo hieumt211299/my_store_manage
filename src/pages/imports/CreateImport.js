@@ -235,13 +235,17 @@ function CreateImport() {
 
   // Build import order payload
   const buildImportOrderPayload = () => {
+    const getDisplayName = () => {
+      if (user?.user_metadata?.full_name) return user.user_metadata.full_name;
+    };
+
     const payload = {
       [ImportOrderFields.SOURCE_TYPE]: importForm.sourceType,
       [ImportOrderFields.STATUS]: importForm.status,
       [ImportOrderFields.IMPORT_DATE]: importForm.importDate,
       [ImportOrderFields.EXPECTED_RETURN_DATE]: importForm.expectedReturnDate,
       [ImportOrderFields.TOTAL_AMOUNT]: totalAmount,
-      [ImportOrderFields.CREATED_BY]: user?.name || 'Admin',
+      [ImportOrderFields.CREATED_BY]: getDisplayName(),
     };
 
     if (importForm.sourceType === ImportOrderSourceType.ANCARAT) {

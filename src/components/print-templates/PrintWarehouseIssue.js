@@ -1,34 +1,43 @@
-import React from 'react';
-import { OrderFields, formatCurrency, numberToVietnameseCurrencyWords } from '../../models';
+import React from "react";
+import {
+  OrderFields,
+  formatCurrency,
+  numberToVietnameseCurrencyWords,
+  toTitleCase,
+} from "../../models";
 import {
   COMPANY_HEAD_OFFICE_ADDRESS,
   COMPANY_LEGAL_NAME,
+  COMPANY_REPRESENTATIVE_NAME,
   COMPANY_STORE_ADDRESS,
-} from '../../config/companyInfo';
+} from "../../config/companyInfo";
 
 const getDateParts = (dateValue) => {
   const date = dateValue ? new Date(dateValue) : new Date();
 
   return {
-    day: String(date.getDate()).padStart(2, '0'),
-    month: String(date.getMonth() + 1).padStart(2, '0'),
+    day: String(date.getDate()).padStart(2, "0"),
+    month: String(date.getMonth() + 1).padStart(2, "0"),
     year: String(date.getFullYear()),
   };
 };
-
 const PrintWarehouseIssue = React.forwardRef(({ order }, ref) => {
   if (!order) return null;
 
-  const createdDate = order[OrderFields.CREATED_DATE] || order[OrderFields.CREATED_AT];
+  const createdDate =
+    order[OrderFields.CREATED_DATE] || order[OrderFields.CREATED_AT];
   const { day, month, year } = getDateParts(createdDate);
   const items = order.order_items || [];
-  const totalQuantity = items.reduce((sum, item) => sum + (item.quantity || 0), 0);
+  const totalQuantity = items.reduce(
+    (sum, item) => sum + (item.quantity || 0),
+    0,
+  );
   const totalAmount = items.reduce(
-    (sum, item) => sum + ((item.quantity || 0) * (item.selling_price || 0)),
-    0
+    (sum, item) => sum + (item.quantity || 0) * (item.selling_price || 0),
+    0,
   );
   const totalAmountInWords = numberToVietnameseCurrencyWords(totalAmount);
-  const customerAddress = order[OrderFields.CUSTOMER_ADDRESS] || '';
+  const customerAddress = order[OrderFields.CUSTOMER_ADDRESS] || "";
 
   return (
     <div ref={ref} className="print-warehouse-issue-container">
@@ -230,24 +239,34 @@ const PrintWarehouseIssue = React.forwardRef(({ order }, ref) => {
         .warehouse-signatures .space {
           height: 66px;
         }
-      `}</style>
+        .warehouse-signatures .name {
+          margin-top: 8px;
+        }      `}</style>
 
       <div className="warehouse-top">
         <div className="warehouse-company">
           <div className="warehouse-company-name">{COMPANY_LEGAL_NAME}</div>
-          <div className="warehouse-company-address">{COMPANY_HEAD_OFFICE_ADDRESS}</div>
+          <div className="warehouse-company-address">
+            {COMPANY_HEAD_OFFICE_ADDRESS}
+          </div>
         </div>
 
         <div className="warehouse-form-meta">
-          <div className="meta-line"><strong>Mẫu số:</strong> 02 - VT</div>
-          <div className="meta-line">(Ban hành theo Thông tư số 133/2016/TT-BTC</div>
+          <div className="meta-line">
+            <strong>Mẫu số:</strong> 02 - VT
+          </div>
+          <div className="meta-line">
+            (Ban hành theo Thông tư số 133/2016/TT-BTC
+          </div>
           <div className="meta-line">Ngày 26/08/2016 của Bộ Tài chính)</div>
         </div>
       </div>
 
       <div className="warehouse-center">
         <div className="warehouse-title">PHIẾU XUẤT KHO</div>
-        <div className="warehouse-date">Ngày {day} tháng {month} năm {year}</div>
+        <div className="warehouse-date">
+          Ngày {day} tháng {month} năm {year}
+        </div>
       </div>
 
       <div className="warehouse-accounts">
@@ -268,7 +287,9 @@ const PrintWarehouseIssue = React.forwardRef(({ order }, ref) => {
       <div className="warehouse-info">
         <div className="warehouse-info-row">
           <span className="label">- Họ tên người nhận hàng:</span>
-          <span className="value">{order[OrderFields.CUSTOMER_NAME] || ''}</span>
+          <span className="value">
+            {toTitleCase(order[OrderFields.CUSTOMER_NAME]) || ""}
+          </span>
         </div>
         <div className="warehouse-info-row">
           <span className="label">- Địa chỉ (bộ phận):</span>
@@ -291,29 +312,38 @@ const PrintWarehouseIssue = React.forwardRef(({ order }, ref) => {
       <table className="warehouse-table">
         <thead>
           <tr>
-            <th style={{ width: '38px' }}>STT</th>
-            <th>Tên, nhãn hiệu, quy cách, phẩm chất vật tư, dụng cụ sản phẩm, hàng hóa</th>
-            <th style={{ width: '82px' }}>Mã số</th>
-            <th style={{ width: '56px' }}>Đơn vị tính</th>
-            <th style={{ width: '56px' }}>Yêu cầu</th>
-            <th style={{ width: '62px' }}>Thực xuất</th>
-            <th style={{ width: '88px' }}>Đơn giá</th>
-            <th style={{ width: '98px' }}>Thành tiền</th>
+            <th style={{ width: "38px" }}>STT</th>
+            <th>
+              Tên, nhãn hiệu, quy cách, phẩm chất vật tư, dụng cụ sản phẩm, hàng
+              hóa
+            </th>
+            <th style={{ width: "82px" }}>Mã số</th>
+            <th style={{ width: "56px" }}>Đơn vị tính</th>
+            <th style={{ width: "56px" }}>Yêu cầu</th>
+            <th style={{ width: "62px" }}>Thực xuất</th>
+            <th style={{ width: "88px" }}>Đơn giá</th>
+            <th style={{ width: "98px" }}>Thành tiền</th>
           </tr>
         </thead>
         <tbody>
-          {items.length > 0 ? items.map((item, index) => (
-            <tr key={item.id || index}>
-              <td className="center">{index + 1}</td>
-              <td>{item.products?.name || 'Sản phẩm không xác định'}</td>
-              <td className="center">{item.products?.sku || ''}</td>
-              <td className="center">Cái</td>
-              <td className="center">{item.quantity ?? ''}</td>
-              <td className="center">{item.quantity ?? ''}</td>
-              <td className="right">{formatCurrency(item.selling_price)}</td>
-              <td className="right">{formatCurrency((item.quantity || 0) * (item.selling_price || 0))}</td>
-            </tr>
-          )) : (
+          {items.length > 0 ? (
+            items.map((item, index) => (
+              <tr key={item.id || index}>
+                <td className="center">{index + 1}</td>
+                <td>{item.products?.name || "Sản phẩm không xác định"}</td>
+                <td className="center">{item.products?.sku || ""}</td>
+                <td className="center">Cái</td>
+                <td className="center">{item.quantity ?? ""}</td>
+                <td className="center">{item.quantity ?? ""}</td>
+                <td className="right">{formatCurrency(item.selling_price)}</td>
+                <td className="right">
+                  {formatCurrency(
+                    (item.quantity || 0) * (item.selling_price || 0),
+                  )}
+                </td>
+              </tr>
+            ))
+          ) : (
             <tr>
               <td className="center">1</td>
               <td>&nbsp;</td>
@@ -327,13 +357,23 @@ const PrintWarehouseIssue = React.forwardRef(({ order }, ref) => {
           )}
           <tr>
             <td className="center">&nbsp;</td>
-            <td className="center"><strong>Cộng</strong></td>
+            <td className="center">
+              <strong>Cộng</strong>
+            </td>
             <td>&nbsp;</td>
             <td>&nbsp;</td>
-            <td className="center"><strong>{items.length > 0 ? totalQuantity : ''}</strong></td>
-            <td className="center"><strong>{items.length > 0 ? totalQuantity : ''}</strong></td>
+            <td className="center">
+              <strong>{items.length > 0 ? totalQuantity : ""}</strong>
+            </td>
+            <td className="center">
+              <strong>{items.length > 0 ? totalQuantity : ""}</strong>
+            </td>
             <td>&nbsp;</td>
-            <td className="right"><strong>{items.length > 0 ? formatCurrency(totalAmount) : ''}</strong></td>
+            <td className="right">
+              <strong>
+                {items.length > 0 ? formatCurrency(totalAmount) : ""}
+              </strong>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -341,7 +381,7 @@ const PrintWarehouseIssue = React.forwardRef(({ order }, ref) => {
       <div className="warehouse-summary">
         <div className="warehouse-summary-row">
           <span className="label">- Tổng số tiền (Viết bằng chữ):</span>
-          <span className="value">{totalAmountInWords || '\u00A0'}</span>
+          <span className="value">{totalAmountInWords || "\u00A0"}</span>
         </div>
         <div className="warehouse-summary-row">
           <span className="label">- Số chứng từ gốc kèm theo:</span>
@@ -351,39 +391,46 @@ const PrintWarehouseIssue = React.forwardRef(({ order }, ref) => {
         </div>
       </div>
 
-      <div className="warehouse-sign-date">Ngày {day} tháng {month} năm {year}</div>
+      <div className="warehouse-sign-date">
+        Ngày {day} tháng {month} năm {year}
+      </div>
 
       <div className="warehouse-signatures">
         <div className="sign-col">
           <div className="title">Người lập phiếu</div>
           <div className="subtitle">(Ký, họ tên)</div>
           <div className="space" />
+          <div className="name">{toTitleCase(order[OrderFields.CREATED_BY]) || ""}</div>
         </div>
         <div className="sign-col">
           <div className="title">Người nhận hàng</div>
           <div className="subtitle">(Ký, họ tên)</div>
           <div className="space" />
+          <div className="name">{toTitleCase(order[OrderFields.CUSTOMER_NAME]) || ""}</div>
         </div>
         <div className="sign-col">
           <div className="title">Thủ kho</div>
           <div className="subtitle">(Ký, họ tên)</div>
           <div className="space" />
+          <div className="name"></div>
         </div>
         <div className="sign-col">
           <div className="title">Kế toán trưởng</div>
           <div className="subtitle">(Hoặc bộ phận có nhu cầu nhập)</div>
           <div className="space" />
+          <div className="name"></div>
         </div>
         <div className="sign-col">
           <div className="title">Giám đốc</div>
           <div className="subtitle">(Ký, họ tên, đóng dấu)</div>
           <div className="space" />
+          <div className="name">{COMPANY_REPRESENTATIVE_NAME}</div>
         </div>
       </div>
     </div>
   );
 });
 
-PrintWarehouseIssue.displayName = 'PrintWarehouseIssue';
+PrintWarehouseIssue.displayName = "PrintWarehouseIssue";
 
 export default PrintWarehouseIssue;

@@ -1,18 +1,19 @@
-import React from 'react';
-import { formatCurrency, numberToVietnameseCurrencyWords } from '../../models';
+import React from "react";
+import { formatCurrency, numberToVietnameseCurrencyWords } from "../../models";
 import {
   COMPANY_HEAD_OFFICE_ADDRESS,
   COMPANY_LEGAL_NAME,
   COMPANY_PHONE,
+  COMPANY_REPRESENTATIVE_NAME,
   COMPANY_STORE_ADDRESS,
   COMPANY_TAX_CODE,
-} from '../../config/companyInfo';
+} from "../../config/companyInfo";
 
 const formatDateValue = (dateValue) => {
-  if (!dateValue) return '';
+  if (!dateValue) return "";
 
   const date = new Date(`${dateValue}T00:00:00`);
-  return date.toLocaleDateString('vi-VN');
+  return date.toLocaleDateString("vi-VN");
 };
 
 const getReportDateLabel = (dateFrom, dateTo) => {
@@ -28,16 +29,17 @@ const getReportDateLabel = (dateFrom, dateTo) => {
   if (dateFrom) return `Từ ngày ${formatDateValue(dateFrom)}`;
   if (dateTo) return `Đến ngày ${formatDateValue(dateTo)}`;
 
-  return '';
+  return "";
 };
 
-const PurchaseLedgerPrintTemplate = React.forwardRef(({ rows, totalAmount, dateFrom, dateTo }, ref) => {
-  const reportDateLabel = getReportDateLabel(dateFrom, dateTo);
-  const totalAmountInWords = numberToVietnameseCurrencyWords(totalAmount);
+const PurchaseLedgerPrintTemplate = React.forwardRef(
+  ({ rows, totalAmount, dateFrom, dateTo }, ref) => {
+    const reportDateLabel = getReportDateLabel(dateFrom, dateTo);
+    const totalAmountInWords = numberToVietnameseCurrencyWords(totalAmount);
 
-  return (
-    <div ref={ref} className="purchase-ledger-print-container">
-      <style>{`
+    return (
+      <div ref={ref} className="purchase-ledger-print-container">
+        <style>{`
         @media print {
           @page {
             size: A4 landscape;
@@ -169,146 +171,199 @@ const PurchaseLedgerPrintTemplate = React.forwardRef(({ rows, totalAmount, dateF
         .purchase-ledger-signatures .space {
           height: 80px;
         }
+
+        .purchase-ledger-signatures .name {
+          margin-top: 8px;
+        }
       `}</style>
 
-      <div className="purchase-ledger-meta">
-        Mẫu số: 02/TNDN (Ban hành kèm theo Thông tư số 20/2026/TT-BTC của Bộ trưởng Bộ Tài chính)
-      </div>
+        <div className="purchase-ledger-meta">
+          Mẫu số: 02/TNDN (Ban hành kèm theo Thông tư số 20/2026/TT-BTC của Bộ
+          trưởng Bộ Tài chính)
+        </div>
 
-      <div className="purchase-ledger-title">Bảng kê thu mua hàng hóa, dịch vụ không có hóa đơn</div>
-      <div className="purchase-ledger-subtitle">
-        {reportDateLabel ? `(${reportDateLabel})` : ''}
-      </div>
+        <div className="purchase-ledger-title">
+          Bảng kê thu mua hàng hóa, dịch vụ không có hóa đơn
+        </div>
+        <div className="purchase-ledger-subtitle">
+          {reportDateLabel ? `(${reportDateLabel})` : ""}
+        </div>
 
-      <div className="purchase-ledger-company">
-        <div className="purchase-ledger-company-row">
-          <span className="label">Tên doanh nghiệp:</span>
-          <span className="value">{COMPANY_LEGAL_NAME}</span>
+        <div className="purchase-ledger-company">
+          <div className="purchase-ledger-company-row">
+            <span className="label">Tên doanh nghiệp:</span>
+            <span className="value">{COMPANY_LEGAL_NAME}</span>
+          </div>
+          <div className="purchase-ledger-company-row">
+            <span className="label">Mã số thuế:</span>
+            <span className="value">{COMPANY_TAX_CODE}</span>
+          </div>
+          <div className="purchase-ledger-company-row">
+            <span className="label">Địa chỉ:</span>
+            <span className="value">{COMPANY_HEAD_OFFICE_ADDRESS}</span>
+          </div>
+          <div className="purchase-ledger-company-row">
+            <span className="label">Số điện thoại:</span>
+            <span className="value">{COMPANY_PHONE}</span>
+          </div>
+          <div className="purchase-ledger-company-row">
+            <span className="label">Địa chỉ nơi tổ chức thu mua:</span>
+            <span className="value">{COMPANY_STORE_ADDRESS}</span>
+          </div>
         </div>
-        <div className="purchase-ledger-company-row">
-          <span className="label">Mã số thuế:</span>
-          <span className="value">{COMPANY_TAX_CODE}</span>
-        </div>
-        <div className="purchase-ledger-company-row">
-          <span className="label">Địa chỉ:</span>
-          <span className="value">{COMPANY_HEAD_OFFICE_ADDRESS}</span>
-        </div>
-        <div className="purchase-ledger-company-row">
-          <span className="label">Số điện thoại:</span>
-          <span className="value">{COMPANY_PHONE}</span>
-        </div>
-        <div className="purchase-ledger-company-row">
-          <span className="label">Địa chỉ nơi tổ chức thu mua:</span>
-          <span className="value">{COMPANY_STORE_ADDRESS}</span>
-        </div>
-      </div>
 
-      <table className="purchase-ledger-table">
-        <thead>
-          <tr>
-            <th className="group-header" style={{ width: '92px' }}>
-              Ngày<br />
-              tháng<br />
-              năm<br />
-              mua<br />
-              hàng
-            </th>
-            <th className="group-header" colSpan="4">Người bán</th>
-            <th className="group-header" colSpan="4">Hàng hóa, dịch vụ mua vào</th>
-            <th className="group-header" style={{ width: '90px' }} rowSpan="2">Ghi chú</th>
-          </tr>
-          <tr>
-            <th className="sub-header" />
-            <th className="sub-header" style={{ width: '120px' }}>
-              Tên<br />
-              người<br />
-              bán
-            </th>
-            <th className="sub-header" style={{ width: '150px' }}>
-              Địa<br />
-              chỉ
-            </th>
-            <th className="sub-header" style={{ width: '108px' }}>
-              Số<br />
-              căn<br />
-              cước
-            </th>
-            <th className="sub-header" style={{ width: '105px' }}>
-              Số điện<br />
-              thoại<br />
-              (nếu<br />
-              có)
-            </th>
-            <th className="sub-header">
-              Tên<br />
-              hàng<br />
-              hóa,<br />
-              dịch vụ
-            </th>
-            <th className="sub-header" style={{ width: '90px' }}>
-              Số<br />
-              lượng,<br />
-              trọng<br />
-              lượng
-            </th>
-            <th className="sub-header" style={{ width: '100px' }}>
-              Đơn<br />
-              giá
-            </th>
-            <th className="sub-header" style={{ width: '115px' }}>
-              Tổng giá<br />
-              thanh toán
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.length > 0 ? rows.map((row) => (
-            <tr key={row.id}>
-              <td className="center">{formatDateValue(row.importDate)}</td>
-              <td>{row.sellerName}</td>
-              <td>{row.sellerAddress}</td>
-              <td className="center">{row.sellerIdNumber}</td>
-              <td className="center">{row.sellerPhone}</td>
-              <td>{row.productName}</td>
-              <td className="center">{row.quantity}</td>
-              <td className="right">{formatCurrency(row.unitPrice)}</td>
-              <td className="right">{formatCurrency(row.totalPrice)}</td>
-              <td>{row.note}</td>
-            </tr>
-          )) : (
+        <table className="purchase-ledger-table">
+          <thead>
             <tr>
-              <td colSpan="10" className="center">Không có dữ liệu trong khoảng ngày đã chọn</td>
+              <th className="group-header" style={{ width: "92px" }}>
+                Ngày
+                <br />
+                tháng
+                <br />
+                năm
+                <br />
+                mua
+                <br />
+                hàng
+              </th>
+              <th className="group-header" colSpan="4">
+                Người bán
+              </th>
+              <th className="group-header" colSpan="4">
+                Hàng hóa, dịch vụ mua vào
+              </th>
+              <th
+                className="group-header"
+                style={{ width: "90px" }}
+                rowSpan="2"
+              >
+                Ghi chú
+              </th>
             </tr>
-          )}
-        </tbody>
-      </table>
+            <tr>
+              <th className="sub-header" />
+              <th className="sub-header" style={{ width: "120px" }}>
+                Tên
+                <br />
+                người
+                <br />
+                bán
+              </th>
+              <th className="sub-header" style={{ width: "150px" }}>
+                Địa
+                <br />
+                chỉ
+              </th>
+              <th className="sub-header" style={{ width: "108px" }}>
+                Số
+                <br />
+                căn
+                <br />
+                cước
+              </th>
+              <th className="sub-header" style={{ width: "105px" }}>
+                Số điện
+                <br />
+                thoại
+                <br />
+                (nếu
+                <br />
+                có)
+              </th>
+              <th className="sub-header">
+                Tên
+                <br />
+                hàng
+                <br />
+                hóa,
+                <br />
+                dịch vụ
+              </th>
+              <th className="sub-header" style={{ width: "90px" }}>
+                Số
+                <br />
+                lượng,
+                <br />
+                trọng
+                <br />
+                lượng
+              </th>
+              <th className="sub-header" style={{ width: "100px" }}>
+                Đơn
+                <br />
+                giá
+              </th>
+              <th className="sub-header" style={{ width: "115px" }}>
+                Tổng giá
+                <br />
+                thanh toán
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.length > 0 ? (
+              rows.map((row) => (
+                <tr key={row.id}>
+                  <td className="center">{formatDateValue(row.importDate)}</td>
+                  <td>{row.sellerName}</td>
+                  <td>{row.sellerAddress}</td>
+                  <td className="center">{row.sellerIdNumber}</td>
+                  <td className="center">{row.sellerPhone}</td>
+                  <td>{row.productName}</td>
+                  <td className="center">{row.quantity}</td>
+                  <td className="right">{formatCurrency(row.unitPrice)}</td>
+                  <td className="right">{formatCurrency(row.totalPrice)}</td>
+                  <td>{row.note}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="10" className="center">
+                  Không có dữ liệu trong khoảng ngày đã chọn
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
 
-      <div className="purchase-ledger-total">
-        <div className="purchase-ledger-total-row">
-          Tổng giá trị hàng hóa, dịch vụ mua vào: {formatCurrency(totalAmount)}
+        <div className="purchase-ledger-total">
+          <div className="purchase-ledger-total-row">
+            Tổng giá trị hàng hóa, dịch vụ mua vào:{" "}
+            {formatCurrency(totalAmount)}
+          </div>
+          <div className="purchase-ledger-total-row">
+            (Số tiền bằng chữ: {totalAmountInWords})
+          </div>
         </div>
-        <div className="purchase-ledger-total-row">
-          (Số tiền bằng chữ: {totalAmountInWords})
+
+        <div className="purchase-ledger-signatures">
+          <div className="sign-col">
+            <div>
+              <strong>Người lập bảng kê</strong>
+            </div>
+            <div>(Ký, ghi rõ họ tên)</div>
+            <div className="space" />
+            <div className="name"></div>
+          </div>
+          <div className="sign-col">
+            <div>
+              <strong>Ngày ..... tháng ..... năm .....</strong>
+            </div>
+            <div>
+              <strong>
+                Người đại diện hoặc người được ủy quyền của doanh nghiệp
+              </strong>
+            </div>
+            <div>(Ký tên, đóng dấu)</div>
+            <div className="space" />
+            <div className="name">{COMPANY_REPRESENTATIVE_NAME}</div>
+          </div>
         </div>
       </div>
+    );
+  },
+);
 
-      <div className="purchase-ledger-signatures">
-        <div className="sign-col">
-          <div><strong>Người lập bảng kê</strong></div>
-          <div>(Ký, ghi rõ họ tên)</div>
-          <div className="space" />
-        </div>
-        <div className="sign-col">
-          <div><strong>Ngày ..... tháng ..... năm .....</strong></div>
-          <div><strong>Người đại diện hoặc người được ủy quyền của doanh nghiệp</strong></div>
-          <div>(Ký tên, đóng dấu)</div>
-          <div className="space" />
-        </div>
-      </div>
-    </div>
-  );
-});
-
-PurchaseLedgerPrintTemplate.displayName = 'PurchaseLedgerPrintTemplate';
+PurchaseLedgerPrintTemplate.displayName = "PurchaseLedgerPrintTemplate";
 
 export default PurchaseLedgerPrintTemplate;
