@@ -44,7 +44,7 @@ function ImportOrderList() {
   );
   
   // Sorting states
-  const [sortBy, setSortBy] = useState(searchParams.get('sortBy') || 'created_at');
+  const [sortBy, setSortBy] = useState(searchParams.get('sortBy') || ImportOrderFields.IMPORT_DATE);
   const [sortOrder, setSortOrder] = useState(searchParams.get('sortOrder') || 'desc');
   
   // Debounced search ID
@@ -153,7 +153,7 @@ function ImportOrderList() {
     if (statusFilter.length > 0) statusFilter.forEach((status) => params.append('status', status));
     if (productFilter) params.set('productId', productFilter);
     if (quantity) params.set('quantity', quantity.toString());
-    if (sortBy !== 'created_at') params.set('sortBy', sortBy);
+    if (sortBy !== ImportOrderFields.IMPORT_DATE) params.set('sortBy', sortBy);
     if (sortOrder !== 'desc') params.set('sortOrder', sortOrder);
 
     const newSearch = params.toString();
@@ -315,10 +315,10 @@ function ImportOrderList() {
                 Nguồn nhập
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                onClick={() => handleSort('created_at')}>
+                onClick={() => handleSort(ImportOrderFields.IMPORT_DATE)}>
                 <div className="flex items-center space-x-1">
                   <span>Ngày tạo</span>
-                  {sortBy === 'created_at' && (
+                  {sortBy === ImportOrderFields.IMPORT_DATE && (
                     <span className="text-blue-600">{sortOrder === 'asc' ? '↑' : '↓'}</span>
                   )}
                 </div>

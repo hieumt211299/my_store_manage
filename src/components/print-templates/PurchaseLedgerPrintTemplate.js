@@ -217,14 +217,6 @@ const PurchaseLedgerPrintTemplate = React.forwardRef(
             <tr>
               <th className="group-header" style={{ width: "92px" }}>
                 Ngày
-                <br />
-                tháng
-                <br />
-                năm
-                <br />
-                mua
-                <br />
-                hàng
               </th>
               <th className="group-header" colSpan="4">
                 Người bán

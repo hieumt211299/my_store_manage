@@ -195,6 +195,13 @@ function Sidebar() {
               <FaPlus className="mr-3 text-xl" />
               <span className="font-medium">Tạo đơn hàng</span>
             </NavLink>
+            {/* <NavLink
+              to="/warranty/create"
+              className="flex w-full items-center rounded-lg bg-green-600 p-3 text-white transition-colors duration-200 hover:bg-green-700"
+            >
+              <FaPlus className="mr-3 text-xl" />
+              <span className="font-medium">Tạo phiếu đảm bảo</span>
+            </NavLink> */}
           </div>
         </nav>
         
