@@ -10,7 +10,7 @@ import {
 import {
   COMPANY_HEAD_OFFICE_ADDRESS,
   COMPANY_LEGAL_NAME,
-  COMPANY_REPRESENTATIVE_NAME,
+  // COMPANY_REPRESENTATIVE_NAME,
   COMPANY_STORE_ADDRESS,
 } from "../../config/companyInfo";
 const getDateParts = (dateValue) => {
@@ -407,9 +407,7 @@ const ImportWarehouseReceiptTemplate = React.forwardRef(
             <div className="title">Người lập phiếu</div>
             <div className="subtitle">(Ký, họ tên)</div>
             <div className="space" />
-            <div className="name">
-              {toTitleCase(importOrder[ImportOrderFields.CREATED_BY]) || ''}
-            </div>
+
           </div>
           <div className="sign-col">
             <div className="title">Người giao hàng</div>
@@ -429,7 +427,6 @@ const ImportWarehouseReceiptTemplate = React.forwardRef(
             <div className="title">Kế toán trưởng</div>
             <div className="subtitle">(Hoặc bộ phận có nhu cầu nhập)</div>
             <div className="space" />
-            <div className="name">{COMPANY_REPRESENTATIVE_NAME}</div>
           </div>
         </div>
       </div>

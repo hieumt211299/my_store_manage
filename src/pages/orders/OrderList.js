@@ -1,18 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
 import Loading from '../../components/Loading';
 import PageHeader from '../../components/PageHeader';
 import SearchInput from '../../components/SearchInput';
 import Pagination from '../../components/Pagination';
 import StatusBadge from '../../components/StatusBadge';
 import OrderListFilters from './components/OrderListFilters';
+import { buildOrderListBaseQuery, filterOrdersByProduct } from './orderListHelpers';
+import { exportOrdersToExcel } from './orderExport';
 import {
-  Tables,
   CustomerFields,
   OrderFields,
   OrderStatus,
-  OrderSelectWithCustomerAndItems,
   getStatusDisplay,
   getStatusBadgeColor,
   getOrderTypeLabel,
@@ -26,6 +25,7 @@ function OrderList() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const [message, setMessage] = useState('');
   const [searchId, setSearchId] = useState(searchParams.get('search') || '');
   const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page')) || 1);
@@ -68,44 +68,30 @@ function OrderList() {
     try {
       setLoading(true);
       const offset = (currentPage - 1) * itemsPerPage;
-      
-      let query = supabase
-        .from(Tables.ORDERS)
-        .select(OrderSelectWithCustomerAndItems, { count: 'exact' })
-        .order(sortBy, { ascending: sortOrder === 'asc' });
-
-      // Only apply pagination if no product search (since we need all data for client-side filtering)
-      if (!productFilter) {
-        query = query.range(offset, offset + itemsPerPage - 1);
-      }
-
-      if (debouncedSearchId && debouncedSearchId.trim()) {
-        query = query.eq(OrderFields.ID, parseInt(debouncedSearchId.trim()));
-      }
-      if (createdDateFrom) query = query.gte(OrderFields.CREATED_DATE, createdDateFrom);
-      if (createdDateTo) query = query.lte(OrderFields.CREATED_DATE, createdDateTo);
-      if (expectedDeliveryDateFrom) query = query.gte(OrderFields.EXPECTED_DELIVERY_DATE, expectedDeliveryDateFrom);
-      if (expectedDeliveryDateTo) query = query.lte(OrderFields.EXPECTED_DELIVERY_DATE, expectedDeliveryDateTo);
-      if (actualReceivedDateFrom) query = query.gte(OrderFields.DATE_RECEIVED, actualReceivedDateFrom);
-      if (actualReceivedDateTo) query = query.lte(OrderFields.DATE_RECEIVED, actualReceivedDateTo);
-      if (customerFilter) query = query.eq(OrderFields.CUSTOMER_ID, parseInt(customerFilter));
-      if (statusFilter.length > 0) query = query.in(OrderFields.STATUS, statusFilter);
+      const query = buildOrderListBaseQuery({
+        includeCount: true,
+        rangeFrom: productFilter ? undefined : offset,
+        rangeTo: productFilter ? undefined : offset + itemsPerPage - 1,
+        searchId: debouncedSearchId,
+        createdDateFrom,
+        createdDateTo,
+        expectedDeliveryDateFrom,
+        expectedDeliveryDateTo,
+        actualReceivedDateFrom,
+        actualReceivedDateTo,
+        customerFilter,
+        statusFilter,
+        sortBy,
+        sortOrder,
+      });
 
       const { data, error, count } = await query;
 
       if (error) throw error;
       
-      let filteredData = data || [];
+      let filteredData = filterOrdersByProduct(data || [], productFilter);
       
-      // Client-side product filtering 
       if (productFilter) {
-        filteredData = filteredData.filter(order => {
-          return order.order_items && order.order_items.some(item => {
-            return item.products && item.products.id.toString() === productFilter;
-          });
-        });
-        
-        // Apply pagination to filtered results
         const total = filteredData.length;
         filteredData = filteredData.slice(offset, offset + itemsPerPage);
         setTotalOrders(total);
@@ -136,6 +122,44 @@ function OrderList() {
     sortBy,
     sortOrder,
   ]);
+
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+      setMessage('');
+
+      const { data, error } = await buildOrderListBaseQuery({
+        searchId: debouncedSearchId,
+        createdDateFrom,
+        createdDateTo,
+        expectedDeliveryDateFrom,
+        expectedDeliveryDateTo,
+        actualReceivedDateFrom,
+        actualReceivedDateTo,
+        customerFilter,
+        statusFilter,
+        sortBy,
+        sortOrder,
+      });
+
+      if (error) throw error;
+
+      const filteredOrders = filterOrdersByProduct(data || [], productFilter);
+
+      if (filteredOrders.length === 0) {
+        setMessage('Không có dữ liệu phù hợp để xuất Excel.');
+        return;
+      }
+
+      exportOrdersToExcel(filteredOrders);
+      setMessage(`Xuất Excel thành công ${filteredOrders.length} đơn hàng.`);
+    } catch (error) {
+      console.error('Error exporting orders:', error);
+      setMessage(`Lỗi xuất Excel: ${error.message}`);
+    } finally {
+      setExporting(false);
+    }
+  };
 
   // Update URL when state changes
   useEffect(() => {
@@ -256,17 +280,27 @@ function OrderList() {
 
 
   return (
-    <div className="mx-auto max-w-7xl px-0 sm:px-2 lg:px-4">
+    <div className="mx-auto max-w-8xl px-0 sm:px-2 lg:px-4">
       <PageHeader
         title="Quản lý đơn hàng"
         badge={`${totalOrders} đơn hàng`}
         actions={
-          <Link
-            to="/orders/create"
-            className="inline-flex w-full items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 sm:w-auto"
-          >
-            + Tạo đơn hàng
-          </Link>
+          <>
+            <button
+              type="button"
+              onClick={handleExport}
+              disabled={loading || exporting}
+              className="inline-flex w-full items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+            >
+              {exporting ? 'Đang xuất Excel...' : 'Xuất Excel'}
+            </button>
+            <Link
+              to="/orders/create"
+              className="inline-flex w-full items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 sm:w-auto"
+            >
+              + Tạo đơn hàng
+            </Link>
+          </>
         }
       />
 

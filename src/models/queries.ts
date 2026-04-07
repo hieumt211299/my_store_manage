@@ -29,15 +29,18 @@ export const OrderSelectWithItems = `
 `;
 
 /**
- * Select fragment: order with customer (inner join) and items.
+ * Select fragment: order with customer and items.
  */
 export const OrderSelectWithCustomerAndItems = `
   *,
-  customers!inner (
+  customers (
     ${CustomerFields.ID},
     ${CustomerFields.NAME},
     ${CustomerFields.ID_NUMBER},
-    ${CustomerFields.PHONE}
+    ${CustomerFields.PHONE},
+    ${CustomerFields.EMAIL},
+    ${CustomerFields.ID_ISSUED_DATE},
+    ${CustomerFields.ADDRESS}
   ),
   order_items (
     ${OrderItemFields.ID},
@@ -45,6 +48,7 @@ export const OrderSelectWithCustomerAndItems = `
     ${OrderItemFields.QUANTITY},
     ${OrderItemFields.SELLING_PRICE},
     products (
+      ${ProductFields.ID},
       ${ProductFields.NAME},
       ${ProductFields.SKU}
     )

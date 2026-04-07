@@ -103,7 +103,7 @@ function CustomerList() {
   // formatDate imported from models
 
   return (
-    <div className="mx-auto max-w-7xl px-0 sm:px-2 lg:px-4">
+    <div className="mx-auto max-w-8xl px-0 sm:px-2 lg:px-4">
       {/* Header */}
       <div className="mb-6 flex flex-col gap-3 md:mb-8 md:flex-row md:items-center md:justify-between">
         <h1 className="text-3xl font-bold text-gray-900">Quản lý khách hàng</h1>
