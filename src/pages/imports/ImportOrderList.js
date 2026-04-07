@@ -293,7 +293,7 @@ function ImportOrderList() {
   const totalPages = Math.ceil(totalImports / itemsPerPage);
 
   return (
-    <div className="mx-auto max-w-7xl px-0 sm:px-2 lg:px-4">
+    <div className="mx-auto max-w-8xl px-0 sm:px-2 lg:px-4">
       <PageHeader
         title="Danh sách đơn nhập"
         subtitle="Quản lý đơn nhập hàng từ Ancarat và khách bán"

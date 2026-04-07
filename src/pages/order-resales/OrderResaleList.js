@@ -172,7 +172,7 @@ function OrderResaleList() {
   const activeFiltersCount = getActiveFiltersCount();
 
   return (
-    <div className="mx-auto max-w-7xl px-0 sm:px-2 lg:px-4">
+    <div className="mx-auto max-w-8xl px-0 sm:px-2 lg:px-4">
       <PageHeader
         title="Bán đơn cho cửa hàng"
         subtitle="Quản lý các giao dịch cửa hàng mua lại đơn hàng từ khách."

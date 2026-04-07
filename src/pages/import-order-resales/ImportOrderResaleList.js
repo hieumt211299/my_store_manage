@@ -150,7 +150,7 @@ function ImportOrderResaleList() {
     (statusFilter.length > 0 ? 1 : 0);
 
   return (
-    <div className="mx-auto max-w-7xl px-0 sm:px-2 lg:px-4">
+    <div className="mx-auto max-w-8xl px-0 sm:px-2 lg:px-4">
       <PageHeader
         title="Bán lại Ancarat"
         subtitle="Quản lý các giao dịch bán lại đơn nhập Ancarat."

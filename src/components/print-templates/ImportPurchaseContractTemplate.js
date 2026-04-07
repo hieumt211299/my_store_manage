@@ -28,15 +28,15 @@ const extractMaterialPurity = (productName) => {
   return match ? match[0].trim() : "";
 };
 
-const formatContractDate = (dateValue) => {
-  const date = dateValue ? new Date(dateValue) : new Date();
+// const formatContractDate = (dateValue) => {
+//   const date = dateValue ? new Date(dateValue) : new Date();
 
-  return {
-    day: date.getDate(),
-    month: date.getMonth() + 1,
-    year: date.getFullYear(),
-  };
-};
+//   return {
+//     day: date.getDate(),
+//     month: date.getMonth() + 1,
+//     year: date.getFullYear(),
+//   };
+// };
 
 const ImportPurchaseContractTemplate = React.forwardRef(
   ({ importOrder }, ref) => {
@@ -45,10 +45,10 @@ const ImportPurchaseContractTemplate = React.forwardRef(
     const items = importOrder.import_items || [];
     const totalAmount = importOrder[ImportOrderFields.TOTAL_AMOUNT] || 0;
     const totalAmountInWords = numberToVietnameseCurrencyWords(totalAmount);
-    const contractDate = formatContractDate(
-      importOrder[ImportOrderFields.CREATED_AT] ||
-        importOrder[ImportOrderFields.IMPORT_DATE],
-    );
+    // const contractDate = formatContractDate(
+    //   importOrder[ImportOrderFields.CREATED_AT] ||
+    //     importOrder[ImportOrderFields.IMPORT_DATE],
+    // );
     const sellerIssuedDate = importOrder[
       ImportOrderFields.SELLER_ID_ISSUED_DATE
     ]
@@ -262,8 +262,8 @@ const ImportPurchaseContractTemplate = React.forwardRef(
 
         <div className="contract-title">Hợp đồng mua bán</div>
         <div className="contract-subtitle">
-          Hợp đồng này được lập ngày {contractDate.day} tháng{" "}
-          {contractDate.month} năm {contractDate.year} được thực hiện bởi các
+          Hợp đồng này được lập ngày ....... tháng{" "}
+          ....... năm ....... được thực hiện bởi các
           bên tham gia dưới đây:
         </div>
 
