@@ -13,12 +13,16 @@ import SellerInfoForm from './components/SellerInfoForm';
 import ImportItemsTable from './components/ImportItemsTable';
 import {
   Tables,
+  CustomerFields,
   ProductFields,
   ImportOrderFields,
   ImportItemFields,
   ImportOrderSourceType,
   ImportOrderStatus,
+  buildCustomerInsertPayload,
+  createDefaultCustomerForm,
   formatCurrency,
+  mapCustomerRowToForm,
 } from '../../models';
 
 function CreateImport() {
@@ -28,6 +32,7 @@ function CreateImport() {
   const [products, setProducts] = useState([]);
   const [showProductDialog, setShowProductDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sellerSearch, setSellerSearch] = useState('');
 
   // Initialize form with default values
   const [importForm, setImportForm] = useState({
@@ -45,13 +50,7 @@ function CreateImport() {
     ancaratCashierName: '',
     
     // Customer seller specific fields
-    seller: {
-      idNumber: '',
-      name: '',
-      phone: '',
-      address: '',
-      idIssuedDate: '',
-    },
+    seller: createDefaultCustomerForm(),
     
     items: [],
   });
@@ -97,14 +96,9 @@ function CreateImport() {
       // Reset fields when changing source type
       ancaratInvoiceNumber: '',
       ancaratCashierName: '',
-      seller: {
-        idNumber: '',
-        name: '',
-        phone: '',
-        address: '',
-        idIssuedDate: '',
-      },
+      seller: createDefaultCustomerForm(),
     }));
+    setSellerSearch('');
   };
 
   // Handle basic import info changes
@@ -123,6 +117,23 @@ function CreateImport() {
       ...prev,
       seller: { ...prev.seller, [field]: value },
     }));
+  };
+
+  const handleSelectSeller = (customer) => {
+    setImportForm(prev => ({
+      ...prev,
+      seller: mapCustomerRowToForm(customer),
+    }));
+    setSellerSearch(customer.id_number || '');
+    addNotification('Đã chọn khách bán thành công!', 'success', 3000);
+  };
+
+  const handleClearSeller = () => {
+    setImportForm(prev => ({
+      ...prev,
+      seller: createDefaultCustomerForm(),
+    }));
+    setSellerSearch('');
   };
 
   // Add products to import
@@ -211,6 +222,10 @@ function CreateImport() {
         addNotification('Vui lòng nhập số CCCD/CMND', 'error');
         return false;
       }
+      if (!importForm.seller.address.trim()) {
+        addNotification('Vui lòng nhập địa chỉ khách bán', 'error');
+        return false;
+      }
     }
 
     if (importForm.items.length === 0) {
@@ -257,6 +272,7 @@ function CreateImport() {
       payload[ImportOrderFields.SELLER_ID_NUMBER] = importForm.seller.idNumber.trim();
       payload[ImportOrderFields.SELLER_NAME] = importForm.seller.name.trim();
       payload[ImportOrderFields.SELLER_PHONE] = importForm.seller.phone.trim();
+      payload[ImportOrderFields.SELLER_EMAIL] = importForm.seller.email.trim() || null;
       payload[ImportOrderFields.SELLER_ADDRESS] = importForm.seller.address.trim();
       if (importForm.seller.idIssuedDate) {
         payload[ImportOrderFields.SELLER_ID_ISSUED_DATE] = importForm.seller.idIssuedDate;
@@ -285,6 +301,26 @@ function CreateImport() {
 
     try {
       setIsSubmitting(true);
+
+      if (importForm.sourceType === ImportOrderSourceType.CUSTOMER) {
+        const { data: existingCustomer, error: customerSearchError } = await supabase
+          .from(Tables.CUSTOMERS)
+          .select(CustomerFields.ID)
+          .eq(CustomerFields.ID_NUMBER, importForm.seller.idNumber.trim())
+          .single();
+
+        if (customerSearchError && customerSearchError.code !== 'PGRST116') {
+          throw customerSearchError;
+        }
+
+        if (!existingCustomer) {
+          const { error: customerCreateError } = await supabase
+            .from(Tables.CUSTOMERS)
+            .insert([buildCustomerInsertPayload(importForm.seller)]);
+
+          if (customerCreateError) throw customerCreateError;
+        }
+      }
 
       // Insert import order
       const { data: importOrderData, error: importOrderError } = await supabase
@@ -363,7 +399,11 @@ function CreateImport() {
           {importForm.sourceType === ImportOrderSourceType.CUSTOMER && (
             <SellerInfoForm
               seller={importForm.seller}
+              customerSearch={sellerSearch}
               onSellerChange={handleSellerInfoChange}
+              onCustomerSearchChange={setSellerSearch}
+              onSelectCustomer={handleSelectSeller}
+              onClearCustomer={handleClearSeller}
             />
           )}
 

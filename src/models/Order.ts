@@ -132,6 +132,7 @@ export interface Order {
   created_date: string;
   customer_name: string;
   customer_phone: string;
+  customer_email: string | null;
   customer_id_number: string;
   customer_id_issued_date: string | null;
   customer_address: string;
@@ -172,6 +173,7 @@ export const OrderFields = {
   CREATED_DATE: 'created_date',
   CUSTOMER_NAME: 'customer_name',
   CUSTOMER_PHONE: 'customer_phone',
+  CUSTOMER_EMAIL: 'customer_email',
   CUSTOMER_ID_NUMBER: 'customer_id_number',
   CUSTOMER_ID_ISSUED_DATE: 'customer_id_issued_date',
   CUSTOMER_ADDRESS: 'customer_address',
@@ -290,6 +292,7 @@ export const buildOrderInsertPayload = (
   customer_id_number: orderForm.customer.idNumber,
   customer_name: orderForm.customer.name,
   customer_phone: orderForm.customer.phone,
+  customer_email: orderForm.customer.email || null,
   customer_id_issued_date: orderForm.customer.idIssuedDate || null,
   customer_address: orderForm.customer.address,
   customer_discovery_source: orderForm.customerDiscoverySource || null,

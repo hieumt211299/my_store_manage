@@ -36,7 +36,7 @@ function CustomerList() {
       // Apply search filter if searchQuery is provided
       if (searchQuery && searchQuery.trim()) {
         const search = searchQuery.trim();
-        query = query.or(`${CustomerFields.NAME}.ilike.%${search}%,${CustomerFields.PHONE}.ilike.%${search}%,${CustomerFields.ID_NUMBER}.ilike.%${search}%`);
+        query = query.or(`${CustomerFields.NAME}.ilike.%${search}%,${CustomerFields.PHONE}.ilike.%${search}%,${CustomerFields.EMAIL}.ilike.%${search}%,${CustomerFields.ID_NUMBER}.ilike.%${search}%`);
       }
 
       const { data, error, count } = await query;
@@ -127,7 +127,7 @@ function CustomerList() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Tìm theo tên, số điện thoại hoặc CCCD..."
+                placeholder="Tìm theo tên, số điện thoại, email hoặc CCCD..."
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <button
@@ -167,7 +167,7 @@ function CustomerList() {
           Vuốt ngang để xem đầy đủ thông tin bảng.
         </div>
         <div className="overflow-x-auto">
-        <table className="w-full min-w-[900px] divide-y divide-gray-200">
+        <table className="w-full min-w-[1080px] divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -180,6 +180,9 @@ function CustomerList() {
                 Số điện thoại
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Email
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Địa chỉ
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -189,10 +192,10 @@ function CustomerList() {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {loading ? (
-              <Loading type="table" message="Đang tải danh sách khách hàng..." colSpan="5" />
+              <Loading type="table" message="Đang tải danh sách khách hàng..." colSpan="6" />
             ) : customers.length === 0 ? (
               <tr>
-                <td colSpan="5" className="px-6 py-12 text-center">
+                <td colSpan="6" className="px-6 py-12 text-center">
                   <div className="text-gray-500">
                     {searchQuery ? 'Không tìm thấy khách hàng phù hợp' : 'Chưa có khách hàng nào'}
                   </div>
@@ -253,6 +256,15 @@ function CustomerList() {
                       className="text-gray-900 hover:text-blue-600 font-mono text-sm"
                     >
                       {customer[CustomerFields.PHONE]}
+                    </Link>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <Link
+                      to={`/customers/${customer[CustomerFields.ID]}`}
+                      onClick={(e) => handleLinkClick(e, customer[CustomerFields.ID])}
+                      className="text-gray-900 hover:text-blue-600 text-sm"
+                    >
+                      {customer[CustomerFields.EMAIL] || '-'}
                     </Link>
                   </td>
                   <td className="px-6 py-4">

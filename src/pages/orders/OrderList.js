@@ -33,8 +33,12 @@ function OrderList() {
   const [itemsPerPage] = useState(10);
   
   // Filter states - initialize from URL params
-  const [dateFrom, setDateFrom] = useState(searchParams.get('dateFrom') || '');
-  const [dateTo, setDateTo] = useState(searchParams.get('dateTo') || '');
+  const [createdDateFrom, setCreatedDateFrom] = useState(searchParams.get('createdDateFrom') || '');
+  const [createdDateTo, setCreatedDateTo] = useState(searchParams.get('createdDateTo') || '');
+  const [expectedDeliveryDateFrom, setExpectedDeliveryDateFrom] = useState(searchParams.get('expectedDeliveryDateFrom') || '');
+  const [expectedDeliveryDateTo, setExpectedDeliveryDateTo] = useState(searchParams.get('expectedDeliveryDateTo') || '');
+  const [actualReceivedDateFrom, setActualReceivedDateFrom] = useState(searchParams.get('actualReceivedDateFrom') || '');
+  const [actualReceivedDateTo, setActualReceivedDateTo] = useState(searchParams.get('actualReceivedDateTo') || '');
   const [customerFilter, setCustomerFilter] = useState(searchParams.get('customer') || '');
   const [statusFilter, setStatusFilter] = useState(searchParams.getAll('status') || []);
   const [productFilter, setProductFilter] = useState(searchParams.get('productId') || '');
@@ -47,8 +51,12 @@ function OrderList() {
   const [debouncedSearchId, setDebouncedSearchId] = useState(searchParams.get('search') || '');
 
   const handleApplyFilters = useCallback((filters) => {
-    setDateFrom(filters.dateFrom || '');
-    setDateTo(filters.dateTo || '');
+    setCreatedDateFrom(filters.createdDateFrom || '');
+    setCreatedDateTo(filters.createdDateTo || '');
+    setExpectedDeliveryDateFrom(filters.expectedDeliveryDateFrom || '');
+    setExpectedDeliveryDateTo(filters.expectedDeliveryDateTo || '');
+    setActualReceivedDateFrom(filters.actualReceivedDateFrom || '');
+    setActualReceivedDateTo(filters.actualReceivedDateTo || '');
     setCustomerFilter(filters.customerFilter || '');
     setProductFilter(filters.productFilter || '');
     setStatusFilter(filters.statusFilter || []);
@@ -74,8 +82,12 @@ function OrderList() {
       if (debouncedSearchId && debouncedSearchId.trim()) {
         query = query.eq(OrderFields.ID, parseInt(debouncedSearchId.trim()));
       }
-      if (dateFrom) query = query.gte(OrderFields.CREATED_DATE, dateFrom);
-      if (dateTo) query = query.lte(OrderFields.CREATED_DATE, dateTo);
+      if (createdDateFrom) query = query.gte(OrderFields.CREATED_DATE, createdDateFrom);
+      if (createdDateTo) query = query.lte(OrderFields.CREATED_DATE, createdDateTo);
+      if (expectedDeliveryDateFrom) query = query.gte(OrderFields.EXPECTED_DELIVERY_DATE, expectedDeliveryDateFrom);
+      if (expectedDeliveryDateTo) query = query.lte(OrderFields.EXPECTED_DELIVERY_DATE, expectedDeliveryDateTo);
+      if (actualReceivedDateFrom) query = query.gte(OrderFields.DATE_RECEIVED, actualReceivedDateFrom);
+      if (actualReceivedDateTo) query = query.lte(OrderFields.DATE_RECEIVED, actualReceivedDateTo);
       if (customerFilter) query = query.eq(OrderFields.CUSTOMER_ID, parseInt(customerFilter));
       if (statusFilter.length > 0) query = query.in(OrderFields.STATUS, statusFilter);
 
@@ -108,7 +120,22 @@ function OrderList() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, debouncedSearchId, itemsPerPage, dateFrom, dateTo, customerFilter, statusFilter, productFilter, sortBy, sortOrder]);
+  }, [
+    currentPage,
+    debouncedSearchId,
+    itemsPerPage,
+    createdDateFrom,
+    createdDateTo,
+    expectedDeliveryDateFrom,
+    expectedDeliveryDateTo,
+    actualReceivedDateFrom,
+    actualReceivedDateTo,
+    customerFilter,
+    statusFilter,
+    productFilter,
+    sortBy,
+    sortOrder,
+  ]);
 
   // Update URL when state changes
   useEffect(() => {
@@ -116,8 +143,12 @@ function OrderList() {
     
     if (debouncedSearchId) params.set('search', debouncedSearchId);
     if (currentPage > 1) params.set('page', currentPage.toString());
-    if (dateFrom) params.set('dateFrom', dateFrom);
-    if (dateTo) params.set('dateTo', dateTo);
+    if (createdDateFrom) params.set('createdDateFrom', createdDateFrom);
+    if (createdDateTo) params.set('createdDateTo', createdDateTo);
+    if (expectedDeliveryDateFrom) params.set('expectedDeliveryDateFrom', expectedDeliveryDateFrom);
+    if (expectedDeliveryDateTo) params.set('expectedDeliveryDateTo', expectedDeliveryDateTo);
+    if (actualReceivedDateFrom) params.set('actualReceivedDateFrom', actualReceivedDateFrom);
+    if (actualReceivedDateTo) params.set('actualReceivedDateTo', actualReceivedDateTo);
     if (customerFilter) params.set('customer', customerFilter);
     if (productFilter) params.set('productId', productFilter);
     if (statusFilter.length > 0) {
@@ -132,7 +163,23 @@ function OrderList() {
     if (newSearch !== currentSearch) {
       setSearchParams(params, { replace: true });
     }
-  }, [debouncedSearchId, currentPage, dateFrom, dateTo, customerFilter, statusFilter, productFilter, sortBy, sortOrder, searchParams, setSearchParams]);
+  }, [
+    debouncedSearchId,
+    currentPage,
+    createdDateFrom,
+    createdDateTo,
+    expectedDeliveryDateFrom,
+    expectedDeliveryDateTo,
+    actualReceivedDateFrom,
+    actualReceivedDateTo,
+    customerFilter,
+    statusFilter,
+    productFilter,
+    sortBy,
+    sortOrder,
+    searchParams,
+    setSearchParams,
+  ]);
 
   useEffect(() => {
     fetchOrders();
@@ -152,8 +199,12 @@ function OrderList() {
   const handleClearFilters = () => {
     setSearchId('');
     setDebouncedSearchId('');
-    setDateFrom('');
-    setDateTo('');
+    setCreatedDateFrom('');
+    setCreatedDateTo('');
+    setExpectedDeliveryDateFrom('');
+    setExpectedDeliveryDateTo('');
+    setActualReceivedDateFrom('');
+    setActualReceivedDateTo('');
     setCustomerFilter('');
     setStatusFilter([]);
     setProductFilter('');
@@ -182,8 +233,12 @@ function OrderList() {
 
   const getActiveFiltersCount = () => {
     let count = 0;
-    if (dateFrom) count++;
-    if (dateTo) count++;
+    if (createdDateFrom) count++;
+    if (createdDateTo) count++;
+    if (expectedDeliveryDateFrom) count++;
+    if (expectedDeliveryDateTo) count++;
+    if (actualReceivedDateFrom) count++;
+    if (actualReceivedDateTo) count++;
     if (customerFilter) count++;
     if (productFilter) count++;
     if (statusFilter.length > 0) count++;
@@ -232,8 +287,12 @@ function OrderList() {
       <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex items-center space-x-4">
           <OrderListFilters
-            dateFrom={dateFrom}
-            dateTo={dateTo}
+            createdDateFrom={createdDateFrom}
+            createdDateTo={createdDateTo}
+            expectedDeliveryDateFrom={expectedDeliveryDateFrom}
+            expectedDeliveryDateTo={expectedDeliveryDateTo}
+            actualReceivedDateFrom={actualReceivedDateFrom}
+            actualReceivedDateTo={actualReceivedDateTo}
             customerFilter={customerFilter}
             productFilter={productFilter}
             statusFilter={statusFilter}
@@ -270,7 +329,7 @@ function OrderList() {
           Vuốt ngang để xem đầy đủ thông tin bảng.
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[980px] divide-y divide-gray-200">
+          <table className="w-full min-w-[1120px] divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">ID</th>
@@ -293,16 +352,17 @@ function OrderList() {
                     )}
                   </div>
                 </th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Ngày nhận thực tế</th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Tổng tiền</th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Người tạo</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
               {loading ? (
-                <Loading type="table" message="Đang tải đơn hàng..." colSpan="8" />
+                <Loading type="table" message="Đang tải đơn hàng..." colSpan="9" />
               ) : orders.length === 0 ? (
                 <tr>
-                  <td colSpan="8" className="px-6 py-12 text-center">
+                  <td colSpan="9" className="px-6 py-12 text-center">
                     <div className="text-gray-500">
                       {searchId ? 'Không tìm thấy đơn hàng' : 'Chưa có đơn hàng nào'}
                     </div>
@@ -377,6 +437,18 @@ function OrderList() {
                         className="text-gray-900 hover:text-blue-600"
                       >
                         {formatDate(order[OrderFields.EXPECTED_DELIVERY_DATE])}
+                      </Link>
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                      <Link
+                        to={`/orders/${order[OrderFields.ID]}`}
+                        onClick={(e) => handleLinkClick(e, order[OrderFields.ID])}
+                        className="text-gray-900 hover:text-blue-600"
+                      >
+                        {order[OrderFields.DATE_RECEIVED]
+                          ? formatDate(order[OrderFields.DATE_RECEIVED])
+                          : 'N/A'
+                        }
                       </Link>
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm font-bold text-green-600">

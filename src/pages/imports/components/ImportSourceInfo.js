@@ -38,43 +38,40 @@ function ImportSourceInfo({ importOrder }) {
 
         {isCustomer && (
           <>
-            <div className="space-y-4">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Tên khách hàng:</span>
-                <span className="font-medium">
-                  {importOrder[ImportOrderFields.SELLER_NAME] || 'N/A'}
-                </span>
+            <div>
+              <div className="flex mb-2">
+                <span className="font-medium min-w-32">CMND/CCCD:</span>
+                <span>{importOrder[ImportOrderFields.SELLER_ID_NUMBER] || 'N/A'}</span>
               </div>
-              
-              <div className="flex justify-between">
-                <span className="text-gray-600">Số điện thoại:</span>
-                <span className="font-medium">
-                  {importOrder[ImportOrderFields.SELLER_PHONE] || 'N/A'}
-                </span>
+              <div className="flex mb-2">
+                <span className="font-medium min-w-32">Họ và tên:</span>
+                <span>{importOrder[ImportOrderFields.SELLER_NAME] || 'N/A'}</span>
               </div>
-              
-              <div className="flex justify-between">
-                <span className="text-gray-600">CCCD/CMND:</span>
-                <span className="font-medium">
-                  {importOrder[ImportOrderFields.SELLER_ID_NUMBER] || 'N/A'}
-                </span>
+              <div className="flex mb-2">
+                <span className="font-medium min-w-32">Số điện thoại:</span>
+                <span>{importOrder[ImportOrderFields.SELLER_PHONE] || 'N/A'}</span>
               </div>
+              {importOrder[ImportOrderFields.SELLER_EMAIL] && (
+                <div className="flex mb-2">
+                  <span className="font-medium min-w-32">Email:</span>
+                  <span>{importOrder[ImportOrderFields.SELLER_EMAIL]}</span>
+                </div>
+              )}
             </div>
 
-            <div className="space-y-4">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Ngày cấp CCCD:</span>
-                <span className="font-medium">
+            <div>
+              <div className="flex mb-2">
+                <span className="font-medium min-w-32">Ngày cấp:</span>
+                <span>
                   {importOrder[ImportOrderFields.SELLER_ID_ISSUED_DATE] 
                     ? formatDate(importOrder[ImportOrderFields.SELLER_ID_ISSUED_DATE])
                     : 'N/A'
                   }
                 </span>
               </div>
-              
-              <div className="flex justify-between items-start">
-                <span className="text-gray-600">Địa chỉ:</span>
-                <span className="font-medium text-right max-w-xs">
+              <div className="flex mb-2">
+                <span className="font-medium min-w-32">Địa chỉ:</span>
+                <span>
                   {importOrder[ImportOrderFields.SELLER_ADDRESS] || 'N/A'}
                 </span>
               </div>

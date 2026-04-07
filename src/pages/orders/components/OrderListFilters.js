@@ -1,4 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import {
+  FiCalendar,
+  FiCheckCircle,
+  FiChevronDown,
+  FiFilter,
+  FiList,
+  FiTruck,
+  FiUser,
+} from 'react-icons/fi';
 import DropdownMultiSelect from '../../../components/DropdownMultiSelect';
 import SearchInputDropdown from '../../../components/SearchInputDropdown';
 import { supabase } from '../../../lib/supabase';
@@ -11,8 +20,12 @@ import {
 } from '../../../models';
 
 function OrderListFilters({
-  dateFrom,
-  dateTo,
+  createdDateFrom,
+  createdDateTo,
+  expectedDeliveryDateFrom,
+  expectedDeliveryDateTo,
+  actualReceivedDateFrom,
+  actualReceivedDateTo,
   customerFilter,
   productFilter,
   statusFilter,
@@ -22,8 +35,12 @@ function OrderListFilters({
 }) {
   const [showFilters, setShowFilters] = useState(false);
   const [localFilters, setLocalFilters] = useState({
-    dateFrom: dateFrom || '',
-    dateTo: dateTo || '',
+    createdDateFrom: createdDateFrom || '',
+    createdDateTo: createdDateTo || '',
+    expectedDeliveryDateFrom: expectedDeliveryDateFrom || '',
+    expectedDeliveryDateTo: expectedDeliveryDateTo || '',
+    actualReceivedDateFrom: actualReceivedDateFrom || '',
+    actualReceivedDateTo: actualReceivedDateTo || '',
     customerFilter: customerFilter || '',
     productFilter: productFilter || '',
     statusFilter: statusFilter || [],
@@ -33,13 +50,27 @@ function OrderListFilters({
 
   useEffect(() => {
     setLocalFilters({
-      dateFrom: dateFrom || '',
-      dateTo: dateTo || '',
+      createdDateFrom: createdDateFrom || '',
+      createdDateTo: createdDateTo || '',
+      expectedDeliveryDateFrom: expectedDeliveryDateFrom || '',
+      expectedDeliveryDateTo: expectedDeliveryDateTo || '',
+      actualReceivedDateFrom: actualReceivedDateFrom || '',
+      actualReceivedDateTo: actualReceivedDateTo || '',
       customerFilter: customerFilter || '',
       productFilter: productFilter || '',
       statusFilter: statusFilter || [],
     });
-  }, [dateFrom, dateTo, customerFilter, productFilter, statusFilter]);
+  }, [
+    createdDateFrom,
+    createdDateTo,
+    expectedDeliveryDateFrom,
+    expectedDeliveryDateTo,
+    actualReceivedDateFrom,
+    actualReceivedDateTo,
+    customerFilter,
+    productFilter,
+    statusFilter,
+  ]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -135,8 +166,12 @@ function OrderListFilters({
   };
 
   const hasPendingChanges = (
-    localFilters.dateFrom !== (dateFrom || '') ||
-    localFilters.dateTo !== (dateTo || '') ||
+    localFilters.createdDateFrom !== (createdDateFrom || '') ||
+    localFilters.createdDateTo !== (createdDateTo || '') ||
+    localFilters.expectedDeliveryDateFrom !== (expectedDeliveryDateFrom || '') ||
+    localFilters.expectedDeliveryDateTo !== (expectedDeliveryDateTo || '') ||
+    localFilters.actualReceivedDateFrom !== (actualReceivedDateFrom || '') ||
+    localFilters.actualReceivedDateTo !== (actualReceivedDateTo || '') ||
     localFilters.customerFilter !== (customerFilter || '') ||
     localFilters.productFilter !== (productFilter || '') ||
     JSON.stringify(localFilters.statusFilter) !== JSON.stringify(statusFilter || [])
@@ -154,7 +189,10 @@ function OrderListFilters({
               : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
           }`}
         >
-          <span>🔧 Bộ lọc</span>
+          <span className="inline-flex items-center gap-2">
+            <FiFilter className="h-4 w-4" />
+            <span>Bộ lọc</span>
+          </span>
           {activeFiltersCount > 0 && (
             <span className="bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
               {activeFiltersCount}
@@ -163,26 +201,79 @@ function OrderListFilters({
           {hasPendingChanges && (
             <span className="bg-orange-500 w-2 h-2 rounded-full" title="Có thay đổi chưa áp dụng"></span>
           )}
-          <span className={`transform transition-transform ${showFilters ? 'rotate-180' : ''}`}>▼</span>
+          <FiChevronDown className={`h-4 w-4 transform transition-transform ${showFilters ? 'rotate-180' : ''}`} />
         </button>
 
         {showFilters && (
           <div className="absolute top-full left-0 z-50 mt-2 w-[calc(100vw-2rem)] max-w-96 rounded-lg border border-gray-200 bg-white shadow-lg sm:w-96">
             <div className="p-4 space-y-4">
-              {/* Date Range */}
+              {/* Created Date Range */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">📅 Khoảng thời gian</label>
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  <span className="inline-flex items-center gap-2">
+                    <FiCalendar className="h-4 w-4" />
+                    <span>Ngày tạo</span>
+                  </span>
+                </label>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <input
                     type="date"
-                    value={localFilters.dateFrom}
-                    onChange={(e) => updateLocalFilter('dateFrom', e.target.value)}
+                    value={localFilters.createdDateFrom}
+                    onChange={(e) => updateLocalFilter('createdDateFrom', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <input
                     type="date"
-                    value={localFilters.dateTo}
-                    onChange={(e) => updateLocalFilter('dateTo', e.target.value)}
+                    value={localFilters.createdDateTo}
+                    onChange={(e) => updateLocalFilter('createdDateTo', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              {/* Expected Delivery Date Range */}
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  <span className="inline-flex items-center gap-2">
+                    <FiTruck className="h-4 w-4" />
+                    <span>Ngày giao dự kiến</span>
+                  </span>
+                </label>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <input
+                    type="date"
+                    value={localFilters.expectedDeliveryDateFrom}
+                    onChange={(e) => updateLocalFilter('expectedDeliveryDateFrom', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <input
+                    type="date"
+                    value={localFilters.expectedDeliveryDateTo}
+                    onChange={(e) => updateLocalFilter('expectedDeliveryDateTo', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              {/* Actual Received Date Range */}
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  <span className="inline-flex items-center gap-2">
+                    <FiCheckCircle className="h-4 w-4" />
+                    <span>Ngày nhận thực tế</span>
+                  </span>
+                </label>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <input
+                    type="date"
+                    value={localFilters.actualReceivedDateFrom}
+                    onChange={(e) => updateLocalFilter('actualReceivedDateFrom', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <input
+                    type="date"
+                    value={localFilters.actualReceivedDateTo}
+                    onChange={(e) => updateLocalFilter('actualReceivedDateTo', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -190,7 +281,12 @@ function OrderListFilters({
 
               {/* Status Filter */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">📝 Trạng thái</label>
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  <span className="inline-flex items-center gap-2">
+                    <FiList className="h-4 w-4" />
+                    <span>Trạng thái</span>
+                  </span>
+                </label>
                 <DropdownMultiSelect
                   values={localFilters.statusFilter}
                   onChange={(values) => updateLocalFilter('statusFilter', values)}
@@ -208,7 +304,7 @@ function OrderListFilters({
                 selectedDisplayName={selectedCustomerName}
                 onSelectionChange={handleCustomerChange}
                 label="Khách hàng"
-                emoji="👤"
+                labelIcon={<FiUser className="h-4 w-4" />}
                 placeholder="Tìm kiếm khách hàng..."
                 className="relative customer-search-container"
                 fields={{
@@ -264,14 +360,34 @@ function OrderListFilters({
       {activeFiltersCount > 0 && (
         <div className="flex flex-wrap items-center gap-2 mt-4">
           <span className="text-sm text-gray-600">Bộ lọc đang áp dụng:</span>
-          {dateFrom && (
+          {createdDateFrom && (
             <span className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">
-              Từ: {new Date(dateFrom).toLocaleDateString('vi-VN')}
+              Ngày tạo từ: {new Date(createdDateFrom).toLocaleDateString('vi-VN')}
             </span>
           )}
-          {dateTo && (
+          {createdDateTo && (
             <span className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">
-              Đến: {new Date(dateTo).toLocaleDateString('vi-VN')}
+              Ngày tạo đến: {new Date(createdDateTo).toLocaleDateString('vi-VN')}
+            </span>
+          )}
+          {expectedDeliveryDateFrom && (
+            <span className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">
+              Giao dự kiến từ: {new Date(expectedDeliveryDateFrom).toLocaleDateString('vi-VN')}
+            </span>
+          )}
+          {expectedDeliveryDateTo && (
+            <span className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">
+              Giao dự kiến đến: {new Date(expectedDeliveryDateTo).toLocaleDateString('vi-VN')}
+            </span>
+          )}
+          {actualReceivedDateFrom && (
+            <span className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">
+              Nhận thực tế từ: {new Date(actualReceivedDateFrom).toLocaleDateString('vi-VN')}
+            </span>
+          )}
+          {actualReceivedDateTo && (
+            <span className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">
+              Nhận thực tế đến: {new Date(actualReceivedDateTo).toLocaleDateString('vi-VN')}
             </span>
           )}
           {customerFilter && selectedCustomerName && (

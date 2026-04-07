@@ -1,4 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import {
+  FiBox,
+  FiCalendar,
+  FiCheckCircle,
+  FiChevronDown,
+  FiFilter,
+  FiHash,
+  FiList,
+  FiPackage,
+} from 'react-icons/fi';
 import DropdownMultiSelect from '../../../components/DropdownMultiSelect';
 import SearchInputDropdown from '../../../components/SearchInputDropdown';
 import { supabase } from '../../../lib/supabase';
@@ -12,8 +22,12 @@ import {
 } from '../../../models';
 
 function ImportListFilters({
-  dateFrom,
-  dateTo,
+  createdDateFrom,
+  createdDateTo,
+  expectedReturnDateFrom,
+  expectedReturnDateTo,
+  actualReturnDateFrom,
+  actualReturnDateTo,
   sourceFilter,
   statusFilter,
   productFilter,
@@ -26,8 +40,12 @@ function ImportListFilters({
   
   // Local filter state for manual apply pattern
   const [localFilters, setLocalFilters] = useState({
-    dateFrom: dateFrom || '',
-    dateTo: dateTo || '',
+    createdDateFrom: createdDateFrom || '',
+    createdDateTo: createdDateTo || '',
+    expectedReturnDateFrom: expectedReturnDateFrom || '',
+    expectedReturnDateTo: expectedReturnDateTo || '',
+    actualReturnDateFrom: actualReturnDateFrom || '',
+    actualReturnDateTo: actualReturnDateTo || '',
     sourceFilter: sourceFilter || '',
     statusFilter: statusFilter || [],
     productFilter: productFilter || '',
@@ -40,14 +58,29 @@ function ImportListFilters({
   // Update local state when props change
   useEffect(() => {
     setLocalFilters({
-      dateFrom: dateFrom || '',
-      dateTo: dateTo || '',
+      createdDateFrom: createdDateFrom || '',
+      createdDateTo: createdDateTo || '',
+      expectedReturnDateFrom: expectedReturnDateFrom || '',
+      expectedReturnDateTo: expectedReturnDateTo || '',
+      actualReturnDateFrom: actualReturnDateFrom || '',
+      actualReturnDateTo: actualReturnDateTo || '',
       sourceFilter: sourceFilter || '',
       statusFilter: statusFilter || [],
       productFilter: productFilter || '',
       quantity: quantity || null,
     });
-  }, [dateFrom, dateTo, sourceFilter, statusFilter, productFilter, quantity]);
+  }, [
+    createdDateFrom,
+    createdDateTo,
+    expectedReturnDateFrom,
+    expectedReturnDateTo,
+    actualReturnDateFrom,
+    actualReturnDateTo,
+    sourceFilter,
+    statusFilter,
+    productFilter,
+    quantity,
+  ]);
 
   // Fetch product name whenever productFilter prop changes
   useEffect(() => {
@@ -118,8 +151,12 @@ function ImportListFilters({
   
   // Check if filters have pending changes
   const hasPendingChanges = (
-    localFilters.dateFrom !== (dateFrom || '') ||
-    localFilters.dateTo !== (dateTo || '') ||
+    localFilters.createdDateFrom !== (createdDateFrom || '') ||
+    localFilters.createdDateTo !== (createdDateTo || '') ||
+    localFilters.expectedReturnDateFrom !== (expectedReturnDateFrom || '') ||
+    localFilters.expectedReturnDateTo !== (expectedReturnDateTo || '') ||
+    localFilters.actualReturnDateFrom !== (actualReturnDateFrom || '') ||
+    localFilters.actualReturnDateTo !== (actualReturnDateTo || '') ||
     localFilters.sourceFilter !== (sourceFilter || '') ||
     JSON.stringify(localFilters.statusFilter) !== JSON.stringify(statusFilter || []) ||
     localFilters.productFilter !== (productFilter || '') ||
@@ -138,7 +175,10 @@ function ImportListFilters({
               : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
           }`}
         >
-          <span>🔧 Bộ lọc</span>
+          <span className="inline-flex items-center gap-2">
+            <FiFilter className="h-4 w-4" />
+            <span>Bộ lọc</span>
+          </span>
           {activeFiltersCount > 0 && (
             <span className="bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
               {activeFiltersCount}
@@ -147,27 +187,84 @@ function ImportListFilters({
           {hasPendingChanges && (
             <span className="bg-orange-500 w-2 h-2 rounded-full" title="Có thay đổi chưa áp dụng"></span>
           )}
-          <span className={`transform transition-transform ${showFilters ? 'rotate-180' : ''}`}>▼</span>
+          <FiChevronDown className={`h-4 w-4 transform transition-transform ${showFilters ? 'rotate-180' : ''}`} />
         </button>
 
       {showFilters && (
         <div className="absolute top-full left-0 z-50 mt-2 w-[calc(100vw-2rem)] max-w-96 rounded-lg border border-gray-200 bg-white shadow-lg sm:w-96">
           <div className="p-4 space-y-4">
-            {/* Date Range */}
+            {/* Created Date Range */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">📅 Khoảng thời gian</label>
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                <span className="inline-flex items-center gap-2">
+                  <FiCalendar className="h-4 w-4" />
+                  <span>Ngày tạo</span>
+                </span>
+              </label>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <input
                   type="date"
-                  value={localFilters.dateFrom}
-                  onChange={(e) => updateLocalFilter('dateFrom', e.target.value)}
+                  value={localFilters.createdDateFrom}
+                  onChange={(e) => updateLocalFilter('createdDateFrom', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Từ ngày"
                 />
                 <input
                   type="date"
-                  value={localFilters.dateTo}
-                  onChange={(e) => updateLocalFilter('dateTo', e.target.value)}
+                  value={localFilters.createdDateTo}
+                  onChange={(e) => updateLocalFilter('createdDateTo', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Đến ngày"
+                />
+              </div>
+            </div>
+
+            {/* Expected Return Date Range */}
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                <span className="inline-flex items-center gap-2">
+                  <FiPackage className="h-4 w-4" />
+                  <span>Ngày dự kiến trả</span>
+                </span>
+              </label>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <input
+                  type="date"
+                  value={localFilters.expectedReturnDateFrom}
+                  onChange={(e) => updateLocalFilter('expectedReturnDateFrom', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Từ ngày"
+                />
+                <input
+                  type="date"
+                  value={localFilters.expectedReturnDateTo}
+                  onChange={(e) => updateLocalFilter('expectedReturnDateTo', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Đến ngày"
+                />
+              </div>
+            </div>
+
+            {/* Actual Return Date Range */}
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                <span className="inline-flex items-center gap-2">
+                  <FiCheckCircle className="h-4 w-4" />
+                  <span>Ngày trả thực tế</span>
+                </span>
+              </label>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <input
+                  type="date"
+                  value={localFilters.actualReturnDateFrom}
+                  onChange={(e) => updateLocalFilter('actualReturnDateFrom', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Từ ngày"
+                />
+                <input
+                  type="date"
+                  value={localFilters.actualReturnDateTo}
+                  onChange={(e) => updateLocalFilter('actualReturnDateTo', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Đến ngày"
                 />
@@ -176,7 +273,12 @@ function ImportListFilters({
 
             {/* Source Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">📦 Nguồn nhập</label>
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                <span className="inline-flex items-center gap-2">
+                  <FiBox className="h-4 w-4" />
+                  <span>Nguồn nhập</span>
+                </span>
+              </label>
               <select
                 value={localFilters.sourceFilter}
                 onChange={(e) => updateLocalFilter('sourceFilter', e.target.value)}
@@ -194,7 +296,12 @@ function ImportListFilters({
 
             {/* Status Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">📝 Trạng thái</label>
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                <span className="inline-flex items-center gap-2">
+                  <FiList className="h-4 w-4" />
+                  <span>Trạng thái</span>
+                </span>
+              </label>
               <DropdownMultiSelect
                 values={localFilters.statusFilter}
                 onChange={(values) => updateLocalFilter('statusFilter', values)}
@@ -218,7 +325,7 @@ function ImportListFilters({
                 onSelectionChange={handleProductChange}
                 label='Sản phẩm'
                 placeholder="Tìm kiếm sản phẩm..."
-                emoji="📦"
+                labelIcon={<FiPackage className="h-4 w-4" />}
                 className="relative product-search-container"
                 fields={{
                   id: ProductFields.ID,
@@ -236,7 +343,12 @@ function ImportListFilters({
 
             {/* Quantity Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">🔢 Số lượng</label>
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                <span className="inline-flex items-center gap-2">
+                  <FiHash className="h-4 w-4" />
+                  <span>Số lượng</span>
+                </span>
+              </label>
               <input
                 type="number"
                 min="1"
@@ -285,14 +397,34 @@ function ImportListFilters({
       {activeFiltersCount > 0 && (
         <div className="flex flex-wrap items-center gap-2 mt-4">
           <span className="text-sm text-gray-600">Bộ lọc đang áp dụng:</span>
-          {dateFrom && (
+          {createdDateFrom && (
             <span className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">
-              Từ: {new Date(dateFrom).toLocaleDateString('vi-VN')}
+              Ngày tạo từ: {new Date(createdDateFrom).toLocaleDateString('vi-VN')}
             </span>
           )}
-          {dateTo && (
+          {createdDateTo && (
             <span className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">
-              Đến: {new Date(dateTo).toLocaleDateString('vi-VN')}
+              Ngày tạo đến: {new Date(createdDateTo).toLocaleDateString('vi-VN')}
+            </span>
+          )}
+          {expectedReturnDateFrom && (
+            <span className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">
+              Dự kiến trả từ: {new Date(expectedReturnDateFrom).toLocaleDateString('vi-VN')}
+            </span>
+          )}
+          {expectedReturnDateTo && (
+            <span className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">
+              Dự kiến trả đến: {new Date(expectedReturnDateTo).toLocaleDateString('vi-VN')}
+            </span>
+          )}
+          {actualReturnDateFrom && (
+            <span className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">
+              Thực tế trả từ: {new Date(actualReturnDateFrom).toLocaleDateString('vi-VN')}
+            </span>
+          )}
+          {actualReturnDateTo && (
+            <span className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">
+              Thực tế trả đến: {new Date(actualReturnDateTo).toLocaleDateString('vi-VN')}
             </span>
           )}
           {sourceFilter && (

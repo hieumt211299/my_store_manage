@@ -98,7 +98,7 @@ function CustomerInfoForm({
       </div>
 
       {/* Customer Fields */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <CustomerSearchInput
           value={customerSearch}
           onSelect={handleSelectCustomer}
@@ -109,6 +109,16 @@ function CustomerInfoForm({
           disabled={disabled}
         />
         <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Ngày cấp</label>
+          <input
+            type="date"
+            value={orderForm.customer.idIssuedDate}
+            onChange={(e) => handleCustomerFieldChange('idIssuedDate', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={disabled}
+          />
+        </div>
+        <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Họ tên *</label>
           <input
             type="text"
@@ -118,6 +128,17 @@ function CustomerInfoForm({
             placeholder="Nhập họ tên khách hàng"
             disabled={disabled}
             required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+          <input
+            type="email"
+            value={orderForm.customer.email}
+            onChange={(e) => handleCustomerFieldChange('email', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Nhập email khách hàng"
+            disabled={disabled}
           />
         </div>
         <div>
@@ -133,16 +154,6 @@ function CustomerInfoForm({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Ngày cấp</label>
-          <input
-            type="date"
-            value={orderForm.customer.idIssuedDate}
-            onChange={(e) => handleCustomerFieldChange('idIssuedDate', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            disabled={disabled}
-          />
-        </div>
-        <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-2">Địa chỉ *</label>
           <input
             type="text"

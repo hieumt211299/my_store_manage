@@ -30,8 +30,12 @@ function ImportOrderList() {
   const [itemsPerPage] = useState(10);
   
   // Filter states - initialize from URL params
-  const [dateFrom, setDateFrom] = useState(searchParams.get('dateFrom') || '');
-  const [dateTo, setDateTo] = useState(searchParams.get('dateTo') || '');
+  const [createdDateFrom, setCreatedDateFrom] = useState(searchParams.get('createdDateFrom') || '');
+  const [createdDateTo, setCreatedDateTo] = useState(searchParams.get('createdDateTo') || '');
+  const [expectedReturnDateFrom, setExpectedReturnDateFrom] = useState(searchParams.get('expectedReturnDateFrom') || '');
+  const [expectedReturnDateTo, setExpectedReturnDateTo] = useState(searchParams.get('expectedReturnDateTo') || '');
+  const [actualReturnDateFrom, setActualReturnDateFrom] = useState(searchParams.get('actualReturnDateFrom') || '');
+  const [actualReturnDateTo, setActualReturnDateTo] = useState(searchParams.get('actualReturnDateTo') || '');
   const [sourceFilter, setSourceFilter] = useState(searchParams.get('source') || '');
   const [statusFilter, setStatusFilter] = useState(searchParams.getAll('status') || []);
   
@@ -54,8 +58,12 @@ function ImportOrderList() {
 
   // Handle apply filters callback from ImportListFilters
   const handleApplyFilters = useCallback((filters) => {
-    setDateFrom(filters.dateFrom);
-    setDateTo(filters.dateTo);
+    setCreatedDateFrom(filters.createdDateFrom);
+    setCreatedDateTo(filters.createdDateTo);
+    setExpectedReturnDateFrom(filters.expectedReturnDateFrom);
+    setExpectedReturnDateTo(filters.expectedReturnDateTo);
+    setActualReturnDateFrom(filters.actualReturnDateFrom);
+    setActualReturnDateTo(filters.actualReturnDateTo);
     setSourceFilter(filters.sourceFilter);
     setStatusFilter(filters.statusFilter);
     setProductFilter(filters.productFilter);
@@ -93,8 +101,12 @@ function ImportOrderList() {
       }
 
       // Apply filters
-      if (dateFrom) query = query.gte(ImportOrderFields.IMPORT_DATE, dateFrom);
-      if (dateTo) query = query.lte(ImportOrderFields.IMPORT_DATE, dateTo);
+      if (createdDateFrom) query = query.gte(ImportOrderFields.IMPORT_DATE, createdDateFrom);
+      if (createdDateTo) query = query.lte(ImportOrderFields.IMPORT_DATE, createdDateTo);
+      if (expectedReturnDateFrom) query = query.gte(ImportOrderFields.EXPECTED_RETURN_DATE, expectedReturnDateFrom);
+      if (expectedReturnDateTo) query = query.lte(ImportOrderFields.EXPECTED_RETURN_DATE, expectedReturnDateTo);
+      if (actualReturnDateFrom) query = query.gte(ImportOrderFields.ACTUAL_RETURN_DATE, actualReturnDateFrom);
+      if (actualReturnDateTo) query = query.lte(ImportOrderFields.ACTUAL_RETURN_DATE, actualReturnDateTo);
       if (sourceFilter) query = query.eq(ImportOrderFields.SOURCE_TYPE, sourceFilter);
       if (statusFilter.length > 0) query = query.in(ImportOrderFields.STATUS, statusFilter);
 
@@ -139,7 +151,23 @@ function ImportOrderList() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, debouncedSearchId, itemsPerPage, dateFrom, dateTo, sourceFilter, statusFilter, normalizedProductFilter, quantity, sortBy, sortOrder]);
+  }, [
+    currentPage,
+    debouncedSearchId,
+    itemsPerPage,
+    createdDateFrom,
+    createdDateTo,
+    expectedReturnDateFrom,
+    expectedReturnDateTo,
+    actualReturnDateFrom,
+    actualReturnDateTo,
+    sourceFilter,
+    statusFilter,
+    normalizedProductFilter,
+    quantity,
+    sortBy,
+    sortOrder,
+  ]);
 
   // Update URL when state changes
   useEffect(() => {
@@ -147,8 +175,12 @@ function ImportOrderList() {
     
     if (debouncedSearchId) params.set('search', debouncedSearchId);
     if (currentPage > 1) params.set('page', currentPage.toString());
-    if (dateFrom) params.set('dateFrom', dateFrom);
-    if (dateTo) params.set('dateTo', dateTo);
+    if (createdDateFrom) params.set('createdDateFrom', createdDateFrom);
+    if (createdDateTo) params.set('createdDateTo', createdDateTo);
+    if (expectedReturnDateFrom) params.set('expectedReturnDateFrom', expectedReturnDateFrom);
+    if (expectedReturnDateTo) params.set('expectedReturnDateTo', expectedReturnDateTo);
+    if (actualReturnDateFrom) params.set('actualReturnDateFrom', actualReturnDateFrom);
+    if (actualReturnDateTo) params.set('actualReturnDateTo', actualReturnDateTo);
     if (sourceFilter) params.set('source', sourceFilter);
     if (statusFilter.length > 0) statusFilter.forEach((status) => params.append('status', status));
     if (productFilter) params.set('productId', productFilter);
@@ -161,7 +193,24 @@ function ImportOrderList() {
     if (newSearch !== currentSearch) {
       setSearchParams(params, { replace: true });
     }
-  }, [debouncedSearchId, currentPage, dateFrom, dateTo, sourceFilter, statusFilter, productFilter, quantity, sortBy, sortOrder, searchParams, setSearchParams]);
+  }, [
+    debouncedSearchId,
+    currentPage,
+    createdDateFrom,
+    createdDateTo,
+    expectedReturnDateFrom,
+    expectedReturnDateTo,
+    actualReturnDateFrom,
+    actualReturnDateTo,
+    sourceFilter,
+    statusFilter,
+    productFilter,
+    quantity,
+    sortBy,
+    sortOrder,
+    searchParams,
+    setSearchParams,
+  ]);
 
   useEffect(() => {
     fetchImports();
@@ -181,8 +230,12 @@ function ImportOrderList() {
   const handleClearFilters = () => {
     setSearchId('');
     setDebouncedSearchId('');
-    setDateFrom('');
-    setDateTo('');
+    setCreatedDateFrom('');
+    setCreatedDateTo('');
+    setExpectedReturnDateFrom('');
+    setExpectedReturnDateTo('');
+    setActualReturnDateFrom('');
+    setActualReturnDateTo('');
     setSourceFilter('');
     setStatusFilter([]);
     setProductFilter('');
@@ -220,8 +273,12 @@ function ImportOrderList() {
   // Count active filters
   const getActiveFiltersCount = () => {
     let count = 0;
-    if (dateFrom) count++;
-    if (dateTo) count++;
+    if (createdDateFrom) count++;
+    if (createdDateTo) count++;
+    if (expectedReturnDateFrom) count++;
+    if (expectedReturnDateTo) count++;
+    if (actualReturnDateFrom) count++;
+    if (actualReturnDateTo) count++;
     if (sourceFilter) count++;
     if (statusFilter.length > 0) count++;
     if (productFilter) count++;
@@ -276,8 +333,12 @@ function ImportOrderList() {
       <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex items-center space-x-4">
           <ImportListFilters
-          dateFrom={dateFrom}
-          dateTo={dateTo}
+          createdDateFrom={createdDateFrom}
+          createdDateTo={createdDateTo}
+          expectedReturnDateFrom={expectedReturnDateFrom}
+          expectedReturnDateTo={expectedReturnDateTo}
+          actualReturnDateFrom={actualReturnDateFrom}
+          actualReturnDateTo={actualReturnDateTo}
           sourceFilter={sourceFilter}
           statusFilter={statusFilter}
           productFilter={productFilter}
@@ -305,7 +366,7 @@ function ImportOrderList() {
           Vuốt ngang để xem đầy đủ thông tin bảng.
         </div>
         <div className="overflow-x-auto">
-        <table className="w-full min-w-[920px] divide-y divide-gray-200">
+        <table className="w-full min-w-[1100px] divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -334,6 +395,9 @@ function ImportOrderList() {
                   )}
                 </div>
               </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Ngày trả thực tế
+              </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onClick={() => handleSort(ImportOrderFields.TOTAL_AMOUNT)}>
                 <div className="flex items-center space-x-1">
                   <span>Tổng tiền</span>
@@ -352,10 +416,10 @@ function ImportOrderList() {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {loading ? (
-              <Loading type="table" message="Đang tải đơn nhập..." colSpan="7" />
+              <Loading type="table" message="Đang tải đơn nhập..." colSpan="8" />
             ) : imports.length === 0 ? (
               <tr>
-                <td colSpan="7" className="px-6 py-12 text-center">
+                <td colSpan="8" className="px-6 py-12 text-center">
                   <div className="text-gray-500">
                     {totalActiveFilters > 0
                       ? 'Không tìm thấy đơn nhập phù hợp với bộ lọc hiện tại'
@@ -420,6 +484,18 @@ function ImportOrderList() {
                     >
                       {importOrder[ImportOrderFields.EXPECTED_RETURN_DATE] 
                         ? formatDate(importOrder[ImportOrderFields.EXPECTED_RETURN_DATE])
+                        : 'N/A'
+                      }
+                    </Link>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <Link
+                      to={`/imports/${importOrder[ImportOrderFields.ID]}`}
+                      onClick={(e) => handleLinkClick(e, importOrder[ImportOrderFields.ID])}
+                      className="text-gray-900 hover:text-blue-600"
+                    >
+                      {importOrder[ImportOrderFields.ACTUAL_RETURN_DATE]
+                        ? formatDate(importOrder[ImportOrderFields.ACTUAL_RETURN_DATE])
                         : 'N/A'
                       }
                     </Link>
