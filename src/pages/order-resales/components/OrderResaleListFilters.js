@@ -1,4 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import {
+  FiCalendar,
+  FiChevronDown,
+  FiDollarSign,
+  FiFilter,
+  FiList,
+} from 'react-icons/fi';
 import DropdownMultiSelect from '../../../components/DropdownMultiSelect';
 import {
   OrderResaleStatus,
@@ -84,7 +91,10 @@ function OrderResaleListFilters({
               : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
           }`}
         >
-          <span>🔧 Bộ lọc</span>
+          <span className="inline-flex items-center gap-2">
+            <FiFilter className="h-4 w-4" />
+            <span>Bộ lọc</span>
+          </span>
           {activeFiltersCount > 0 && (
             <span className="bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
               {activeFiltersCount}
@@ -93,7 +103,7 @@ function OrderResaleListFilters({
           {hasPendingChanges && (
             <span className="bg-orange-500 w-2 h-2 rounded-full" title="Có thay đổi chưa áp dụng"></span>
           )}
-          <span className={`transform transition-transform ${showFilters ? 'rotate-180' : ''}`}>▼</span>
+          <FiChevronDown className={`h-4 w-4 transform transition-transform ${showFilters ? 'rotate-180' : ''}`} />
         </button>
 
         {showFilters && (
@@ -101,7 +111,12 @@ function OrderResaleListFilters({
             <div className="p-4 space-y-4">
               {/* Date Range */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">📅 Ngày bán</label>
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  <span className="inline-flex items-center gap-2">
+                    <FiCalendar className="h-4 w-4" />
+                    <span>Ngày bán</span>
+                  </span>
+                </label>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <input
                     type="date"
@@ -122,7 +137,12 @@ function OrderResaleListFilters({
 
               {/* Payment Date Range */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">💰 Ngày chuyển tiền</label>
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  <span className="inline-flex items-center gap-2">
+                    <FiDollarSign className="h-4 w-4" />
+                    <span>Ngày chuyển tiền</span>
+                  </span>
+                </label>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <input
                     type="date"
@@ -143,7 +163,12 @@ function OrderResaleListFilters({
 
               {/* Status Filter */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">📝 Trạng thái</label>
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  <span className="inline-flex items-center gap-2">
+                    <FiList className="h-4 w-4" />
+                    <span>Trạng thái</span>
+                  </span>
+                </label>
                 <DropdownMultiSelect
                   values={localFilters.statusFilter}
                   onChange={(values) => updateLocalFilter('statusFilter', values)}

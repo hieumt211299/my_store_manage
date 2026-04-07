@@ -22,6 +22,7 @@ function CustomerDetail() {
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
+    email: '',
     id_number: '',
     id_issued_date: '',
     address: '',
@@ -52,6 +53,7 @@ function CustomerDetail() {
           setFormData({
             name: data[CustomerFields.NAME] || '',
             phone: data[CustomerFields.PHONE] || '',
+            email: data[CustomerFields.EMAIL] || '',
             id_number: data[CustomerFields.ID_NUMBER] || '',
             id_issued_date: data[CustomerFields.ID_ISSUED_DATE] || '',
             address: data[CustomerFields.ADDRESS] || '',
@@ -86,6 +88,7 @@ function CustomerDetail() {
       const updateData = {
         [CustomerFields.NAME]: formData.name.trim(),
         [CustomerFields.PHONE]: formData.phone.trim(),
+        [CustomerFields.EMAIL]: formData.email.trim() || null,
         [CustomerFields.ID_NUMBER]: formData.id_number.trim() || null,
         [CustomerFields.ID_ISSUED_DATE]: formData.id_issued_date || null,
         [CustomerFields.ADDRESS]: formData.address.trim() || '',
@@ -116,6 +119,7 @@ function CustomerDetail() {
       setFormData({
         name: customer[CustomerFields.NAME] || '',
         phone: customer[CustomerFields.PHONE] || '',
+        email: customer[CustomerFields.EMAIL] || '',
         id_number: customer[CustomerFields.ID_NUMBER] || '',
         id_issued_date: customer[CustomerFields.ID_ISSUED_DATE] || '',
         address: customer[CustomerFields.ADDRESS] || '',
@@ -202,6 +206,19 @@ function CustomerDetail() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Nhập email"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     CCCD/CMND
                   </label>
                   <input
@@ -277,6 +294,12 @@ function CustomerDetail() {
                       <p className="text-sm text-gray-500">Số điện thoại</p>
                       <p className="text-base font-medium text-gray-900 font-mono">
                         {customer[CustomerFields.PHONE] || '-'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Email</p>
+                      <p className="text-base font-medium text-gray-900">
+                        {customer[CustomerFields.EMAIL] || '-'}
                       </p>
                     </div>
                     <div>

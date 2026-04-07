@@ -64,6 +64,7 @@ export interface ImportOrder {
   seller_id_number: string | null;
   seller_name: string | null;
   seller_phone: string | null;
+  seller_email: string | null;
   seller_address: string | null;
   seller_id_issued_date: string | null;
   
@@ -88,6 +89,7 @@ export interface ImportOrderForm {
     idNumber: string;
     name: string;
     phone: string;
+    email: string;
     address: string;
     idIssuedDate: string;
   };
@@ -111,6 +113,7 @@ export const ImportOrderFields = {
   SELLER_ID_NUMBER: 'seller_id_number',
   SELLER_NAME: 'seller_name',
   SELLER_PHONE: 'seller_phone',
+  SELLER_EMAIL: 'seller_email',
   SELLER_ADDRESS: 'seller_address',
   SELLER_ID_ISSUED_DATE: 'seller_id_issued_date',
 } as const;
@@ -182,6 +185,7 @@ export const buildImportOrderInsertPayload = (
       seller_id_number: null,
       seller_name: null,
       seller_phone: null,
+      seller_email: null,
       seller_address: null,
       seller_id_issued_date: null,
     };
@@ -196,6 +200,7 @@ export const buildImportOrderInsertPayload = (
       seller_id_number: importForm.seller.idNumber,
       seller_name: importForm.seller.name,
       seller_phone: importForm.seller.phone,
+      seller_email: importForm.seller.email || null,
       seller_address: importForm.seller.address,
       seller_id_issued_date: importForm.seller.idIssuedDate || null,
     };
@@ -219,6 +224,7 @@ export const mapImportOrderRowToForm = (importOrder: ImportOrder): ImportOrderFo
     idNumber: importOrder.seller_id_number || '',
     name: importOrder.seller_name || '',
     phone: importOrder.seller_phone || '',
+    email: importOrder.seller_email || '',
     address: importOrder.seller_address || '',
     idIssuedDate: importOrder.seller_id_issued_date || '',
   },

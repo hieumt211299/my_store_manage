@@ -19,6 +19,12 @@ function CustomerInfoCard({ order, children }) {
             <span className="font-medium min-w-32">Số điện thoại:</span>
             <span>{order[OrderFields.CUSTOMER_PHONE]}</span>
           </div>
+          {order[OrderFields.CUSTOMER_EMAIL] && (
+            <div className="flex mb-2">
+              <span className="font-medium min-w-32">Email:</span>
+              <span>{order[OrderFields.CUSTOMER_EMAIL]}</span>
+            </div>
+          )}
         </div>
         <div>
           {order[OrderFields.CUSTOMER_ID_ISSUED_DATE] && (

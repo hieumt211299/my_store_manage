@@ -9,6 +9,7 @@ function SearchInputDropdown({
   placeholder = "Tìm kiếm...",
   label = "Tìm kiếm",
   emoji = "🔍",
+  labelIcon = null,
   disabled = false,
   className = "relative search-container",
   // Field mappings
@@ -150,7 +151,10 @@ function SearchInputDropdown({
   return (
     <div className={className}>
       <label className="block text-sm font-medium text-gray-700 mb-2">
-        {emoji} {label}
+        <span className="inline-flex items-center gap-2">
+          {labelIcon || <span>{emoji}</span>}
+          <span>{label}</span>
+        </span>
       </label>
       <div className="relative">
         <input
