@@ -14,9 +14,11 @@ import { supabase } from '../../../lib/supabase';
 import {
   Tables,
   CustomerFields,
+  OrderTypeLabels,
   ProductFields,
   OrderStatusOptions,
   getStatusDisplay,
+  getOrderTypeLabel,
 } from '../../../models';
 
 function OrderListFilters({
@@ -27,6 +29,7 @@ function OrderListFilters({
   actualReceivedDateFrom,
   actualReceivedDateTo,
   customerFilter,
+  orderTypeFilter,
   productFilter,
   statusFilter,
   onApplyFilters,
@@ -42,6 +45,7 @@ function OrderListFilters({
     actualReceivedDateFrom: actualReceivedDateFrom || '',
     actualReceivedDateTo: actualReceivedDateTo || '',
     customerFilter: customerFilter || '',
+    orderTypeFilter: orderTypeFilter || '',
     productFilter: productFilter || '',
     statusFilter: statusFilter || [],
   });
@@ -57,6 +61,7 @@ function OrderListFilters({
       actualReceivedDateFrom: actualReceivedDateFrom || '',
       actualReceivedDateTo: actualReceivedDateTo || '',
       customerFilter: customerFilter || '',
+      orderTypeFilter: orderTypeFilter || '',
       productFilter: productFilter || '',
       statusFilter: statusFilter || [],
     });
@@ -68,6 +73,7 @@ function OrderListFilters({
     actualReceivedDateFrom,
     actualReceivedDateTo,
     customerFilter,
+    orderTypeFilter,
     productFilter,
     statusFilter,
   ]);
@@ -173,6 +179,7 @@ function OrderListFilters({
     localFilters.actualReceivedDateFrom !== (actualReceivedDateFrom || '') ||
     localFilters.actualReceivedDateTo !== (actualReceivedDateTo || '') ||
     localFilters.customerFilter !== (customerFilter || '') ||
+    localFilters.orderTypeFilter !== (orderTypeFilter || '') ||
     localFilters.productFilter !== (productFilter || '') ||
     JSON.stringify(localFilters.statusFilter) !== JSON.stringify(statusFilter || [])
   );
@@ -297,6 +304,27 @@ function OrderListFilters({
                 />
               </div>
 
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  <span className="inline-flex items-center gap-2">
+                    <FiList className="h-4 w-4" />
+                    <span>Loại phiếu</span>
+                  </span>
+                </label>
+                <select
+                  value={localFilters.orderTypeFilter}
+                  onChange={(e) => updateLocalFilter('orderTypeFilter', e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Tất cả loại phiếu</option>
+                  {Object.entries(OrderTypeLabels).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               {/* Customer Filter */}
               <SearchInputDropdown
                 tableName={Tables.CUSTOMERS}
@@ -393,6 +421,11 @@ function OrderListFilters({
           {customerFilter && selectedCustomerName && (
             <span className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">
               KH: {selectedCustomerName}
+            </span>
+          )}
+          {orderTypeFilter && (
+            <span className="bg-amber-100 text-amber-800 text-xs px-3 py-1 rounded-full">
+              LP: {getOrderTypeLabel(orderTypeFilter)}
             </span>
           )}
           {productFilter && selectedProductName && (

@@ -1,15 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
 import Loading from '../../components/Loading';
 import PageHeader from '../../components/PageHeader';
 import SearchInput from '../../components/SearchInput';
 import Pagination from '../../components/Pagination';
 import ImportListFilters from './components/ImportListFilters';
+import { buildImportOrderListBaseQuery, filterImportOrdersByItemFilters } from './importOrderListHelpers';
+import { exportImportOrdersToExcel } from './importOrderExport';
 import {
-  Tables,
   ImportOrderFields,
-  ImportOrderSelectWithItems,
   getImportStatusDisplay,
   getImportStatusBadgeColor,
   ImportOrderSourceTypeLabels,
@@ -23,6 +22,7 @@ function ImportOrderList() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [imports, setImports] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const [message, setMessage] = useState('');
   const [searchId, setSearchId] = useState(searchParams.get('search') || '');
   const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page')) || 1);
@@ -77,67 +77,35 @@ function ImportOrderList() {
       setLoading(true);
       setMessage('');
       const offset = (currentPage - 1) * itemsPerPage;
+      const shouldFilterClientSide = Boolean(normalizedProductFilter || quantity);
       
-      let query = supabase
-        .from(Tables.IMPORT_ORDERS)
-        .select(ImportOrderSelectWithItems, { count: 'exact' })
-        .order(sortBy, { ascending: sortOrder === 'asc' });
-
-      // Only apply pagination if no product search (since we need all data for client-side filtering)
-      if (!normalizedProductFilter && !quantity) {
-        query = query.range(offset, offset + itemsPerPage - 1);
-      }
-
-      // Search by ID or Ancarat invoice number
-      if (debouncedSearchId && debouncedSearchId.trim()) {
-        const searchValue = debouncedSearchId.trim();
-        if (!isNaN(searchValue)) {
-          // Search by ID
-          query = query.eq(ImportOrderFields.ID, parseInt(searchValue));
-        } else {
-          // Search by Ancarat invoice number
-          query = query.eq(ImportOrderFields.ANCARAT_INVOICE_NUMBER, searchValue);
-        }
-      }
-
-      // Apply filters
-      if (createdDateFrom) query = query.gte(ImportOrderFields.IMPORT_DATE, createdDateFrom);
-      if (createdDateTo) query = query.lte(ImportOrderFields.IMPORT_DATE, createdDateTo);
-      if (expectedReturnDateFrom) query = query.gte(ImportOrderFields.EXPECTED_RETURN_DATE, expectedReturnDateFrom);
-      if (expectedReturnDateTo) query = query.lte(ImportOrderFields.EXPECTED_RETURN_DATE, expectedReturnDateTo);
-      if (actualReturnDateFrom) query = query.gte(ImportOrderFields.ACTUAL_RETURN_DATE, actualReturnDateFrom);
-      if (actualReturnDateTo) query = query.lte(ImportOrderFields.ACTUAL_RETURN_DATE, actualReturnDateTo);
-      if (sourceFilter) query = query.eq(ImportOrderFields.SOURCE_TYPE, sourceFilter);
-      if (statusFilter.length > 0) query = query.in(ImportOrderFields.STATUS, statusFilter);
+      const query = buildImportOrderListBaseQuery({
+        includeCount: true,
+        rangeFrom: shouldFilterClientSide ? undefined : offset,
+        rangeTo: shouldFilterClientSide ? undefined : offset + itemsPerPage - 1,
+        searchId: debouncedSearchId,
+        createdDateFrom,
+        createdDateTo,
+        expectedReturnDateFrom,
+        expectedReturnDateTo,
+        actualReturnDateFrom,
+        actualReturnDateTo,
+        sourceFilter,
+        statusFilter,
+        sortBy,
+        sortOrder,
+      });
 
       const { data, error, count } = await query;
 
       if (error) throw error;
       
-      let filteredData = data || [];
+      let filteredData = filterImportOrdersByItemFilters(data || [], normalizedProductFilter, quantity);
       let finalCount = count || 0;
-      
-      // Client-side product filtering 
-      // TODO: Optimize with Supabase RPC function for better performance with large datasets
-      if (normalizedProductFilter || quantity) {
-        filteredData = filteredData.filter(importOrder => {
-          return importOrder.import_items && importOrder.import_items.some(item => {
-            let matches = true;
-            
-            if (normalizedProductFilter) {
-              matches = matches && String(item.products?.id || '') === normalizedProductFilter;
-            }
-            
-            if (quantity) {
-              matches = matches && item.quantity === quantity;
-            }
-            
-            return matches;
-          });
-        });
+
+      if (shouldFilterClientSide) {
         finalCount = filteredData.length;
-        
-        // Re-paginate filtered results
+
         const startIndex = (currentPage - 1) * itemsPerPage;
         const endIndex = startIndex + itemsPerPage;
         filteredData = filteredData.slice(startIndex, endIndex);
@@ -168,6 +136,48 @@ function ImportOrderList() {
     sortBy,
     sortOrder,
   ]);
+
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+      setMessage('');
+
+      const { data, error } = await buildImportOrderListBaseQuery({
+        searchId: debouncedSearchId,
+        createdDateFrom,
+        createdDateTo,
+        expectedReturnDateFrom,
+        expectedReturnDateTo,
+        actualReturnDateFrom,
+        actualReturnDateTo,
+        sourceFilter,
+        statusFilter,
+        sortBy,
+        sortOrder,
+      });
+
+      if (error) throw error;
+
+      const filteredImports = filterImportOrdersByItemFilters(
+        data || [],
+        normalizedProductFilter,
+        quantity
+      );
+
+      if (filteredImports.length === 0) {
+        setMessage('Không có dữ liệu phù hợp để xuất Excel.');
+        return;
+      }
+
+      exportImportOrdersToExcel(filteredImports);
+      setMessage(`Xuất Excel thành công ${filteredImports.length} đơn nhập.`);
+    } catch (error) {
+      console.error('Error exporting imports:', error);
+      setMessage(`Lỗi xuất Excel: ${error.message}`);
+    } finally {
+      setExporting(false);
+    }
+  };
 
   // Update URL when state changes
   useEffect(() => {
@@ -298,12 +308,22 @@ function ImportOrderList() {
         title="Danh sách đơn nhập"
         subtitle="Quản lý đơn nhập hàng từ Ancarat và khách bán"
         actions={
-          <Link
-            to="/imports/create"
-            className="inline-flex w-full items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 sm:w-auto"
-          >
-            + Tạo đơn nhập
-          </Link>
+          <>
+            <button
+              type="button"
+              onClick={handleExport}
+              disabled={loading || exporting}
+              className="inline-flex w-full items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+            >
+              {exporting ? 'Đang xuất Excel...' : 'Xuất Excel'}
+            </button>
+            <Link
+              to="/imports/create"
+              className="inline-flex w-full items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 sm:w-auto"
+            >
+              + Tạo đơn nhập
+            </Link>
+          </>
         }
       />
 

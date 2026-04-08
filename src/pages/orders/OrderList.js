@@ -40,6 +40,7 @@ function OrderList() {
   const [actualReceivedDateFrom, setActualReceivedDateFrom] = useState(searchParams.get('actualReceivedDateFrom') || '');
   const [actualReceivedDateTo, setActualReceivedDateTo] = useState(searchParams.get('actualReceivedDateTo') || '');
   const [customerFilter, setCustomerFilter] = useState(searchParams.get('customer') || '');
+  const [orderTypeFilter, setOrderTypeFilter] = useState(searchParams.get('orderType') || '');
   const [statusFilter, setStatusFilter] = useState(searchParams.getAll('status') || []);
   const [productFilter, setProductFilter] = useState(searchParams.get('productId') || '');
   
@@ -58,6 +59,7 @@ function OrderList() {
     setActualReceivedDateFrom(filters.actualReceivedDateFrom || '');
     setActualReceivedDateTo(filters.actualReceivedDateTo || '');
     setCustomerFilter(filters.customerFilter || '');
+    setOrderTypeFilter(filters.orderTypeFilter || '');
     setProductFilter(filters.productFilter || '');
     setStatusFilter(filters.statusFilter || []);
     setCurrentPage(1);
@@ -80,6 +82,7 @@ function OrderList() {
         actualReceivedDateFrom,
         actualReceivedDateTo,
         customerFilter,
+        orderTypeFilter,
         statusFilter,
         sortBy,
         sortOrder,
@@ -117,6 +120,7 @@ function OrderList() {
     actualReceivedDateFrom,
     actualReceivedDateTo,
     customerFilter,
+    orderTypeFilter,
     statusFilter,
     productFilter,
     sortBy,
@@ -137,6 +141,7 @@ function OrderList() {
         actualReceivedDateFrom,
         actualReceivedDateTo,
         customerFilter,
+        orderTypeFilter,
         statusFilter,
         sortBy,
         sortOrder,
@@ -174,6 +179,7 @@ function OrderList() {
     if (actualReceivedDateFrom) params.set('actualReceivedDateFrom', actualReceivedDateFrom);
     if (actualReceivedDateTo) params.set('actualReceivedDateTo', actualReceivedDateTo);
     if (customerFilter) params.set('customer', customerFilter);
+    if (orderTypeFilter) params.set('orderType', orderTypeFilter);
     if (productFilter) params.set('productId', productFilter);
     if (statusFilter.length > 0) {
       statusFilter.forEach(status => params.append('status', status));
@@ -197,6 +203,7 @@ function OrderList() {
     actualReceivedDateFrom,
     actualReceivedDateTo,
     customerFilter,
+    orderTypeFilter,
     statusFilter,
     productFilter,
     sortBy,
@@ -230,6 +237,7 @@ function OrderList() {
     setActualReceivedDateFrom('');
     setActualReceivedDateTo('');
     setCustomerFilter('');
+    setOrderTypeFilter('');
     setStatusFilter([]);
     setProductFilter('');
     setCurrentPage(1);
@@ -264,6 +272,7 @@ function OrderList() {
     if (actualReceivedDateFrom) count++;
     if (actualReceivedDateTo) count++;
     if (customerFilter) count++;
+    if (orderTypeFilter) count++;
     if (productFilter) count++;
     if (statusFilter.length > 0) count++;
     return count;
@@ -328,6 +337,7 @@ function OrderList() {
             actualReceivedDateFrom={actualReceivedDateFrom}
             actualReceivedDateTo={actualReceivedDateTo}
             customerFilter={customerFilter}
+            orderTypeFilter={orderTypeFilter}
             productFilter={productFilter}
             statusFilter={statusFilter}
             onApplyFilters={handleApplyFilters}
