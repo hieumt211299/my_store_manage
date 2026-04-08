@@ -13,6 +13,7 @@ export const buildOrderListBaseQuery = ({
   actualReceivedDateFrom = '',
   actualReceivedDateTo = '',
   customerFilter = '',
+  orderTypeFilter = '',
   statusFilter = [],
   sortBy = 'created_at',
   sortOrder = 'desc',
@@ -42,6 +43,7 @@ export const buildOrderListBaseQuery = ({
   if (actualReceivedDateFrom) query = query.gte(OrderFields.DATE_RECEIVED, actualReceivedDateFrom);
   if (actualReceivedDateTo) query = query.lte(OrderFields.DATE_RECEIVED, actualReceivedDateTo);
   if (customerFilter) query = query.eq(OrderFields.CUSTOMER_ID, parseInt(customerFilter, 10));
+  if (orderTypeFilter) query = query.eq(OrderFields.ORDER_TYPE, orderTypeFilter);
   if (statusFilter.length > 0) query = query.in(OrderFields.STATUS, statusFilter);
 
   return query;
