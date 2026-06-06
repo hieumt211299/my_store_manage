@@ -135,7 +135,7 @@ export const getImportSourceTypeBadgeColor = (sourceType: string): string =>
 // ── Factory / builder helpers ────────────────
 
 export const createDefaultImportOrderForm = (userEmail: string = 'Admin'): ImportOrderForm => {
-    const EXPECTED_DELIVERY_OFFSET_DAYS = 95;
+  const EXPECTED_DELIVERY_OFFSET_DAYS = 60;
   const expectedDate = new Date();
   expectedDate.setDate(expectedDate.getDate() + EXPECTED_DELIVERY_OFFSET_DAYS);
   return {

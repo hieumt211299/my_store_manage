@@ -219,7 +219,7 @@ export const getOrderTypeBadgeColor = (type: string): string =>
 
 // ── Factory / builder helpers ────────────────
 
-const EXPECTED_DELIVERY_OFFSET_DAYS = 95;
+const EXPECTED_DELIVERY_OFFSET_DAYS = 60;
 
 export const createDefaultOrderForm = (): OrderForm => {
   const expectedDate = new Date();
